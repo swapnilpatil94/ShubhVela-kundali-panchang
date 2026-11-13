@@ -1,0 +1,15 @@
+# Applied to every module on top of detekt defaults.
+style:
+  ForbiddenImport:
+    active: true
+    forbiddenImports:
+      - value: 'androidx.security.crypto.**'
+        reason: 'androidx.security:security-crypto is banned (CLAUDE.md non-negotiable 5).'
+  MagicNumber:
+    active: true
+    ignorePropertyDeclaration: true
+    ignoreAnnotation: true
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated: ['Composable']

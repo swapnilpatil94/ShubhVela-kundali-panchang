@@ -1,0 +1,9 @@
+# Applied only to :engine. Overrides ForbiddenImport: blocks android.* (and keeps the global androidx.security.crypto ban).
+style:
+  ForbiddenImport:
+    active: true
+    forbiddenImports:
+      - value: 'android.**'
+        reason: ':engine is pure Kotlin Multiplatform; no android.* imports (ARCHITECTURE.md).'
+      - value: 'androidx.security.crypto.**'
+        reason: 'androidx.security:security-crypto is banned (CLAUDE.md non-negotiable 5).'

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "schedule": ["before 6am on monday"],
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    { "matchManagers": ["gradle", "gradle-wrapper"], "groupName": "gradle ecosystem", "matchUpdateTypes": ["minor", "patch"] },
+    { "matchPackageNames": ["/^org.jetbrains.kotlin/", "/^com.google.devtools.ksp/"], "groupName": "kotlin + ksp" },
+    { "matchPackageNames": ["androidx.compose:compose-bom"], "description": "BOM 2026.09+ needs compileSdk 37; bump only after SDK 37 is installed.", "dependencyDashboardApproval": true },
+    { "matchPackageNames": ["androidx.security:security-crypto"], "enabled": false },
+    { "matchManagers": ["github-actions"], "pinDigests": true }
+  ],
+  "vulnerabilityAlerts": { "labels": ["security"] }
+}
