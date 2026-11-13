@@ -1,0 +1,20 @@
+{
+  "model": "sonnet",
+  "effortLevel": "medium",
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git add:*)", "Bash(git commit:*)", "Bash(git log:*)",
+      "Bash(python3 tools/:*)", "Bash(scripts/:*)"
+    ],
+    "deny": [
+      "Read(~/.pp-secrets/**)", "Bash(git push --force:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Read|Edit|Write|Bash|Grep|Glob",
+        "hooks": [ { "type": "command", "command": "python3 scripts/guard_secrets.py" } ] }
+    ]
+  }
+}

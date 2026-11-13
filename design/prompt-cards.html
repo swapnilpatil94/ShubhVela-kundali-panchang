@@ -1,0 +1,358 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Prompt cards</title>
+<style>body{background:#E9E4DC;margin:0;padding:24px;font-family:"Noto Sans",system-ui,sans-serif;color:#1d1410}
+.card{width:1280px;margin:0 auto 28px;background:#fff;border-radius:18px;border:2px solid #E8772E;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.hd{display:flex;gap:14px;align-items:center;background:#FFF1E4;padding:12px 18px;border-bottom:1px solid #F1D9C1}
+.num{background:#E8772E;color:#fff;font-weight:800;border-radius:10px;padding:4px 10px;font-size:15px}
+.t{font-weight:800;font-size:18px;flex:1} .of{font-size:11px;color:#8a7766}
+.bd{padding:12px 20px 16px;font-size:14.2px;line-height:1.42;column-count:2;column-gap:28px;column-rule:1px solid #F1D9C1} table,.li,p{break-inside:avoid} .bd p{margin:6px 0} .li{margin:2px 0;padding-left:14px;text-indent:-12px}
+code{font-family:ui-monospace,Menlo,monospace;background:#F6EFE6;padding:0 4px;border-radius:4px;font-size:13.6px}
+table{border-collapse:collapse;margin:6px 0;font-size:14px} td,th{border:1px solid #E5D6C4;padding:3px 8px;text-align:left} th{background:#FAF3EA}</style></head><body>
+<h2 style="text-align:center;font-family:Georgia,serif;color:#8C2F39">Screenshot one card at a time and send them in order</h2>
+<section class="card"><div class="hd"><span class="num">CARD 0</span><span class="t">FOR YOU (the human): how to use these cards</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><div class="li" style="margin-left:0px">1. <b>Prefer moving files over screenshots.</b> If your company policy allows any file transfer (personal email, Google Drive, a private GitHub repo, USB), move the <code>build-kit/</code> folder instead. It is more complete, and nothing gets lost to text recognition. These cards are the fallback.</div>
+<div class="li" style="margin-left:0px">2. <b>Set up the other laptop.</b> Install Android Studio and Claude Code, then create an empty folder <code>parivaar-panchang</code> and open Claude Code inside it.</div>
+<div class="li" style="margin-left:0px">3. <b>Pick the model.</b> Use <code>/model</code> to choose <b>Fable 5.2</b> with effort <b>high</b> for the setup cards.</div>
+<div class="li" style="margin-left:0px">4. <b>Send Cards 1–7.</b> Paste or attach Cards 1–7 <b>in order, in ONE message</b>. Attach the contact-sheet screenshots with Card 7.</div>
+<div class="li" style="margin-left:0px">5. <b>Check the docs it writes.</b> The AI creates <code>CLAUDE.md</code> and <code>docs/*.md</code>. Read them and correct anything it misread from the screenshots, especially numbers.</div>
+<div class="li" style="margin-left:0px">6. <b>Start building.</b> Send Card 8. From then on, run <b>one milestone per session</b>, use <code>/clear</code> between milestones, and commit after each one.</div>
+<div class="li" style="margin-left:0px">7. <b>Want to see the UI fast?</b> Send Card 9 after M00. It builds a clickable prototype with fake data that you can run in the emulator.</div></div></section><section class="card"><div class="hd"><span class="num">CARD 1</span><span class="t">Role, product, non-negotiables</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><p>You are the founding engineer and designer for <b>&quot;Parivaar Panchang&quot;</b> (a working name). I will send Cards 1–7. <b>Do not write app code yet.</b> After Card 7, create <code>CLAUDE.md</code> plus <code>docs/PRODUCT.md</code>, <code>ENGINE.md</code>, <code>ARCHITECTURE.md</code>, <code>SECURITY.md</code>, <code>DESIGN.md</code>, <code>MONETIZATION.md</code>, <code>SOCIAL.md</code>, <code>I18N_CONTENT.md</code>, <code>PROMPTS.md</code> and <code>DECISIONS.md</code>. Write them as dense bullets with no fluff, then stop.</p>
+<p><b>PRODUCT:</b> an Android app combining Vedic astrology, a Hindu calendar (panchang) and devotion, in one place.</p>
+<div class="li" style="margin-left:0px">• <b>Model:</b> free, with ads, plus an optional &quot;Parivaar Plus&quot; plan with no ads.</div>
+<div class="li" style="margin-left:0px">• <b>Markets:</b> India first, plus the diaspora (US, UK, Canada, UAE, Australia, Singapore).</div>
+<div class="li" style="margin-left:0px">• <b>Languages:</b> en, hi, mr and gu in R1; bn, te, ta, kn, ml and or in R2; pa, as and ne in R3.</div>
+<div class="li" style="margin-left:0px">• <b>Constraints:</b> no human astrologers, no wallet, no accounts. Offline-first. Birth data never leaves the device.</div>
+<p><b>NON-NEGOTIABLES (put these in CLAUDE.md):</b></p>
+<div class="li" style="margin-left:0px">1. <b>Accuracy beats everything.</b> Golden tests are mandatory, and tolerances are never loosened to make a test pass.</div>
+<div class="li" style="margin-left:0px">2. <b>Privacy.</b> No personal data in logs, analytics, crash reports, URLs, file names or notifications.</div>
+<div class="li" style="margin-left:0px">3. <b>No ads in sacred zones:</b> aarti, jap, mantra, Gita and Chalisa reading, the puja timer, shraddha screens, and the whole first session.</div>
+<div class="li" style="margin-left:0px">4. <b>No fear language and no selling of remedies.</b> Every interpretation shows the footer &quot;Traditional interpretation, not a scientific prediction.&quot;</div>
+<div class="li" style="margin-left:0px">5. <b>Licences.</b> No AGPL or GPL code. <b>NO Swiss Ephemeris</b> or any library built on it. Never copy text, translations or art from other apps or books.</div>
+<div class="li" style="margin-left:0px">6. <b><code>:engine</code> is pure Kotlin Multiplatform</b> and has zero Android imports.</div>
+<div class="li" style="margin-left:0px">7. <b>All UI text lives in resources or content packs.</b> Every new permission must be documented in <code>SECURITY.md</code>.</div>
+<p><b>Working style (token-lean):</b></p>
+<div class="li" style="margin-left:0px">• One milestone per session.</div>
+<div class="li" style="margin-left:0px">• Read only the doc sections a task names.</div>
+<div class="li" style="margin-left:0px">• Start with a short plan, then implement, then verify with tests.</div>
+<div class="li" style="margin-left:0px">• End each session with a 5-line summary.</div>
+<div class="li" style="margin-left:0px">• When something is ambiguous, choose the more private, more accurate, fewer-ads option and log it in <code>DECISIONS.md</code>.</div></div></section><section class="card"><div class="hd"><span class="num">CARD 2</span><span class="t">Features (PRODUCT.md)</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><p><b>Navigation:</b> five tabs (Aaj, Calendar, Kundli, Bonds, Bhakti) plus a global search bar.</p>
+<p><b>Gating key:</b> F = free · N = free with one native ad below the fold · R = unlocked by one rewarded ad · P = Plan cosmetic perk.</p>
+<p><b>AAJ (today)</b></p>
+<div class="li" style="margin-left:0px">• The five limbs (tithi, nakshatra, yoga, karana, vaar) with end times, plus paksha, masa (amanta/purnimanta), samvat, ritu and ayana.</div>
+<div class="li" style="margin-left:0px">• Sun and Moon rise/set; Moon phase.</div>
+<div class="li" style="margin-left:0px">• Inauspicious windows: Rahu kaal, Yamaganda, Gulika, Durmuhurta, Varjyam, Bhadra, Panchak, with a live countdown.</div>
+<div class="li" style="margin-left:0px">• Auspicious windows: Abhijit, Brahma muhurta, Amrit kaal.</div>
+<div class="li" style="margin-left:0px">• Choghadiya, Hora, Gowri / Nalla neram.</div>
+<div class="li" style="margin-left:0px">• Tarabala and chandrabala.</div>
+<div class="li" style="margin-left:0px">• <b>Chandrashtama alerts for each family member:</b> the Moon in the 8th house from that person&#x27;s natal Moon.</div>
+<div class="li" style="margin-left:0px">• <b>Answer-first header:</b> one plain line such as &quot;Good for new work until 2:40 PM&quot;, then the timings, then the full panchang (progressive disclosure).</div>
+<div class="li" style="margin-left:0px">• Rashifal by Moon sign (N); share card.</div>
+<p><b>CALENDAR</b></p>
+<div class="li" style="margin-left:0px">• Month view.</div>
+<div class="li" style="margin-left:0px">• Festival and vrat engine, region- and tradition-aware, <b>computed for the user&#x27;s own city worldwide</b>.</div>
+<div class="li" style="margin-left:0px">• Eclipses with local visibility and sutak.</div>
+<div class="li" style="margin-left:0px">• Regional calendars: Tamil, Malayalam, Bengali, Odia, Gujarati, Marathi, Telugu, Kannada.</div>
+<div class="li" style="margin-left:0px">• Date converter; yearly PDF (R); ICS export to Google Calendar.</div>
+<div class="li" style="margin-left:0px">• <b>Regional wall-calendar view</b>, in the style of a traditional printed almanac. It&#x27;s our own design: never the &quot;Kalnirnay&quot; name or look.</div>
+<div class="li" style="margin-left:18px">• Paper-style month grid in local script and numerals; Sundays in red; local tithi labels (शु./कृ., સુદ/વદ); local samvat; a monthly festivals list; a wall-PDF print.</div>
+<div class="li" style="margin-left:18px">• Marathi: Champa Shashthi and the Margashirsha Thursday vrat. Gujarati: a choghadiya strip.</div>
+<div class="li" style="margin-left:0px">• <b>Tamil daily sheet (தினசரி காலண்டர்):</b> Nalla neram, Gowri, Rahu, Yamagandam, Kuligai, Soolam + parigaram, Chandrashtamam, Naal. Toggle: &quot;printed style&quot; fixed 6 AM times vs actual city sunrise (the default).</div>
+<p><b>MUHURAT:</b> a finder for marriage, griha pravesh, vehicle, namkaran and more, with a personal tara filter (R).</p>
+<div class="li" style="margin-left:0px">• <b>&quot;Should I…?&quot; (free, offline, rule-based, no AI):</b> covers about 30 intents (vehicle, travel, griha pravesh, new job, haircut and so on). Answer first: verdict, then the best window today, then an expandable &quot;why&quot;. Voice input with a labelled mic.</div>
+<p><b>KUNDLI</b></p>
+<div class="li" style="margin-left:0px">• Profiles for the user, family and friends.</div>
+<div class="li" style="margin-left:0px">• Chart styles: North, South and East.</div>
+<div class="li" style="margin-left:0px">• Vimshottari to 5 levels, Yogini.</div>
+<div class="li" style="margin-left:0px">• D1–D60, Chalit, KP, Ashtakavarga, Shadbala.</div>
+<div class="li" style="margin-left:0px">• Yogas and doshas, in neutral framing.</div>
+<div class="li" style="margin-left:0px">• Gochar; Varshphal (R3).</div>
+<div class="li" style="margin-left:0px">• <b>Family dates:</b> nakshatra birthdays, tithi birthdays and shraddha tithi, with yearly reminders.</div>
+<p><b>REPORTS:</b> PDF generated on the device, in every language.</p>
+<div class="li" style="margin-left:0px">• Basic, Life (60–120 pages), Career, Marriage, Year-ahead, Matching, Child, Numerology.</div>
+<div class="li" style="margin-left:0px">• Viewing in the app is F. Exporting the PDF is R.</div>
+<p><b>BONDS</b></p>
+<div class="li" style="margin-left:0px">• Ashtakoota out of 36 and 10 Porutham, with Manglik checks.</div>
+<div class="li" style="margin-left:0px">• Friend Bonds via a privacy-safe Bond Code.</div>
+<div class="li" style="margin-left:0px">• Bond types (Love, Crush, Bestie, Sibling, Work) shown on five axes.</div>
+<div class="li" style="margin-left:0px">• Deep-dive (R); squad of 3–8 (R).</div>
+<div class="li" style="margin-left:0px">• Identity cards: yoni animal, gana, nadi, deity.</div>
+<div class="li" style="margin-left:0px">• Bond weather; Cosmic Wrapped in December; card themes (R/P).</div>
+<p><b>BHAKTI</b></p>
+<div class="li" style="margin-left:0px">• Virtual mandir and aarti, using our own recordings.</div>
+<div class="li" style="margin-left:0px">• Naam-jap mala with haptics and streaks.</div>
+<div class="li" style="margin-left:0px">• Chalisa, Gita (Sanskrit + our own translations), stotras.</div>
+<div class="li" style="margin-left:0px">• Vrat tracker and kathas.</div>
+<div class="li" style="margin-left:0px">• Step-by-step puja vidhi with timers and a samagri checklist.</div>
+<div class="li" style="margin-left:0px">• <b>Live Sankalp generator</b> with today&#x27;s panchang filled in.</div>
+<div class="li" style="margin-left:0px">• Greeting cards with the user&#x27;s name; meditation timer.</div>
+<p><b>OTHER:</b> numerology, tarot (1909 public-domain art), baby names by nakshatra, Vastu basics.</p>
+<p><b>TOOLS:</b> planet positions, ephemeris, a Conventions screen, and <b>AR sky view</b> (R2).</p>
+<p><b>PLATFORM:</b></p>
+<div class="li" style="margin-left:0px">• Glance widgets and a Wear OS tile.</div>
+<div class="li" style="margin-left:0px">• Rahu Kaal Quick Settings tile. Live Updates only when the user starts one (fast tracker, puja timer, eclipse tracker); an automatic countdown breaks Google&#x27;s Live Updates policy.</div>
+<div class="li" style="margin-left:0px">• Read-aloud (TTS) in every language; &quot;Bada Text&quot; large-text mode.</div>
+<div class="li" style="margin-left:0px">• <b>Auto travel mode:</b> when the location or time zone changes, update every timing and show a note.</div>
+<div class="li" style="margin-left:0px">• <b>Proof panel:</b> show the engine, ayanamsa, sunrise convention and altitude used, and why results may differ from other apps.</div>
+<div class="li" style="margin-left:0px">• Encrypted backup; app lock; delete-all.</div>
+<p><b>AI (R3):</b> &quot;Explain this&quot; uses retrieval only. &quot;Ask my chart&quot; runs through a proxy, receives only computed facts, is labelled AI, and is capped at 3 per day (R).</p>
+<p><b>NOT BUILT:</b> live astrologers, a wallet, a remedy store, a social feed, contacts permission, login.</p></div></section><section class="card"><div class="hd"><span class="num">CARD 3</span><span class="t">Engine part 1 (ENGINE.md)</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><p><b>Ephemeris interface:</b> <code>geoApparent(body, JD_TT)</code> returns λ and β on the true ecliptic of date, plus distance and dλ/dt.</p>
+<p><b>Backends:</b></p>
+<div class="li" style="margin-left:0px">• <b>Base:</b> Astronomy Engine, <code>io.github.cosinekitty:astronomy</code> (MIT). Pure Kotlin, no data files.</div>
+<div class="li" style="margin-left:0px">• <b>Precision:</b> a JPL DE440 excerpt covering 1900–2100. NAIF rules allow commercial use with no fees. Rename the modified kernel and give attribution. Size is about 14 MB.</div>
+<div class="li" style="margin-left:18px">• Build it with <code>jplephem excerpt</code> (MIT). Keep segments 1–6, 10, 3 (EMB) and 301 (Moon wrt EMB).</div>
+<div class="li" style="margin-left:18px">• Read it with our own ~300-line Chebyshev reader, ported from jplephem&#x27;s logic.</div>
+<div class="li" style="margin-left:18px">• Conversions: Moon_geo = (Moon wrt EMB)·(1 + 1/EMRAT); Earth = EMB − Moon_geo/(1 + EMRAT).</div>
+<div class="li" style="margin-left:18px">• Then apply light-time, aberration, IAU 2006 precession and IAU 2000B nutation (port from ERFA, BSD-3).</div>
+<div class="li" style="margin-left:18px">• Ship the file as a Play Asset Delivery <b>fast-follow</b> pack with a SHA-256 check.</div>
+<div class="li" style="margin-left:0px">• <b>Selection:</b> use Precision when the pack is present and the date is inside its range; otherwise Base. The UI shows which backend was used.</div>
+<p><b>FORBIDDEN:</b> Swiss Ephemeris and anything built on it (VedAstro, PyJHora, swisseph-based drik-panchanga), Moshier code, GPL ephemeris readers, Vedaksha.</p>
+<p><b>TIME</b></p>
+<div class="li" style="margin-left:0px">• UTC → TAI via the leap-second table; TT = TAI + 32.184 s.</div>
+<div class="li" style="margin-left:0px">• ΔT from the Espenak–Meeus polynomials, updatable through a signed pack.</div>
+<div class="li" style="margin-left:0px">• GMST from IAU 2006; GAST = GMST + the equation of the equinoxes.</div>
+<p><b>SUNRISE:</b> use the altitude h0 that matches the chosen convention.</p>
+<div class="li" style="margin-left:0px">• Default UPPER_LIMB_REFRACTED: h0 = −50′.</div>
+<div class="li" style="margin-left:0px">• CENTER_REFRACTED: h0 = −34′.</div>
+<div class="li" style="margin-left:0px">• CENTER_GEOMETRIC: h0 = 0.</div>
+<div class="li" style="margin-left:0px">• Search: bracket every 10 minutes, then refine with Brent&#x27;s method to 0.5 s.</div>
+<div class="li" style="margin-left:0px">• Above 60° latitude, apply a fallback rule and show a note.</div>
+<p><b>LAHIRI (IAE):</b> 23°15′00.658″ <b>true</b> at JD 2435553.5 (21 Mar 1956, 0h TT).</p>
+<div class="li" style="margin-left:0px">• A_mean(t) = (23°15′00.658″ − Δψ(t0)) + pA(t) − pA(t0), where Δψ(t0) ≈ +16.79″.</div>
+<div class="li" style="margin-left:0px">• A_true = A_mean + Δψ(t).</div>
+<div class="li" style="margin-left:0px">• pA = 5029.0966·T + 1.11113·T² − 0.000006·T³ (arcseconds; T in Julian centuries from J2000).</div>
+<div class="li" style="margin-left:0px">• Sidereal λ = λ_true − A_true.</div>
+<div class="li" style="margin-left:0px">• <b>Golden values (tolerance ≤ 0.1″):</b></div>
+<div class="li" style="margin-left:18px">• 2019-01-01 true: 24°07′05.986″</div>
+<div class="li" style="margin-left:18px">• 2020-01-01 true: 24°07′54.841″</div>
+<div class="li" style="margin-left:18px">• 1989-01-01 mean: 23°42′12.34″</div>
+<div class="li" style="margin-left:18px">• 1990-01-01 mean: 23°43′02.62″</div>
+<div class="li" style="margin-left:0px">• <b>Other ayanamsas:</b> TRUE_CHITRA fixes Spica at exactly 180°. KP, Raman and Yukteshwar come from their epoch values and must be VERIFIED with fixtures.</div>
+<p><b>NODES:</b> mean Ω = 125.0445479 − 1934.1362891·T + 0.0020754·T² + T³/467441 − T⁴/60616000 (degrees). True node comes from the cross product of the Moon&#x27;s position and velocity vectors. Default to true.</p>
+<p><b>ASCENDANT:</b> λ = atan2(cos θ, −(sin θ·cos ε + tan φ·sin ε)), where θ is local apparent sidereal time.</p>
+<p><b>HOUSES:</b> whole-sign (default), equal, Sripati, Placidus (used for KP).</p>
+<p><b>TOLERANCES</b> (Precision / Base):</p>
+<table><tr><th>Quantity</th><th>Precision</th><th>Base</th></tr><tr><td>Sun / Moon position</td><td>0.05″</td><td>Sun 20″, Moon 10″</td></tr><tr><td>Limb end times</td><td>5 s</td><td>30 s typical, 120 s worst</td></tr><tr><td>Rise / set</td><td>5 s</td><td>10 s</td></tr><tr><td>Dasha dates</td><td>exact</td><td>exact</td></tr></table></div></section><section class="card"><div class="hd"><span class="num">CARD 4</span><span class="t">Engine part 2: panchang, calendar, validation</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><p><b>LIMBS</b></p>
+<div class="li" style="margin-left:0px">• Tithi = ⌊(λ☾ − λ☉)/12°⌋ + 1. Tropical; no ayanamsa needed.</div>
+<div class="li" style="margin-left:0px">• Nakshatra = ⌊λ☾_sid / 13°20′⌋; each pada is 3°20′.</div>
+<div class="li" style="margin-left:0px">• Yoga = ⌊(λ☾_sid + λ☉_sid) / 13°20′⌋.</div>
+<div class="li" style="margin-left:0px">• Karana: 60 per lunar month.</div>
+<div class="li" style="margin-left:18px">• #1 is Kimstughna.</div>
+<div class="li" style="margin-left:18px">• #2–57 cycle through Bava, Balava, Kaulava, Taitila, Gara, Vanija, Vishti.</div>
+<div class="li" style="margin-left:18px">• #58–60 are Shakuni, Chatushpada, Naga.</div>
+<div class="li" style="margin-left:0px">• End times: sample every 2 h, then use Brent&#x27;s method to 1 s.</div>
+<div class="li" style="margin-left:0px">• Mark kshaya and adhika cases. The limb prevailing at sunrise names the day.</div>
+<p><b>RAHU / YAMAGANDA / GULIKA:</b> split sunrise→sunset into 8 equal parts and take the part number for the weekday.</p>
+<table><tr><th>Window</th><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr><tr><td>Rahu kaal</td><td>8</td><td>2</td><td>7</td><td>5</td><td>6</td><td>4</td><td>3</td></tr><tr><td>Yamaganda</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td><td>7</td><td>6</td></tr><tr><td>Gulika</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td></tr></table>
+<p><b>MUHURTA:</b> split the day into 15 parts and the night into 15 parts.</p>
+<div class="li" style="margin-left:0px">• Abhijit is day part 8.</div>
+<div class="li" style="margin-left:0px">• Brahma muhurta is night part 14.</div>
+<div class="li" style="margin-left:0px">• Durmuhurta, Varjyam, Amrit kaal and Gowri come from rule JSON files and must be VERIFIED.</div>
+<p><b>CHOGHADIYA</b></p>
+<div class="li" style="margin-left:0px">• Lords: Udveg = Sun, Char = Venus, Labh = Mercury, Amrit = Moon, Kaal = Saturn, Shubh = Jupiter, Rog = Mars.</div>
+<div class="li" style="margin-left:0px">• The day sequence starts with the weekday lord and cycles Udveg → Char → Labh → Amrit → Kaal → Shubh → Rog.</div>
+<div class="li" style="margin-left:0px">• Night sequences live in JSON. All 14 sequences are fixtures (VERIFY).</div>
+<p><b>HORA:</b> 12 day horas plus 12 night horas. The first hora belongs to the weekday lord, then the Chaldean order: Sun, Venus, Mercury, Moon, Saturn, Jupiter, Mars.</p>
+<p><b>PANCHAK:</b> when the Moon&#x27;s sidereal longitude is 300–360°.</p>
+<p><b>TARA:</b> ((nakshatra_today − nakshatra_natal) mod 27) mod 9 + 1.</p>
+<p><b>VIMSHOTTARI:</b> Ketu 7, Venus 20, Sun 6, Moon 10, Mars 7, Rahu 18, Jupiter 16, Saturn 19, Mercury 17 (years; 120 total).</p>
+<div class="li" style="margin-left:0px">• Year length 365.25 days by default; 360 is an option.</div>
+<div class="li" style="margin-left:0px">• The starting balance is the REMAINING (unelapsed) fraction of the Moon&#x27;s nakshatra × the lord&#x27;s years.</div>
+<p><b>MONTHS:</b> amanta or purnimanta.</p>
+<div class="li" style="margin-left:0px">• A month with no sankranti is adhika; a month with two is kshaya.</div>
+<div class="li" style="margin-left:0px">• Samvatsara follows the 60-year cycle; VS = Shaka + 135.</div>
+<p><b>SOLAR CALENDAR RULES</b></p>
+<div class="li" style="margin-left:0px">• Tamil: if sankranti is before sunset, the month starts that day; otherwise the next day.</div>
+<div class="li" style="margin-left:0px">• Malayalam: if before the end of aparahna (3/5 of daylight), that day; otherwise the next day.</div>
+<div class="li" style="margin-left:0px">• Bengali: sunrise to midnight means the next day; midnight to sunrise means the day after that.</div>
+<div class="li" style="margin-left:0px">• Odia: the same day.</div>
+<p><b>FESTIVAL DSL</b> (JSON files, one per region). Rule types:</p>
+<div class="li" style="margin-left:0px">• <code>tithi_at</code> with kala = sunrise, pradosh, nishita, aparahna, madhyahna, moonrise or arunodaya</div>
+<div class="li" style="margin-left:0px">• <code>nakshatra_in_solar_month</code></div>
+<div class="li" style="margin-left:0px">• <code>sankranti</code></div>
+<div class="li" style="margin-left:0px">• <code>weekday_tithi_combo</code></div>
+<div class="li" style="margin-left:0px">• <code>ekadashi</code> (smarta or vaishnava)</div>
+<div class="li" style="margin-left:0px">• <code>fixed_gregorian</code></div>
+<p><b>EKADASHI</b></p>
+<div class="li" style="margin-left:0px">• Smarta: the day Ekadashi prevails at sunrise.</div>
+<div class="li" style="margin-left:0px">• Vaishnava: skip the day if Dashami touches arunodaya (the 96 minutes before sunrise).</div>
+<div class="li" style="margin-left:0px">• Parana: after Hari vasara and before Dwadashi ends (VERIFY).</div>
+<p><b>PRINTED-STYLE MODE:</b> Tamil printed calendars use fixed times on a 6:00 AM basis. Rahu kalam: Sun 4:30, Mon 7:30, Tue 3:00, Wed 12:00, Thu 1:30, Fri 10:30, Sat 9:00 (90 min each). Offer it as an option; actual sunrise stays the default. Soolam/parigaram: Sun W/jaggery, Mon E/curd, Tue N/milk, Wed N/milk, Thu S/oil, Fri W/jaggery, Sat E/curd (VERIFY).</p>
+<p><b>ECLIPSE:</b> apply sutak only if the eclipse is visible locally: 12 h for a solar eclipse, 9 h for a lunar eclipse.</p>
+<p><b>FAMILY DATES</b></p>
+<div class="li" style="margin-left:0px">• Nakshatra birthday: in the birth solar or lunar month, the day the natal nakshatra prevails at sunrise.</div>
+<div class="li" style="margin-left:0px">• Shraddha: the tithi at aparahna in the month of death.</div>
+<p><b>TIME ZONES</b></p>
+<div class="li" style="margin-left:0px">• Use the platform tzdata, plus an overlay covering:</div>
+<div class="li" style="margin-left:18px">• Bombay Time +4:51 until 1955</div>
+<div class="li" style="margin-left:18px">• Calcutta Time +5:53:20 until 1948</div>
+<div class="li" style="margin-left:18px">• War time +6:30 in 1942–45</div>
+<div class="li" style="margin-left:18px">• Pre-1947 Karachi, Lahore and Dhaka</div>
+<div class="li" style="margin-left:0px">• Always show the offset in use, and allow a manual override.</div>
+<p><b>PLACES:</b> GeoNames cities5000 (CC-BY attribution) in SQLite FTS, at most 6 MB.</p>
+<p><b>VALIDATION</b></p>
+<div class="li" style="margin-left:0px">• <code>tools/oracle</code> (Skyfield + DE440, MIT) generates:</div>
+<div class="li" style="margin-left:18px">• 10,000 position vectors</div>
+<div class="li" style="margin-left:18px">• rise/set for 10 cities over 400 days</div>
+<div class="li" style="margin-left:18px">• limb end times for 10 cities over 2 years</div>
+<div class="li" style="margin-left:0px">• Spot-check against JPL Horizons. Hand-check against the Rashtriya Panchang / IAE.</div>
+<div class="li" style="margin-left:0px">• Festival fixtures for 2024–2030 in Delhi, Mumbai, Chennai, Kolkata, New York, London and Sydney, signed off by a pandit.</div>
+<div class="li" style="margin-left:0px">• CI fails on any change to a festival date.</div></div></section><section class="card"><div class="hd"><span class="num">CARD 5</span><span class="t">Architecture and security</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><p><b>STACK</b> (verify the latest stable versions and pin them in the version catalog)</p>
+<table><tr><th>Area</th><th>Choice</th></tr><tr><td>Language and build</td><td>Kotlin 2.4, AGP 9.5</td></tr><tr><td>SDK levels</td><td>minSdk 24, targetSdk 36</td></tr><tr><td>UI</td><td>Compose BOM 2026.09, Material 3 1.4 → 1.5 (Expressive), material3-adaptive, Navigation 3</td></tr><tr><td>DI and async</td><td>Hilt, Coroutines/Flow</td></tr><tr><td>Serialization and time</td><td>kotlinx.serialization (JSON + CBOR), kotlinx-datetime 0.8</td></tr><tr><td>Storage</td><td><b>Room 3 + SQLCipher</b> 4.20; DataStore 1.3 + datastore-tink; Tink 1.24</td></tr><tr><td>Background and widgets</td><td>WorkManager 2.12, Glance 1.2</td></tr><tr><td>Billing and ads</td><td>Play Billing 8+; Google Mobile Ads + mediation; UMP 4.0</td></tr><tr><td>Telemetry and backup</td><td>Firebase Crashlytics (Analytics optional, Ad ID off); Play Integrity 1.6 (AI proxy only); Block Store 16.4</td></tr><tr><td>Performance</td><td>Baseline Profiles; R8 full mode</td></tr><tr><td>Testing</td><td>JUnit/kotlin-test, Turbine, Robolectric, Roborazzi, Macrobenchmark</td></tr><tr><td>CI</td><td>GitHub Actions + detekt + OSV-Scanner + CycloneDX SBOM</td></tr></table>
+<p><b>MODULES</b></p>
+<div class="li" style="margin-left:0px">• <code>:engine</code>: KMP, pure Kotlin. Sub-packages <code>astro</code>, <code>jyotish</code>, <code>panchang</code>, <code>calendar</code>, <code>match</code>, <code>numerology</code>.</div>
+<div class="li" style="margin-left:0px">• <code>:engine-golden</code></div>
+<div class="li" style="margin-left:0px">• <code>:content</code>: signed content packs, term resolver, templates.</div>
+<div class="li" style="margin-left:0px">• Core modules: <code>:core:model</code>, <code>:core:data</code>, <code>:core:geo</code>, <code>:core:designsystem</code>, <code>:core:ads</code>, <code>:core:billing</code>, <code>:core:share</code>, <code>:core:pdf</code>, <code>:core:notify</code>, <code>:core:analytics</code>.</div>
+<div class="li" style="margin-left:0px">• Feature modules: <code>:feature:{onboarding, aaj, calendar, muhurat, kundli, reports, bonds, bhakti, horoscope, tools, settings}</code>.</div>
+<div class="li" style="margin-left:0px">• <code>:widget</code>, <code>:wear</code> (R2), <code>:app</code>.</div>
+<div class="li" style="margin-left:0px">• <code>:web</code> (R2): static SEO site generated from <code>:engine</code>.</div>
+<div class="li" style="margin-left:0px">• <code>worker/</code> (R3): Cloudflare Worker AI proxy.</div>
+<div class="li" style="margin-left:0px">• Features never depend on other features.</div>
+<p><b>SECURITY</b></p>
+<div class="li" style="margin-left:0px">• <b>Database key.</b> Generate a 32-byte random passphrase. Wrap it with an AES-GCM key held in Android Keystore (use StrongBox if the device has it). Store the wrapped key in <code>noBackupFilesDir</code>.</div>
+<div class="li" style="margin-left:0px">• <b>Do not use <code>androidx.security:security-crypto</code>.</b> It is deprecated.</div>
+<div class="li" style="margin-left:0px">• <b>Backup.</b></div>
+<div class="li" style="margin-left:18px">• Exclude the database and its key in <code>dataExtractionRules</code> and <code>fullBackupContent</code>.</div>
+<div class="li" style="margin-left:18px">• Back up only <code>snapshot.bin</code>, encrypted with Tink AEAD under a key K_b. Set <code>disableIfNoEncryptionCapabilities=true</code>.</div>
+<div class="li" style="margin-left:18px">• Store K_b in Block Store with cloud backup, but only if end-to-end encryption is available.</div>
+<div class="li" style="margin-left:18px">• On restore, re-key everything.</div>
+<div class="li" style="margin-left:18px">• Fallback: an encrypted export file through SAF, protected by a passphrase (PBKDF2 600k iterations or Argon2id).</div>
+<div class="li" style="margin-left:0px">• <b>Network.</b> Disable cleartext and enable <code>certificateTransparency</code>. Don&#x27;t pin certificates. The only endpoints are R2 content packs, Remote Config and the AI proxy.</div>
+<div class="li" style="margin-left:0px">• <b>AI proxy.</b> Validate a Play Integrity standard token with <code>requestHash = SHA-256(body)</code>. Enforce per-install caps and log no request bodies. Send only computed chart facts, never names, places or birth dates.</div>
+<div class="li" style="margin-left:0px">• <b>Components.</b> Set <code>exported</code> explicitly on every component. Use <code>intentMatchingFlags=enforceIntentFilter</code>. Validate deep links against an allow-list. Use no WebView; use Custom Tabs instead.</div>
+<div class="li" style="margin-left:0px">• <b>Permissions.</b></div>
+<div class="li" style="margin-left:18px">• Allowed: notifications (requested in context), optional coarse location, Photo Picker.</div>
+<div class="li" style="margin-left:18px">• Not allowed: contacts, SMS or phone.</div>
+<div class="li" style="margin-left:18px">• Exact alarms only when the user turns them on; otherwise windowed alarms.</div>
+<div class="li" style="margin-left:0px">• <b>Content packs.</b> Sign them with Ed25519 and pin the public key in the app.</div>
+<div class="li" style="margin-left:0px">• <b>Privacy UI.</b> App lock with biometrics, a FLAG_SECURE privacy mode, and lock-screen notifications set to PRIVATE.</div>
+<div class="li" style="margin-left:0px">• <b>Minors.</b> Derive age from the user&#x27;s own profile. Under 18: non-personalized ads only, analytics off, AI off.</div>
+<div class="li" style="margin-left:0px">• <b>DPDP (from 13 May 2027).</b> Show notice and get consent in every language. Provide export and delete-all. Keep a breach runbook.</div>
+<div class="li" style="margin-left:0px">• <b>CI.</b> Crypto round-trip tests, restore on a simulated new device, rejection of tampered packs or bond codes, a manifest audit script, and a MobSF scan before each release.</div></div></section><section class="card"><div class="hd"><span class="num">CARD 6</span><span class="t">Monetization and social</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><p><b>ADS</b></p>
+<div class="li" style="margin-left:0px">• <b>Stack.</b> Google Mobile Ads with mediation through MAX or AdMob. Bidders: InMobi, Meta, Pangle, Unity, Liftoff.</div>
+<div class="li" style="margin-left:0px">• <b>Content settings.</b> <code>maxAdContentRating = PG</code>.</div>
+<div class="li" style="margin-left:18px">• Block: gambling, alcohol, dating, get-rich-quick, sexual content, sensationalism, social casino.</div>
+<div class="li" style="margin-left:18px">• Allow religion.</div>
+<div class="li" style="margin-left:18px">• Block fear-selling astrology advertisers by URL. AdMob dropped the &quot;Astrology&quot; category on 23 Oct 2026, so it can no longer be blocked as a category.</div>
+<div class="li" style="margin-left:0px">• <b>Native:</b> one per screen, placed below the fold.</div>
+<div class="li" style="margin-left:0px">• <b>Banner:</b> calendar and tools screens only.</div>
+<div class="li" style="margin-left:0px">• <b>Interstitial:</b> only at natural breaks, at least 3 minutes apart, at most 3 a day, none on day 1.</div>
+<div class="li" style="margin-left:0px">• <b>Rewarded:</b> at most 6 a day. Use server-side verification (SSV). If an ad fails to load, grant the reward anyway.</div>
+<div class="li" style="margin-left:0px">• <b>App-open:</b> only from the 3rd session on, at most 1 a day, never when the app is opened from a notification or widget.</div>
+<div class="li" style="margin-left:0px">• <b>Rewarded unlocks:</b></div>
+<div class="li" style="margin-left:18px">• PDF export</div>
+<div class="li" style="margin-left:18px">• bond deep-dive for 7 days</div>
+<div class="li" style="margin-left:18px">• squad</div>
+<div class="li" style="margin-left:18px">• personal muhurat filter</div>
+<div class="li" style="margin-left:18px">• card theme for 24 hours</div>
+<div class="li" style="margin-left:18px">• yearly PDF</div>
+<div class="li" style="margin-left:18px">• one AI question</div>
+<div class="li" style="margin-left:18px">• &quot;calm mode&quot;: no interstitials for 3 hours</div>
+<div class="li" style="margin-left:0px">• <b>Ad-free offer.</b> Every &quot;Watch ad&quot; button sits next to &quot;Go ad-free ₹49&quot;.</div>
+<p><b>PLAN &quot;Parivaar Plus&quot;</b></p>
+<div class="li" style="margin-left:0px">• Removes all ads, keeps every unlock on, includes all themes, and gives 10 AI questions a day.</div>
+<div class="li" style="margin-left:0px">• Options: monthly, yearly, India prepaid passes, and lifetime.</div>
+<div class="li" style="margin-left:0px">• Set prices per country through the Play API from <code>play/prices.json</code>.</div>
+<table><tr><th>Market</th><th>Monthly</th><th>Yearly</th><th>Lifetime</th></tr><tr><td>India</td><td>₹49 (prepaid ₹59)</td><td>₹399 (prepaid ₹449)</td><td>₹999</td></tr><tr><td>US</td><td>$1.99</td><td>$11.99</td><td>$29.99</td></tr><tr><td>UK</td><td>£1.49</td><td>£9.99</td><td>£24.99</td></tr><tr><td>Canada</td><td>CA$2.49</td><td>CA$14.99</td><td>CA$34.99</td></tr><tr><td>Australia</td><td>A$2.99</td><td>A$17.99</td><td>A$39.99</td></tr><tr><td>UAE</td><td>AED 6.99</td><td>AED 44.99</td><td>AED 109.99</td></tr><tr><td>Eurozone</td><td>€1.99</td><td>€11.99</td><td>€27.99</td></tr><tr><td>Singapore</td><td>S$2.98</td><td>S$15.98</td><td>S$38.98</td></tr><tr><td>Malaysia</td><td>RM4.90</td><td>RM29.90</td><td>RM69.90</td></tr><tr><td>Nepal / Bangladesh / Sri Lanka</td><td>~$0.99</td><td>~$4.99</td><td>~$11.99</td></tr></table>
+<div class="li" style="margin-left:0px">• <b>Offers:</b> a 7-day yearly trial in tier-1 countries, a Navratri–Diwali offer at 30% off yearly, and a referral reward of 7 ad-free days once the invited friend has been active for 3 days.</div>
+<div class="li" style="margin-left:0px">• <b>Never</b> reward ratings.</div>
+<p><b>BOND CODE (no server)</b></p>
+<div class="li" style="margin-left:0px">• Contents (traits only): <code>{v, name or initials, Moon nakshatra 0–26, pada 1–4, Moon rashi, lagna (optional), Manglik 0/1/2, Venus sign, Sun sign}</code>.</div>
+<div class="li" style="margin-left:0px">• Encoding: CBOR, then base64url, plus a CRC-8. About 20 characters.</div>
+<div class="li" style="margin-left:0px">• Delivery: a link of the form <code>https://&lt;domain&gt;/b#&lt;code&gt;</code>. The fragment never reaches the server. Use App Links with <code>autoVerify</code>.</div>
+<div class="li" style="margin-left:0px">• The share screen shows exactly what will be shared and lets the user drop the lagna.</div>
+<div class="li" style="margin-left:0px">• <b>Never share</b> a birth date, birth time, place, or a profile the user entered manually.</div>
+<p><b>SCORING:</b> Ashtakoota (Varna 1, Vashya 2, Tara 3, Yoni 4, Graha Maitri 5, Gana 6, Bhakoot 7, Nadi 8). Per-type weights map onto five axes: Vibe, Talk, Trust, Fights, Growth. Friend bonds ignore Nadi and Bhakoot.</p>
+<div class="li" style="margin-left:0px">• Labels: Cosmic Twins, Soul Squad, Spicy Combo, Growth Bond, Opposites Attract. There is no negative label.</div>
+<p><b>SHARE CARDS</b></p>
+<div class="li" style="margin-left:0px">• Sizes: 1080×1920 and 1080×1080, rendered on the device, with EXIF stripped, a wordmark and a short link.</div>
+<div class="li" style="margin-left:0px">• WhatsApp: <code>ACTION_SEND</code> with <code>setPackage com.whatsapp</code>, then <code>w4b</code>, then the system chooser.</div>
+<div class="li" style="margin-left:0px">• Instagram: <code>com.instagram.share.ADD_TO_STORY</code> with a Facebook App ID and a FileProvider URI.</div>
+<div class="li" style="margin-left:0px">• Do <b>not</b> use Firebase Dynamic Links (shut down in 2025). Use App Links + Install Referrer.</div></div></section><section class="card"><div class="hd"><span class="num">CARD 7</span><span class="t">Design, languages, reports</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><p><b>DESIGN THEME:</b> &quot;Sacred, modern, calm.&quot; I have attached the contact-sheet screenshots; treat them as the visual reference.</p>
+<div class="li" style="margin-left:0px">• <b>Light theme (&quot;Prabhat&quot;):</b> saffron #E8772E (primary), temple maroon #8C2F39, peacock teal #1F7A74 (auspicious), ivory #FFF8EE (surface), gold #C9A227 (accent).</div>
+<div class="li" style="margin-left:0px">• <b>Dark theme (&quot;Ratri&quot;):</b> indigo night #121331 (surface), marigold #FFB25B (primary), rose #F2A7B0, teal #7FD6CC, gold #E7C85A.</div>
+<div class="li" style="margin-left:0px">• Never rely on color alone. Contrast must meet WCAG AA.</div>
+<div class="li" style="margin-left:0px">• <b>Fonts (all OFL):</b></div>
+<div class="li" style="margin-left:18px">• Noto Sans plus the Noto Indic families for UI text.</div>
+<div class="li" style="margin-left:18px">• Fraunces for display text.</div>
+<div class="li" style="margin-left:18px">• Tiro Devanagari Sanskrit for shlokas.</div>
+<div class="li" style="margin-left:18px">• Body text at least 16sp. Support font scaling up to 200% with no clipping. Never fix the height of text containers.</div>
+<div class="li" style="margin-left:0px">• <b>Look and motion:</b></div>
+<div class="li" style="margin-left:18px">• Material 3 Expressive, 20–28dp rounded cards.</div>
+<div class="li" style="margin-left:18px">• Spring motion that stays gentle on sacred screens.</div>
+<div class="li" style="margin-left:18px">• Animations built in Compose only (no Lottie): diya flicker, mala beads, sun arc, bond orbit.</div>
+<div class="li" style="margin-left:18px">• Haptics: a tick for each bead and a double tick at 108.</div>
+<div class="li" style="margin-left:0px">• <b>Components:</b></div>
+<div class="li" style="margin-left:18px">• TimeWindowCard (with a countdown ring)</div>
+<div class="li" style="margin-left:18px">• DayArc</div>
+<div class="li" style="margin-left:18px">• PanchangGrid</div>
+<div class="li" style="margin-left:18px">• ChartView in North, South and East styles (Canvas, accessible)</div>
+<div class="li" style="margin-left:18px">• DashaTimeline</div>
+<div class="li" style="margin-left:18px">• BondCard</div>
+<div class="li" style="margin-left:18px">• ShareCardFrame</div>
+<div class="li" style="margin-left:18px">• RewardedUnlockButton</div>
+<div class="li" style="margin-left:18px">• ExplainSheet (plain meaning, &quot;how calculated&quot;, read-aloud)</div>
+<div class="li" style="margin-left:0px">• <b>Layout:</b> edge-to-edge, predictive back, NavigationSuiteScaffold and ListDetailPaneScaffold.</div>
+<div class="li" style="margin-left:0px">• <b>Onboarding:</b> under 60 seconds. Steps: language, then city, then tradition, then optional birth details, then reminders.</div>
+<div class="li" style="margin-left:0px">• <b>Budgets:</b></div>
+<div class="li" style="margin-left:18px">• Cold start ≤ 1.2 s on mid-range devices and ≤ 2 s on 3 GB devices.</div>
+<div class="li" style="margin-left:18px">• Base AAB ≤ 20 MB.</div>
+<div class="li" style="margin-left:18px">• The Aaj screen renders in ≤ 150 ms from local computation.</div>
+<div class="li" style="margin-left:0px">• <b>Art:</b> deity art must be originally commissioned. No AI-generated deity images, and never place deity images next to ads.</div>
+<p><b>LANGUAGES</b></p>
+<div class="li" style="margin-left:0px">• UI strings go in <code>strings.xml</code>, with the per-app language picker.</div>
+<div class="li" style="margin-left:0px">• Interpretations ship in signed CBOR content packs per language.</div>
+<div class="li" style="margin-left:0px">• Terms tables (<code>terms/&lt;lang&gt;.json</code>) hold the native names of tithis, nakshatras, yogas, karanas, masas, rashis, grahas and festivals. They are entered by a native expert and then locked.</div>
+<div class="li" style="margin-left:0px">• Users can choose native or Latin digits.</div>
+<p><b>CONTENT</b> (about 160k words per language)</p>
+<div class="li" style="margin-left:0px">• Planet in sign and house, lords, lagna, nakshatras and padas, dashas, yogas, gochar phrases, kootas, festival guides and kathas.</div>
+<div class="li" style="margin-left:0px">• Master copies are written in English and Hindi by a hired jyotish writer.</div>
+<div class="li" style="margin-left:0px">• Translation runs through the Claude Batch API: Haiku 5.5 for bulk text, Sonnet 5.5 for kathas. Inputs are the glossary, a style guide and a do-not-translate list.</div>
+<div class="li" style="margin-left:0px">• A native reviewer then checks 100% of the output.</div>
+<p><b>REPORTS (PDF)</b></p>
+<div class="li" style="margin-left:0px">• Rendered with <code>android.graphics.pdf.PdfDocument</code> + <code>StaticLayout</code>, which shapes Indic text correctly. <b>Do not use iText or PdfBox.</b></div>
+<div class="li" style="margin-left:0px">• Embed subset Noto fonts. Page size A4. Include a table of contents and vector charts.</div>
+<div class="li" style="margin-left:0px">• Generate in a WorkManager job with a progress indicator.</div>
+<div class="li" style="margin-left:0px">• Performance: 100 pages in under 8 s, file under 6 MB.</div>
+<div class="li" style="margin-left:0px">• Known limitation: copying or searching Indic text from the PDF may be imperfect.</div>
+<div class="li" style="margin-left:0px">• <b>Public-domain texts:</b></div>
+<div class="li" style="margin-left:18px">• Gita: Sanskrit from the <code>gita/gita</code> dataset (Unlicense); translations by Arnold (1885), Besant (1895) and Telang (1882), or our own.</div>
+<div class="li" style="margin-left:18px">• Chalisa and aarti lyrics are traditional and public domain.</div>
+<div class="li" style="margin-left:18px">• Audio must be our own recordings. No label recordings.</div></div></section><section class="card"><div class="hd"><span class="num">CARD 8</span><span class="t">Build order and model routing (start building)</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><p>Create the docs from Cards 1–7, then run the milestones below. Do <b>one milestone per session</b>, <code>/clear</code> between them, and commit after each one.</p>
+<p><b>MODELS</b></p>
+<div class="li" style="margin-left:0px">• <b>FABLE 5.2</b> (effort high): the engine, security work, the release audit and the AI proxy.</div>
+<div class="li" style="margin-left:0px">• <b>OPUS 5.5</b> (effort set to high; the default is medium): features and UI.</div>
+<div class="li" style="margin-left:0px">• <b>SONNET 5.5:</b> simple screens and localization plumbing.</div>
+<div class="li" style="margin-left:0px">• <b>HAIKU 5.5:</b> bulk translation through the Batch API.</div>
+<p><b>MILESTONES</b></p>
+<table><tr><th>ID</th><th>Milestone</th><th>Model</th><th>Done when</th></tr><tr><td>M00</td><td>Bootstrap: modules, catalog, detekt (forbid <code>android.*</code> in <code>:engine</code> and forbid <code>security-crypto</code>), CI, verification metadata</td><td>OPUS</td><td>CI is green</td></tr><tr><td>M01</td><td>Astronomy core: time, ΔT, both backends, rise/set, <code>tools/oracle</code> with Skyfield</td><td>FABLE</td><td>Golden tests pass</td></tr><tr><td>M02</td><td>Jyotish core: ayanamsa, houses, nakshatra, vargas, dashas, yogas DSL</td><td>FABLE</td><td>Golden tests pass</td></tr><tr><td>M03</td><td>Panchang: limbs, all windows, choghadiya, hora</td><td>FABLE</td><td>Results within ±60 s of reference</td></tr><tr><td>M04</td><td>Calendar and festival DSL, regional calendars, Ekadashi, eclipses, family dates (effort xhigh)</td><td>FABLE</td><td>Festival fixtures for 2024–30 pass</td></tr><tr><td>M05</td><td>Geo database and timezone overlay</td><td>OPUS</td><td>—</td></tr><tr><td>M06</td><td>Secure data layer and backup/restore</td><td>FABLE</td><td>—</td></tr><tr><td>M07</td><td>Design system, app shell, onboarding, Conventions screen</td><td>OPUS</td><td>—</td></tr><tr><td>M08</td><td>Aaj screen (answer-first header), widgets, Quick Settings tile, notifications, chandrashtama alerts, travel mode, read-aloud (check TTS availability at runtime)</td><td>OPUS</td><td>—</td></tr><tr><td>M09</td><td>Calendar screens, ICS export (share-sheet file, no permission), &quot;Should I…?&quot; engine and screen</td><td>OPUS</td><td>—</td></tr><tr><td>M10</td><td>Kundli and family dates</td><td>OPUS</td><td>—</td></tr><tr><td>M11</td><td>Content packs and rashifal engine</td><td>OPUS</td><td>—</td></tr><tr><td>M12</td><td>Bonds and sharing</td><td>OPUS</td><td>—</td></tr><tr><td>M13</td><td>Bhakti, including the Sankalp generator</td><td>SONNET</td><td>—</td></tr><tr><td>M14</td><td>PDF reports</td><td>OPUS</td><td>—</td></tr><tr><td>M15</td><td>Ads, consent and billing, followed by a policy review</td><td>OPUS, then FABLE</td><td>—</td></tr><tr><td>M16</td><td>Localization pipeline</td><td>SONNET</td><td>—</td></tr><tr><td>M17</td><td>Performance and accessibility</td><td>OPUS</td><td>—</td></tr><tr><td>M18</td><td>Release hardening audit (MASVS), data safety form, privacy policy draft</td><td>FABLE</td><td>—</td></tr></table>
+<p><b>R2:</b> muhurat, advanced charts (D4–D60, Ashtakavarga, Shadbala, KP), remaining regions, the full set of reports, numerology/tarot/names/vastu, the SEO web generator, deep-dive/squad/Wrapped, AR sky view (rotation-vector sensor, accuracy cone), the Wear OS tile and widget (Tiles 1.6), user-started Live Updates, a personalised wall-calendar PDF, and an open-source <code>:engine</code> (Apache-2.0).</p>
+<p><b>R3:</b> the AI proxy (Haiku 5.5 with prompt caching), Varshphal, a Western chart, and iOS via KMP.</p>
+<p><b>Definition of done for every milestone:</b></p>
+<div class="li" style="margin-left:0px">• The build passes.</div>
+<div class="li" style="margin-left:0px">• Tests pass.</div>
+<div class="li" style="margin-left:0px">• lint and detekt are clean.</div>
+<div class="li" style="margin-left:0px">• The acceptance criteria are met.</div>
+<div class="li" style="margin-left:0px">• You write a 5-line summary.</div>
+<div class="li" style="margin-left:0px">• You log TODO(owner) items, such as pandit review, native-language review, legal review and art.</div>
+<p><b>Now start M00.</b></p></div></section><section class="card"><div class="hd"><span class="num">CARD 9</span><span class="t">Quick clickable UI prototype (to review the design)</span><span class="of">Parivaar Panchang · prompt pack v1 · 10 cards</span></div><div class="bd"><p>Using the attached contact-sheet screenshots and DESIGN.md, build a <b><code>prototype</code> product flavor</b> of <code>:app</code> with <b>fake, hard-coded sample data</b>. No engine and no ads.</p>
+<p><b>Screens:</b></p>
+<div class="li" style="margin-left:0px">• Onboarding (language)</div>
+<div class="li" style="margin-left:0px">• &quot;Should I…?&quot; answer screen</div>
+<div class="li" style="margin-left:0px">• Aaj in both light and dark themes, with a live countdown ring and the DayArc</div>
+<div class="li" style="margin-left:0px">• Calendar month, with a day sheet</div>
+<div class="li" style="margin-left:0px">• Kundli, with a North-style chart (Canvas)</div>
+<div class="li" style="margin-left:0px">• Parivaar family dates</div>
+<div class="li" style="margin-left:0px">• Report screen, with the rewarded-unlock bottom sheet</div>
+<div class="li" style="margin-left:0px">• Bond result, with the orbit animation</div>
+<div class="li" style="margin-left:0px">• Story share card preview</div>
+<div class="li" style="margin-left:0px">• Nakshatra identity card</div>
+<div class="li" style="margin-left:0px">• Aarti (dark, with diya flicker)</div>
+<div class="li" style="margin-left:0px">• Naam-jap mala (tap to advance a bead, with haptics)</div>
+<div class="li" style="margin-left:0px">• Sankalp</div>
+<div class="li" style="margin-left:0px">• Explain sheet</div>
+<p><b>Requirements:</b></p>
+<div class="li" style="margin-left:0px">• A bottom navigation bar with 5 tabs.</div>
+<div class="li" style="margin-left:0px">• A theme toggle in the top bar.</div>
+<div class="li" style="margin-left:0px">• A Bada Text toggle.</div>
+<div class="li" style="margin-left:0px">• Hindi and English strings.</div>
+<p><b>Accept when:</b> <code>./gradlew :app:installPrototypeDebug</code> runs in the emulator, all screens can be reached, and Roborazzi screenshots of every screen are saved to <code>design/screens/</code>.</p>
+<p><b>Model:</b> OPUS 5.5, effort high.</p></div></section></body></html>
