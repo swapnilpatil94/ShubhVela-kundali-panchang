@@ -1,0 +1,6 @@
+pp-de440-1900-2100.bin is derived from the JPL Development Ephemeris DE440
+(NASA/JPL/NAIF, file de440.bsp, https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/).
+Modified and renamed excerpt (Chebyshev records for 1899-12 to 2100-02, segments
+0->1..6, 0->10, 3->301 re-packed into a private binary layout).
+Not an official NAIF kernel. Source kernel SHA-256: a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5
+Reference: Park, R. S. et al. 2021, The Astronomical Journal 161, 105 (DE440 and DE441).

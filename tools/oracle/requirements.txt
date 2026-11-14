@@ -1,0 +1,6 @@
+# Oracle dev tooling only (never shipped). Pinned to what pip resolved on 2026-11-13.
+certifi==2026.10.23
+jplephem==2.24
+numpy==2.5.4
+sgp4==2.27
+skyfield==1.55

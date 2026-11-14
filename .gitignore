@@ -18,3 +18,8 @@ build/
 captures/
 .externalNativeBuild/
 .cxx/
+
+# Oracle (M01)
+*.bsp
+tools/oracle/.venv/
+__pycache__/

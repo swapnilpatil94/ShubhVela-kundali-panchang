@@ -10,6 +10,11 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
     repositories {
+        // Astronomy Engine (MIT) is not on Maven Central; JitPack serves only this group (M01 B1).
+        exclusiveContent {
+            forRepository { maven("https://jitpack.io") }
+            filter { includeGroup("io.github.cosinekitty") }
+        }
         google()
         mavenCentral()
     }

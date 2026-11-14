@@ -19,4 +19,4 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :engine:jvmTest :engine:goldenTest --no-daemon
+      - run: ./gradlew :engine:jvmTest :engine:goldenTest :engine:benchmarkTest --no-daemon
