@@ -109,3 +109,5 @@ Reference: Park, R. S. et al. 2021, The Astronomical Journal 161, 105 (DE440 and
 The excerpt ships inside the engine test fixtures and is used to build the precision backend data and the golden tests.
 JPL/NAIF ephemerides are produced by NASA/JPL and are in the public domain as US Government work; the attribution above
 is given as a courtesy and to avoid implying that the excerpt is an official NAIF kernel.
+
+Place data (GeoNames, CC BY 4.0): see `docs/THIRD_PARTY_NOTICES.md`.

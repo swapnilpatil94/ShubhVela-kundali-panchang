@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "status": "VERIFY",
+  "verifyZones": ["Asia/Kolkata", "Asia/Karachi", "Asia/Dhaka"],
+  "verifyUntilUtc": "1956-01-01T00:00:00Z",
+  "entries": [
+    {"id": "bombay_time", "key": "bombay", "offsetSeconds": 17460, "fromUtc": "1899-12-31T19:09:00Z", "untilUtc": "1954-12-31T19:09:00Z", "status": "VERIFY", "source": "MASTER.part3.s9.recollection.unverified"},
+    {"id": "calcutta_time", "key": "calcutta", "offsetSeconds": 21200, "fromUtc": "1899-12-31T18:06:40Z", "untilUtc": "1947-12-31T18:06:40Z", "status": "VERIFY", "source": "MASTER.part3.s9.recollection.unverified"},
+    {"id": "madras_time", "key": "madras", "offsetSeconds": null, "fromUtc": "1899-12-31T00:00:00Z", "untilUtc": "1947-08-15T00:00:00Z", "status": "TODO_OWNER", "source": "owner.todo.no-data"},
+    {"id": "karachi_pre1947", "key": "karachi", "offsetSeconds": null, "fromUtc": "1899-12-31T00:00:00Z", "untilUtc": "1947-08-15T00:00:00Z", "status": "TODO_OWNER", "source": "owner.todo.no-data"},
+    {"id": "lahore_pre1947", "key": "lahore", "offsetSeconds": null, "fromUtc": "1899-12-31T00:00:00Z", "untilUtc": "1947-08-15T00:00:00Z", "status": "TODO_OWNER", "source": "owner.todo.no-data"},
+    {"id": "dhaka_pre1947", "key": "dhaka", "offsetSeconds": null, "fromUtc": "1899-12-31T00:00:00Z", "untilUtc": "1947-08-15T00:00:00Z", "status": "TODO_OWNER", "source": "owner.todo.no-data"}
+  ]
+}

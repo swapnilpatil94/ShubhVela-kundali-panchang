@@ -1,0 +1,6 @@
+9000000001	Mumbai	Mumbai		19.07	72.88	P	PPL	IN		99				12400000		14	Asia/Kolkata	2020-01-01
+9000000002	Kolkata	Kolkata		22.57	88.36	P	PPL	IN		98				4500000	11	11	Asia/Kolkata	2020-01-01
+9000000003	Prayagraj	Prayagraj		25.43	81.84	P	PPL	IN		99				1100000		-9999	Asia/Kolkata	2020-01-01
+9000000004	Zedville	Zedville		10.0	20.0	P	PPL	ZZ		01				52000	300		Europe/London	2020-01-01
+9000000005	Quxton Ångström	Quxton Ångström		-5.5	-170.0	P	PPL	ZZ						8000			Pacific/Apia	2020-01-01
+9000000006	Mumbai	Mumbai		1.0	2.0	P	PPL	ZZ		01				9000			Europe/London	2020-01-01

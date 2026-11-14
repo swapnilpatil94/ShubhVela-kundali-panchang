@@ -1,0 +1,13 @@
+1	9000000003	hi	प्रयागराज	1					
+2	9000000003	en	Allahabadtest						
+3	9000000003	link	http://example.invalid/x						
+4	9000000003	fr	Prayagraj-fr						
+5	9000000003	fr	Ancienne				1		
+6	9000000001	mr	मुंबई						
+7	9000000004	en	Zedtown			1			
+8	9000000004	en	Zedburg						
+9	9000000004	fr	Zedfr				1		
+10	9000000002	iata	CCU						
+11	9000000002	gu	કોલકાતા						
+12	9000000005	hi	क़ुक्सटन						
+13	9999	en	Orphan						

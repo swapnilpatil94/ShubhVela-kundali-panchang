@@ -1,0 +1,262 @@
+{
+ "rows": [
+  {
+   "in": "Prayagraj",
+   "key": "prayagraj"
+  },
+  {
+   "in": "Allahabad",
+   "key": "allahabad"
+  },
+  {
+   "in": "allahabad ",
+   "key": "allahabad"
+  },
+  {
+   "in": "  Mumbai  ",
+   "key": "mumbai"
+  },
+  {
+   "in": "BOMBAY",
+   "key": "bombay"
+  },
+  {
+   "in": "Kolkata",
+   "key": "kolkata"
+  },
+  {
+   "in": "Calcutta",
+   "key": "calcutta"
+  },
+  {
+   "in": "Z\u00fcrich",
+   "key": "zurich"
+  },
+  {
+   "in": "S\u00e3o Paulo",
+   "key": "sao paulo"
+  },
+  {
+   "in": "Montr\u00e9al",
+   "key": "montreal"
+  },
+  {
+   "in": "Bogot\u00e1",
+   "key": "bogota"
+  },
+  {
+   "in": "Reykjav\u00edk",
+   "key": "reykjavik"
+  },
+  {
+   "in": "Krak\u00f3w",
+   "key": "krakow"
+  },
+  {
+   "in": "\u0141\u00f3d\u017a",
+   "key": "\u0142odz"
+  },
+  {
+   "in": "Cura\u00e7ao",
+   "key": "curacao"
+  },
+  {
+   "in": "Malm\u00f6",
+   "key": "malmo"
+  },
+  {
+   "in": "Troms\u00f8",
+   "key": "troms\u00f8"
+  },
+  {
+   "in": "Tromso",
+   "key": "tromso"
+  },
+  {
+   "in": "\u00c5lesund",
+   "key": "alesund"
+  },
+  {
+   "in": "Ho Chi Minh City",
+   "key": "ho chi minh city"
+  },
+  {
+   "in": "Saint-Denis",
+   "key": "saint denis"
+  },
+  {
+   "in": "St. John's",
+   "key": "st john s"
+  },
+  {
+   "in": "O'Fallon",
+   "key": "o fallon"
+  },
+  {
+   "in": "Port-of-Spain",
+   "key": "port of spain"
+  },
+  {
+   "in": "New York, NY",
+   "key": "new york ny"
+  },
+  {
+   "in": "Dar es Salaam",
+   "key": "dar es salaam"
+  },
+  {
+   "in": "Kuala Lumpur (KL)",
+   "key": "kuala lumpur kl"
+  },
+  {
+   "in": "\u092a\u094d\u0930\u092f\u093e\u0917\u0930\u093e\u091c",
+   "key": "\u092a\u094d\u0930\u092f\u093e\u0917\u0930\u093e\u091c"
+  },
+  {
+   "in": "\u0907\u0932\u093e\u0939\u093e\u092c\u093e\u0926",
+   "key": "\u0907\u0932\u093e\u0939\u093e\u092c\u093e\u0926"
+  },
+  {
+   "in": "\u092e\u0941\u0902\u092c\u0908",
+   "key": "\u092e\u0941\u0902\u092c\u0908"
+  },
+  {
+   "in": "\u0915\u094b\u0932\u0915\u093e\u0924\u093e",
+   "key": "\u0915\u094b\u0932\u0915\u093e\u0924\u093e"
+  },
+  {
+   "in": "\u0915\u093c\u0930\u093e\u091a\u0940",
+   "key": "\u0915\u093c\u0930\u093e\u091a\u0940"
+  },
+  {
+   "in": "\u092b\u093c\u0948\u091c\u093c\u093e\u092c\u093e\u0926",
+   "key": "\u092b\u093c\u0948\u091c\u093c\u093e\u092c\u093e\u0926"
+  },
+  {
+   "in": "\u0921\u093c\u094b\u0902\u0917\u0930\u0917\u0922\u093c",
+   "key": "\u0921\u093c\u094b\u0902\u0917\u0930\u0917\u0922\u093c"
+  },
+  {
+   "in": "\u0915\u094d\u0937\u093f\u092a\u094d\u0930\u093e",
+   "key": "\u0915\u094d\u0937\u093f\u092a\u094d\u0930\u093e"
+  },
+  {
+   "in": "\u0936\u094d\u0930\u0940\u0928\u0917\u0930",
+   "key": "\u0936\u094d\u0930\u0940\u0928\u0917\u0930"
+  },
+  {
+   "in": "\u0915\u0930\u094d\u200d\u0928\u093e\u091f\u0915",
+   "key": "\u0915\u0930\u094d\u0928\u093e\u091f\u0915"
+  },
+  {
+   "in": "\u0915\u094d\u200c\u0937",
+   "key": "\u0915\u094d\u0937"
+  },
+  {
+   "in": "\u0915\u094d\u200d\u0937",
+   "key": "\u0915\u094d\u0937"
+  },
+  {
+   "in": "\u0905\u0939\u092e\u0926\u093e\u092c\u093e\u0926",
+   "key": "\u0905\u0939\u092e\u0926\u093e\u092c\u093e\u0926"
+  },
+  {
+   "in": "\u0aa6\u0abf\u0ab2\u0ab9\u0ac0",
+   "key": "\u0aa6\u0abf\u0ab2\u0ab9\u0ac0"
+  },
+  {
+   "in": "\u0a85\u0aae\u0aa6\u0abe\u0ab5\u0abe\u0aa6",
+   "key": "\u0a85\u0aae\u0aa6\u0abe\u0ab5\u0abe\u0aa6"
+  },
+  {
+   "in": "\u0ab5\u0aa1\u0acb\u0aa6\u0ab0\u0abe",
+   "key": "\u0ab5\u0aa1\u0acb\u0aa6\u0ab0\u0abe"
+  },
+  {
+   "in": "\u0ab8\u0ac1\u0ab0\u0aa4",
+   "key": "\u0ab8\u0ac1\u0ab0\u0aa4"
+  },
+  {
+   "in": "\u0cac\u0cc6\u0c82\u0c97\u0cb3\u0cc2\u0cb0\u0cc1",
+   "key": "\u0cac\u0cc6\u0c82\u0c97\u0cb3\u0cc2\u0cb0\u0cc1"
+  },
+  {
+   "in": "\u0b9a\u0bc6\u0ba9\u0bcd\u0ba9\u0bc8",
+   "key": "\u0b9a\u0bc6\u0ba9\u0bcd\u0ba9\u0bc8"
+  },
+  {
+   "in": "\u0c39\u0c48\u0ca6\u0cb0\u0cbe\u0cac\u0cbe\u0ca6\u0ccd",
+   "key": "\u0c39\u0c46\u0c56\u0ca6\u0cb0\u0cbe\u0cac\u0cbe\u0ca6\u0ccd"
+  },
+  {
+   "in": "\u0627\u0644\u0642\u0627\u0647\u0631\u0629",
+   "key": "\u0627\u0644\u0642\u0627\u0647\u0631\u0629"
+  },
+  {
+   "in": "\u6771\u4eac",
+   "key": "\u6771\u4eac"
+  },
+  {
+   "in": "\uff34\uff2f\uff2b\uff39\uff2f",
+   "key": "tokyo"
+  },
+  {
+   "in": "\ufb01nd \u2460 route 66",
+   "key": "find 1 route 66"
+  },
+  {
+   "in": "Sector 21-B",
+   "key": "sector 21 b"
+  },
+  {
+   "in": "2nd Avenue",
+   "key": "2nd avenue"
+  },
+  {
+   "in": "A",
+   "key": "a"
+  },
+  {
+   "in": "  ",
+   "key": ""
+  },
+  {
+   "in": "",
+   "key": ""
+  },
+  {
+   "in": "---",
+   "key": ""
+  },
+  {
+   "in": "\u00a0Nairobi\u00a0",
+   "key": "nairobi"
+  },
+  {
+   "in": "\u01c5ungla",
+   "key": "dzungla"
+  },
+  {
+   "in": "\u0130stanbul",
+   "key": "istanbul"
+  },
+  {
+   "in": "Ma\u0301laga",
+   "key": "malaga"
+  },
+  {
+   "in": "Chennai/Madras",
+   "key": "chennai madras"
+  },
+  {
+   "in": "Dhaka_Division",
+   "key": "dhaka division"
+  },
+  {
+   "in": "K\u0101thm\u0101\u1e47\u1e0d\u016b",
+   "key": "kathmandu"
+  }
+ ],
+ "rule": "docs/specs/M05.md 4.1",
+ "schema": 1
+}

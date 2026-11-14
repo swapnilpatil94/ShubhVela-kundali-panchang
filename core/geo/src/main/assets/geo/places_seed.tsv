@@ -1,0 +1,170 @@
+id	name	admin1	cc	lat	lon	elevM	pop	zone	overlay	alt	status
+2000000001	Mumbai	Maharashtra	IN	19.0760	72.8777	14	12000000	Asia/Kolkata	bombay	Bombay|मुंबई	VERIFY
+2000000002	Delhi	Delhi	IN	28.6139	77.2090	216	11000000	Asia/Kolkata		New Delhi|दिल्ली|नई दिल्ली	VERIFY
+2000000003	Kolkata	West Bengal	IN	22.5726	88.3639	11	4500000	Asia/Kolkata	calcutta	Calcutta|कोलकाता	VERIFY
+2000000004	Chennai	Tamil Nadu	IN	13.0827	80.2707	6	7100000	Asia/Kolkata		Madras|चेन्नई	VERIFY
+2000000005	Ujjain	Madhya Pradesh	IN	23.1765	75.7885	491	520000	Asia/Kolkata		Ujjayini|उज्जैन	VERIFY
+2000000006	London	England	GB	51.5074	-0.1278	11	8900000	Europe/London			VERIFY
+2000000007	New York	New York	US	40.7128	-74.0060	10	8300000	America/New_York		New York City|NYC	VERIFY
+2000000008	Auckland	Auckland	NZ	-36.8485	174.7633	23	1500000	Pacific/Auckland			VERIFY
+2000000009	Suva	Central Division	FJ	-18.1416	178.4419	6	93000	Pacific/Fiji			VERIFY
+2000000010	Tromsø	Troms	NO	69.6492	18.9553	10	77000	Europe/Oslo		Tromso	VERIFY
+2000000011	Prayagraj	Uttar Pradesh	IN	25.4358	81.8463	98	1200000	Asia/Kolkata		Allahabad|प्रयागराज|इलाहाबाद	VERIFY
+2000000012	Bengaluru	Karnataka	IN	12.9716	77.5946	920	8400000	Asia/Kolkata		Bangalore|बेंगलुरु	VERIFY
+2000000013	Varanasi	Uttar Pradesh	IN	25.3176	82.9739	80	1200000	Asia/Kolkata		Benares|Banaras|Kashi|वाराणसी|काशी	VERIFY
+2000000014	Pune	Maharashtra	IN	18.5204	73.8567	560	3100000	Asia/Kolkata		Poona|पुणे	VERIFY
+2000000015	Vadodara	Gujarat	IN	22.3072	73.1812	39	1700000	Asia/Kolkata		Baroda|वडोदरा	VERIFY
+2000000016	Ahmedabad	Gujarat	IN	23.0225	72.5714	53	5600000	Asia/Kolkata		अहमदाबाद	VERIFY
+2000000017	Surat	Gujarat	IN	21.1702	72.8311	13	4500000	Asia/Kolkata		સુરત|सूरत	VERIFY
+2000000018	Rajkot	Gujarat	IN	22.3039	70.8022	128	1300000	Asia/Kolkata		राजकोट	VERIFY
+2000000019	Nagpur	Maharashtra	IN	21.1458	79.0882	310	2400000	Asia/Kolkata		नागपुर	VERIFY
+2000000020	Nashik	Maharashtra	IN	19.9975	73.7898	565	1500000	Asia/Kolkata		Nasik|नाशिक	VERIFY
+2000000021	Karachi	Sindh	PK	24.8607	67.0011	10	14000000	Asia/Karachi		کراچی	VERIFY
+2000000022	Lahore	Punjab	PK	31.5204	74.3587	217	11000000	Asia/Karachi			VERIFY
+2000000023	Dhaka	Dhaka	BD	23.8103	90.4125	4	10000000	Asia/Dhaka		Dacca	VERIFY
+2000000024	Kathmandu	Bagmati	NP	27.7172	85.3240	1400	1000000	Asia/Kathmandu		काठमाडौं	VERIFY
+2000000025	Colombo	Western	LK	6.9271	79.8612	1	560000	Asia/Colombo			VERIFY
+2000000026	Apia	Tuamasaga	WS	-13.8333	-171.7500	2	37000	Pacific/Apia			VERIFY
+2000000027	Kiritimati	Line Islands	KI	1.8721	-157.4278	2	6500	Pacific/Kiritimati		Christmas Island	VERIFY
+2000000028	Santiago	Santiago Metropolitan	CL	-33.4489	-70.6693	520	5200000	America/Santiago			VERIFY
+2000000029	Sydney	New South Wales	AU	-33.8688	151.2093	58	5300000	Australia/Sydney			VERIFY
+2000000030	Hyderabad	Telangana	IN	17.3850	78.4867	505	6900000	Asia/Kolkata		हैदराबाद	VERIFY
+2000000031	Jaipur	Rajasthan	IN	26.9124	75.7873	431	3100000	Asia/Kolkata		जयपुर	VERIFY
+2000000032	Lucknow	Uttar Pradesh	IN	26.8467	80.9462	123	2900000	Asia/Kolkata		लखनऊ	VERIFY
+2000000033	Kanpur	Uttar Pradesh	IN	26.4499	80.3319	126	2900000	Asia/Kolkata		Cawnpore|कानपुर	VERIFY
+2000000034	Bhopal	Madhya Pradesh	IN	23.2599	77.4126	527	1800000	Asia/Kolkata		भोपाल	VERIFY
+2000000035	Indore	Madhya Pradesh	IN	22.7196	75.8577	553	2000000	Asia/Kolkata		इंदौर	VERIFY
+2000000036	Patna	Bihar	IN	25.5941	85.1376	53	1700000	Asia/Kolkata		पटना	VERIFY
+2000000037	Ranchi	Jharkhand	IN	23.3441	85.3096	651	1100000	Asia/Kolkata		राँची	VERIFY
+2000000038	Bhubaneswar	Odisha	IN	20.2961	85.8245	45	840000	Asia/Kolkata			VERIFY
+2000000039	Guwahati	Assam	IN	26.1445	91.7362	55	960000	Asia/Kolkata		Gauhati	VERIFY
+2000000040	Chandigarh	Chandigarh	IN	30.7333	76.7794	321	960000	Asia/Kolkata			VERIFY
+2000000041	Amritsar	Punjab	IN	31.6340	74.8723	234	1200000	Asia/Kolkata		Ambarsar	VERIFY
+2000000042	Dehradun	Uttarakhand	IN	30.3165	78.0322	640	580000	Asia/Kolkata		देहरादून	VERIFY
+2000000043	Haridwar	Uttarakhand	IN	29.9457	78.1642	249	230000	Asia/Kolkata		Hardwar|हरिद्वार	VERIFY
+2000000044	Rishikesh	Uttarakhand	IN	30.0869	78.2676	372	100000	Asia/Kolkata		ऋषिकेश	VERIFY
+2000000045	Mathura	Uttar Pradesh	IN	27.4924	77.6737	174	440000	Asia/Kolkata		मथुरा	VERIFY
+2000000046	Ayodhya	Uttar Pradesh	IN	26.7922	82.1998	93	75000	Asia/Kolkata		Faizabad|अयोध्या	VERIFY
+2000000047	Gaya	Bihar	IN	24.7914	85.0002	111	470000	Asia/Kolkata		गया	VERIFY
+2000000048	Agra	Uttar Pradesh	IN	27.1767	78.0081	170	1600000	Asia/Kolkata		आगरा	VERIFY
+2000000049	Jodhpur	Rajasthan	IN	26.2389	73.0243	231	1100000	Asia/Kolkata			VERIFY
+2000000050	Udaipur	Rajasthan	IN	24.5854	73.7125	577	470000	Asia/Kolkata			VERIFY
+2000000051	Kochi	Kerala	IN	9.9312	76.2673	2	620000	Asia/Kolkata		Cochin	VERIFY
+2000000052	Thiruvananthapuram	Kerala	IN	8.5241	76.9366	10	750000	Asia/Kolkata		Trivandrum	VERIFY
+2000000053	Coimbatore	Tamil Nadu	IN	11.0168	76.9558	411	1100000	Asia/Kolkata		Kovai	VERIFY
+2000000054	Madurai	Tamil Nadu	IN	9.9252	78.1198	134	1500000	Asia/Kolkata			VERIFY
+2000000055	Mysuru	Karnataka	IN	12.2958	76.6394	770	920000	Asia/Kolkata		Mysore	VERIFY
+2000000056	Visakhapatnam	Andhra Pradesh	IN	17.6868	83.2185	3	2000000	Asia/Kolkata		Vizag	VERIFY
+2000000057	Vijayawada	Andhra Pradesh	IN	16.5062	80.6480	20	1100000	Asia/Kolkata			VERIFY
+2000000058	Tirupati	Andhra Pradesh	IN	13.6288	79.4192	161	460000	Asia/Kolkata			VERIFY
+2000000059	Panaji	Goa	IN	15.4909	73.8278	10	115000	Asia/Kolkata		Goa|Panjim	VERIFY
+2000000060	Aurangabad	Maharashtra	IN	19.8762	75.3433	568	1200000	Asia/Kolkata		Chhatrapati Sambhajinagar	VERIFY
+2000000061	Kolhapur	Maharashtra	IN	16.7050	74.2433	550	560000	Asia/Kolkata		कोल्हापूर	VERIFY
+2000000062	Solapur	Maharashtra	IN	17.6599	75.9064	458	950000	Asia/Kolkata		सोलापूर	VERIFY
+2000000063	Thane	Maharashtra	IN	19.2183	72.9781	8	1800000	Asia/Kolkata		ठाणे	VERIFY
+2000000064	Bhavnagar	Gujarat	IN	21.7645	72.1519	24	600000	Asia/Kolkata			VERIFY
+2000000065	Jamnagar	Gujarat	IN	22.4707	70.0577	18	600000	Asia/Kolkata			VERIFY
+2000000066	Gandhinagar	Gujarat	IN	23.2156	72.6369	81	290000	Asia/Kolkata			VERIFY
+2000000067	Dwarka	Gujarat	IN	22.2394	68.9678	2	38000	Asia/Kolkata		દ્વારકા	VERIFY
+2000000068	Somnath	Gujarat	IN	20.8880	70.4010	5	40000	Asia/Kolkata		Prabhas Patan	VERIFY
+2000000069	Nanded	Maharashtra	IN	19.1383	77.3210	358	550000	Asia/Kolkata			VERIFY
+2000000070	Shirdi	Maharashtra	IN	19.7668	74.4770	498	36000	Asia/Kolkata			VERIFY
+2000000071	Srinagar	Jammu and Kashmir	IN	34.0837	74.7973	1585	1200000	Asia/Kolkata			VERIFY
+2000000072	Shimla	Himachal Pradesh	IN	31.1048	77.1734	2200	170000	Asia/Kolkata			VERIFY
+2000000073	Raipur	Chhattisgarh	IN	21.2514	81.6296	298	1000000	Asia/Kolkata			VERIFY
+2000000074	Jabalpur	Madhya Pradesh	IN	23.1815	79.9864	412	1200000	Asia/Kolkata			VERIFY
+2000000075	Gwalior	Madhya Pradesh	IN	26.2183	78.1828	197	1100000	Asia/Kolkata			VERIFY
+2000000076	Meerut	Uttar Pradesh	IN	28.9845	77.7064	222	1400000	Asia/Kolkata			VERIFY
+2000000077	Ludhiana	Punjab	IN	30.9010	75.8573	244	1700000	Asia/Kolkata			VERIFY
+2000000078	Puri	Odisha	IN	19.8135	85.8312	3	200000	Asia/Kolkata		जगन्नाथ पुरी	VERIFY
+2000000079	Imphal	Manipur	IN	24.8170	93.9368	786	270000	Asia/Kolkata			VERIFY
+2000000080	Port Blair	Andaman and Nicobar	IN	11.6234	92.7265	16	140000	Asia/Kolkata			VERIFY
+2000000081	Islamabad	Islamabad	PK	33.6844	73.0479	540	1200000	Asia/Karachi			VERIFY
+2000000082	Chittagong	Chattogram	BD	22.3569	91.7832	6	2600000	Asia/Dhaka		Chattogram	VERIFY
+2000000083	Thimphu	Thimphu	BT	27.4728	89.6390	2320	115000	Asia/Thimphu			VERIFY
+2000000084	Kabul	Kabul	AF	34.5553	69.2075	1790	4200000	Asia/Kabul			VERIFY
+2000000085	Malé	Kaafu	MV	4.1755	73.5093	1	140000	Indian/Maldives		Male	VERIFY
+2000000086	Kandy	Central	LK	7.2906	80.6337	500	110000	Asia/Colombo			VERIFY
+2000000087	Pokhara	Gandaki	NP	28.2096	83.9856	822	520000	Asia/Kathmandu			VERIFY
+2000000088	Birmingham	England	GB	52.4862	-1.8904	140	1100000	Europe/London			VERIFY
+2000000089	Manchester	England	GB	53.4808	-2.2426	38	550000	Europe/London			VERIFY
+2000000090	Leicester	England	GB	52.6369	-1.1398	70	360000	Europe/London			VERIFY
+2000000091	Leeds	England	GB	53.8008	-1.5491	40	800000	Europe/London			VERIFY
+2000000092	Glasgow	Scotland	GB	55.8642	-4.2518	20	630000	Europe/London			VERIFY
+2000000093	Edinburgh	Scotland	GB	55.9533	-3.1883	47	520000	Europe/London			VERIFY
+2000000094	Southall	England	GB	51.5074	-0.3777	25	70000	Europe/London			VERIFY
+2000000095	Wembley	England	GB	51.5560	-0.2796	40	90000	Europe/London			VERIFY
+2000000096	Bradford	England	GB	53.7960	-1.7594	120	540000	Europe/London			VERIFY
+2000000097	Los Angeles	California	US	34.0522	-118.2437	90	3900000	America/Los_Angeles			VERIFY
+2000000098	San Francisco	California	US	37.7749	-122.4194	16	810000	America/Los_Angeles			VERIFY
+2000000099	San Jose	California	US	37.3382	-121.8863	26	1000000	America/Los_Angeles			VERIFY
+2000000100	Seattle	Washington	US	47.6062	-122.3321	53	740000	America/Los_Angeles			VERIFY
+2000000101	Chicago	Illinois	US	41.8781	-87.6298	180	2700000	America/Chicago			VERIFY
+2000000102	Houston	Texas	US	29.7604	-95.3698	15	2300000	America/Chicago			VERIFY
+2000000103	Dallas	Texas	US	32.7767	-96.7970	131	1300000	America/Chicago			VERIFY
+2000000104	Edison	New Jersey	US	40.5187	-74.4121	30	110000	America/New_York			VERIFY
+2000000105	Jersey City	New Jersey	US	40.7178	-74.0431	5	290000	America/New_York			VERIFY
+2000000106	Boston	Massachusetts	US	42.3601	-71.0589	10	650000	America/New_York			VERIFY
+2000000107	Washington	District of Columbia	US	38.9072	-77.0369	7	690000	America/New_York		Washington DC	VERIFY
+2000000108	Atlanta	Georgia	US	33.7490	-84.3880	320	500000	America/New_York			VERIFY
+2000000109	Phoenix	Arizona	US	33.4484	-112.0740	331	1600000	America/Phoenix			VERIFY
+2000000110	Denver	Colorado	US	39.7392	-104.9903	1609	710000	America/Denver			VERIFY
+2000000111	Honolulu	Hawaii	US	21.3069	-157.8583	6	350000	Pacific/Honolulu			VERIFY
+2000000112	Anchorage	Alaska	US	61.2181	-149.9003	31	290000	America/Anchorage			VERIFY
+2000000113	Toronto	Ontario	CA	43.6532	-79.3832	76	2800000	America/Toronto			VERIFY
+2000000114	Brampton	Ontario	CA	43.7315	-79.7624	220	660000	America/Toronto			VERIFY
+2000000115	Mississauga	Ontario	CA	43.5890	-79.6441	156	720000	America/Toronto			VERIFY
+2000000116	Vancouver	British Columbia	CA	49.2827	-123.1207	70	660000	America/Vancouver			VERIFY
+2000000117	Surrey	British Columbia	CA	49.1913	-122.8490	70	580000	America/Vancouver			VERIFY
+2000000118	Calgary	Alberta	CA	51.0447	-114.0719	1045	1300000	America/Edmonton			VERIFY
+2000000119	Montréal	Quebec	CA	45.5019	-73.5674	30	1800000	America/Toronto		Montreal	VERIFY
+2000000120	Dubai	Dubai	AE	25.2048	55.2708	10	3500000	Asia/Dubai			VERIFY
+2000000121	Abu Dhabi	Abu Dhabi	AE	24.4539	54.3773	27	1500000	Asia/Dubai			VERIFY
+2000000122	Sharjah	Sharjah	AE	25.3463	55.4209	4	1300000	Asia/Dubai			VERIFY
+2000000123	Doha	Doha	QA	25.2854	51.5310	10	1000000	Asia/Qatar			VERIFY
+2000000124	Muscat	Muscat	OM	23.5880	58.3829	15	1400000	Asia/Muscat			VERIFY
+2000000125	Kuwait City	Al Asimah	KW	29.3759	47.9774	10	60000	Asia/Kuwait			VERIFY
+2000000126	Riyadh	Riyadh	SA	24.7136	46.6753	612	7000000	Asia/Riyadh			VERIFY
+2000000127	Manama	Capital	BH	26.2285	50.5860	2	160000	Asia/Bahrain			VERIFY
+2000000128	Singapore	Singapore	SG	1.3521	103.8198	15	5600000	Asia/Singapore			VERIFY
+2000000129	Kuala Lumpur	Kuala Lumpur	MY	3.1390	101.6869	56	1800000	Asia/Kuala_Lumpur			VERIFY
+2000000130	Penang	Penang	MY	5.4164	100.3327	3	710000	Asia/Kuala_Lumpur		George Town	VERIFY
+2000000131	Ipoh	Perak	MY	4.5975	101.0901	40	660000	Asia/Kuala_Lumpur			VERIFY
+2000000132	Johor Bahru	Johor	MY	1.4927	103.7414	20	860000	Asia/Kuala_Lumpur			VERIFY
+2000000133	Melbourne	Victoria	AU	-37.8136	144.9631	31	5100000	Australia/Melbourne			VERIFY
+2000000134	Brisbane	Queensland	AU	-27.4698	153.0251	27	2500000	Australia/Brisbane			VERIFY
+2000000135	Perth	Western Australia	AU	-31.9505	115.8605	31	2100000	Australia/Perth			VERIFY
+2000000136	Adelaide	South Australia	AU	-34.9285	138.6007	50	1400000	Australia/Adelaide			VERIFY
+2000000137	Canberra	Australian Capital Territory	AU	-35.2809	149.1300	578	460000	Australia/Sydney			VERIFY
+2000000138	Wellington	Wellington	NZ	-41.2865	174.7762	20	215000	Pacific/Auckland			VERIFY
+2000000139	Christchurch	Canterbury	NZ	-43.5321	172.6362	20	390000	Pacific/Auckland			VERIFY
+2000000140	Nadi	Western Division	FJ	-17.8000	177.4167	18	71000	Pacific/Fiji			VERIFY
+2000000141	Lautoka	Western Division	FJ	-17.6167	177.4500	10	71000	Pacific/Fiji			VERIFY
+2000000142	Nairobi	Nairobi	KE	-1.2921	36.8219	1661	4400000	Africa/Nairobi			VERIFY
+2000000143	Mombasa	Mombasa	KE	-4.0435	39.6682	17	1200000	Africa/Nairobi			VERIFY
+2000000144	Kisumu	Kisumu	KE	-0.0917	34.7680	1131	410000	Africa/Nairobi			VERIFY
+2000000145	Johannesburg	Gauteng	ZA	-26.2041	28.0473	1753	5600000	Africa/Johannesburg			VERIFY
+2000000146	Durban	KwaZulu-Natal	ZA	-29.8587	31.0218	8	590000	Africa/Johannesburg		eThekwini	VERIFY
+2000000147	Cape Town	Western Cape	ZA	-33.9249	18.4241	25	4600000	Africa/Johannesburg			VERIFY
+2000000148	Port Louis	Port Louis	MU	-20.1609	57.5012	10	150000	Indian/Mauritius			VERIFY
+2000000149	Curepipe	Plaines Wilhems	MU	-20.3187	57.5259	560	84000	Indian/Mauritius			VERIFY
+2000000150	Dar es Salaam	Dar es Salaam	TZ	-6.7924	39.2083	14	5400000	Africa/Dar_es_Salaam			VERIFY
+2000000151	Kampala	Central	UG	0.3476	32.5825	1190	1700000	Africa/Kampala			VERIFY
+2000000152	Port of Spain	Port of Spain	TT	10.6549	-61.5019	12	37000	America/Port_of_Spain			VERIFY
+2000000153	Chaguanas	Chaguanas	TT	10.5167	-61.4000	15	83000	America/Port_of_Spain			VERIFY
+2000000154	San Fernando	San Fernando	TT	10.2800	-61.4600	10	49000	America/Port_of_Spain			VERIFY
+2000000155	Georgetown	Demerara-Mahaica	GY	6.8013	-58.1551	2	120000	America/Guyana			VERIFY
+2000000156	New Amsterdam	East Berbice-Corentyne	GY	6.2500	-57.5167	2	17000	America/Guyana			VERIFY
+2000000157	Paramaribo	Paramaribo	SR	5.8520	-55.2038	3	240000	America/Paramaribo			VERIFY
+2000000158	Nieuw Nickerie	Nickerie	SR	5.9333	-57.0000	1	13000	America/Paramaribo			VERIFY
+2000000159	São Paulo	São Paulo	BR	-23.5505	-46.6333	760	12000000	America/Sao_Paulo		Sao Paulo	VERIFY
+2000000160	Amsterdam	North Holland	NL	52.3676	4.9041	2	870000	Europe/Amsterdam			VERIFY
+2000000161	Berlin	Berlin	DE	52.5200	13.4050	34	3600000	Europe/Berlin			VERIFY
+2000000162	Paris	Île-de-France	FR	48.8566	2.3522	35	2100000	Europe/Paris			VERIFY
+2000000163	Zürich	Zurich	CH	47.3769	8.5417	408	420000	Europe/Zurich		Zurich	VERIFY
+2000000164	Moscow	Moscow	RU	55.7558	37.6173	156	12000000	Europe/Moscow			VERIFY
+2000000165	Havana	La Habana	CU	23.1136	-82.3666	59	2100000	America/Havana			VERIFY
+2000000166	Tokyo	Tokyo	JP	35.6762	139.6503	40	14000000	Asia/Tokyo		東京	VERIFY
+2000000167	Bangkok	Bangkok	TH	13.7563	100.5018	2	10000000	Asia/Bangkok			VERIFY
+2000000168	Beirut	Beirut	LB	33.8938	35.5018	20	360000	Asia/Beirut			VERIFY
+2000000169	Lord Howe Island	New South Wales	AU	-31.5553	159.0821	10	400	Australia/Lord_Howe			VERIFY

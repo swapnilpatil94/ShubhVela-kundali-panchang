@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Attribution required by the GeoNames CC BY 4.0 licence; same text as docs/THIRD_PARTY_NOTICES.md. -->
+    <string name="geo_attribution_geonames">Place data from GeoNames (geonames.org), licensed under CC BY 4.0.</string>
+
+    <!-- Historical time overlays (VERIFY: exact dates are owner TODO). -->
+    <string name="geo_overlay_bombay_time">Bombay local time (+4:51), before 1955</string>
+    <string name="geo_overlay_calcutta_time">Calcutta local time (+5:53:20), before 1948</string>
+    <string name="geo_overlay_madras_time">Madras local time, historical</string>
+    <string name="geo_overlay_karachi_pre1947">Karachi local time, before 1947</string>
+    <string name="geo_overlay_lahore_pre1947">Lahore local time, before 1947</string>
+    <string name="geo_overlay_dhaka_pre1947">Dhaka local time, before 1947</string>
+
+    <!-- Where a UTC offset came from. -->
+    <string name="geo_source_iana">Time zone database</string>
+    <string name="geo_source_overlay">Historical local time</string>
+    <string name="geo_source_lmt">Local mean time from longitude</string>
+    <string name="geo_source_manual">Entered by you</string>
+
+    <!-- Offset flags. -->
+    <string name="geo_flag_dst">Daylight saving time</string>
+    <string name="geo_flag_gap_shifted">This clock time did not exist; the time moved forward</string>
+    <string name="geo_flag_ambiguous">This clock time happened twice; please choose</string>
+    <string name="geo_flag_historical_verify">Historical offset, please verify</string>
+    <string name="geo_flag_pre_standard_lmt">Before standard time; local mean time is used</string>
+    <string name="geo_flag_no_overlay_data">No historical data for this place; the standard zone is used</string>
+
+    <!-- Manual offset picker. -->
+    <string name="geo_picker_label">UTC offset (for example +05:30)</string>
+    <string name="geo_picker_error_empty">Enter an offset</string>
+    <string name="geo_picker_error_format">Use the form +HH:MM or +HH:MM:SS</string>
+    <string name="geo_picker_error_range">The offset must be between -12:00 and +14:00</string>
+</resources>

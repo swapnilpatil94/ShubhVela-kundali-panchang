@@ -1,0 +1,19 @@
+id	name	admin1	cc	lat	lon	elevM	pop	zone	overlay	alt	status
+2000001001	Leicester	England	GB	52.6386	-1.1331		370000	Europe/London		लेस्टर|લેસ્ટર	VERIFY
+2000001002	Wembley	England	GB	51.5560	-0.2796		33000	Europe/London			VERIFY
+2000001003	Edison	New Jersey	US	40.5187	-74.4121		107000	America/New_York			VERIFY
+2000001004	Fremont	California	US	37.5483	-121.9886		230000	America/Los_Angeles			VERIFY
+2000001005	Houston	Texas	US	29.7604	-95.3698		2300000	America/Chicago			VERIFY
+2000001006	Brampton	Ontario	CA	43.7315	-79.7624		660000	America/Toronto			VERIFY
+2000001007	Dubai		AE	25.2048	55.2708		3400000	Asia/Dubai		दुबई	VERIFY
+2000001008	Singapore		SG	1.3521	103.8198		5600000	Asia/Singapore		सिंगापुर	VERIFY
+2000001009	Kuala Lumpur		MY	3.1390	101.6869		1800000	Asia/Kuala_Lumpur			VERIFY
+2000001010	Melbourne	Victoria	AU	-37.8136	144.9631		5000000	Australia/Melbourne			VERIFY
+2000001011	Auckland		NZ	-36.8485	174.7633		1600000	Pacific/Auckland			VERIFY
+2000001012	Suva		FJ	-18.1416	178.4419		93000	Pacific/Fiji			VERIFY
+2000001013	Nairobi		KE	-1.2921	36.8219		4400000	Africa/Nairobi			VERIFY
+2000001014	Durban	KwaZulu-Natal	ZA	-29.8587	31.0218		590000	Africa/Johannesburg			VERIFY
+2000001015	Port Louis		MU	-20.1609	57.5012		150000	Indian/Mauritius			VERIFY
+2000001016	Chaguanas		TT	10.5167	-61.4000		83000	America/Port_of_Spain			VERIFY
+2000001017	Georgetown		GY	6.8013	-58.1551		118000	America/Guyana			VERIFY
+2000001018	Paramaribo		SR	5.8520	-55.2038		240000	America/Paramaribo			VERIFY
