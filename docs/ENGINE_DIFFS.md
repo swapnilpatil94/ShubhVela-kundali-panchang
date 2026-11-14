@@ -109,3 +109,77 @@ Temporary test, not committed, run on 2026-11-14 against `positions.json` (10,00
   entry; fragile residual at most 1.42 arcsec (one fragile entry differs in event count, which is not compared).
 - Correction to "Aberration before parallax" above: the Sun's 0.02 arcsec altitude residual (opposite sign at
   rise and set) was measured, but its cause was not isolated; read "mostly diurnal aberration" as a guess.
+
+## M02 Jyotish core, [C1]-[C5] (2026-11-14)
+
+### Contracts (spec 2, 3.1)
+- **Longitudes outside [0, 360).** `Zodiac.rashiOf`, `degInRashi`, `nakshatraOf`, `padaOf`, `Dashas.*` and
+  `ChartFacts.fromLongitudes` read any finite longitude modulo 360 and reject NaN and infinities. Inside
+  [0, 360) the result is bit-identical to the spec formula. The only visible difference: 360.0 is MESHA 0 deg
+  (the literal clamp gives MEENA 30 deg). Owner: architect.
+- **Redacted text forms.** Besides `ChartFacts`, `toString` is redacted for `GrahaFact`, `HouseResult.Cusps`,
+  `HouseAngles`, `DashaPeriod` and `DashaTree` (all follow from birth data). Owner: architect.
+- **`HouseResult` lives in `Houses.kt` and was written with C1**, because `ChartFacts.fromLongitudes` takes it.
+- **`houseOf` fallback.** If rounding leaves a longitude in a gap of a few ulps between two houses, the house
+  whose start is nearest behind it is returned (the spec rule alone would return nothing).
+
+### Ayanamsa (spec 3.2)
+- **Nutation model.** The engine uses IAU 2000B for the nutation in longitude, both at the Lahiri epoch and at
+  the date; the oracle uses IAU 2000A. Measured on the 2,000-epoch grid: Lahiri mean 0.0012 arcsec (the
+  constant offset of the two models at the 1956 epoch), Lahiri true 0.0031, True Chitra true 0.0025.
+- **Lahiri keeps the IAU 1976 precession** (its definition) while positions use IAU 2006. Against the four
+  published values: 0.016, 0.015, 0.032 and 0.006 arcsec.
+- **Spica reduction.** Catalogue place and proper motion carried linearly, rotated by the M01
+  Fukushima-Williams matrix (frame bias included) to the mean ecliptic of date. No parallax, radial velocity,
+  aberration or deflection. Agreement with the oracle's Skyfield reduction: 4e-8 arcsec. The constants were
+  typed without catalogue access: TODO(owner).
+- **Sidereal speed** subtracts the central difference of the true ayanamsa over +/- 0.005 d
+  (`Ayanamsa.trueRateDegPerDay`, internal). It therefore contains the rate of nutation, as the tropical speed
+  of the apparent place does.
+
+### Houses (spec 3.3)
+- **Ascendant inside the polar circles** is the eastern intersection (closed form plus 180 degrees when its
+  hour angle is west of the meridian), as amended in the spec. VERIFY with pandit.
+- **Sripati above 66.56 degrees.** The formulas are applied as written at every latitude. With the eastern
+  ascendant, wrap360(asc - mc) stays inside (0, 180) degrees, so no quadrant gets a negative width (none of
+  the 2,520 fixture rows exceeds 180). Whether Sripati should be offered there is an owner question
+  (TODO(owner), with the polar ascendant).
+- **Placidus** returns the longitude of the last iterate once the right ascension moves by less than
+  1e-11 degrees; against the bisection oracle the largest difference is 1.7e-11 degrees.
+- **LAST** uses UT1 = UTC and GAST without the complementary terms (M01): 0.0041 arcsec against Skyfield.
+
+### Dashas (spec 3.4)
+- **Double arithmetic against exact fractions.** Boundaries are computed in days as doubles and rounded to
+  the millisecond (ties towards the future). Against the oracle's exact rationals 3 of 177,600 boundaries
+  differ, each by 1 ms (a tie decided the other way); lord paths are equal everywhere.
+- **`at` compares days, not instants,** so within 1 ms of a boundary it can name the neighbouring period
+  relative to the rounded `start`/`end` instants.
+- The start day of the first period is +0.0, never -0.0, when the Moon sits exactly on a nakshatra start.
+
+### Chart assembly (spec 3.5)
+- The true ayanamsa is evaluated once per chart and subtracted from every graha (bit-identical to calling
+  `Ayanamsa.siderealDeg` per graha).
+- **Privacy fix to M01 code (2026-11-14):** `EphemerisRangeException` no longer puts the requested TT Julian
+  Day in `message`/`toString` (through `ChartCalculator` that is a birth instant); the value stays in its `tt`
+  property. No other exception or `toString` under `engine/src/commonMain` or `jvmShared` embeds an instant,
+  Julian Day or place. Not changed: the default `toString` of `Place` and `JulianDay` still prints the values.
+
+### Scratch pre-flight against the committed golden JSON (information only, not a gate)
+Temporary test, not committed, run on 2026-11-14. The committed gates are the B6 golden tests.
+- `ayanamsa.json`: 4 published rows, max 0.032 arcsec (limit 0.1); grid of 2,000: Lahiri mean 0.0012 (0.005),
+  Lahiri true 0.0031 (0.01), True Chitra mean 4e-8 (0.01), True Chitra true 0.0025 (0.01).
+- `house_geometry.json` (2,520 rows, limit 1e-7 deg): ascendant 5.4e-13, midheaven 5.7e-13, Sripati cusps
+  6.0e-13 and starts 6.0e-13, Placidus cusps 1.7e-11 (2,448 rows); Placidus unavailable on exactly the 72 null
+  rows.
+- `house_angles.json` (500 rows): LAST 0.0041 arcsec (limit 0.02), true obliquity 0.0007 arcsec (limit 0.005).
+- `dasha.json` (300 Vimshottari + 100 Yogini cases, 88,800 periods): max 1 ms (limit 1 ms), 3 boundaries
+  non-zero, no lord-path mismatch.
+
+### Gochar ingresses (spec 3.9, [B4])
+- **Last sample.** `to` is always sampled itself, so the final partial step is searched as well (the spec samples
+  only `from + k*step <= to`). On the 1950-2050 daily grid the two are identical.
+- **Sampling limit.** A double crossing of the same boundary inside one step (1 day, Moon 6 h) is not reported;
+  the graze check in `gen_jyotish.py` bounds the risk for the fixture. A jump of more than one sign in a step
+  throws `IllegalStateException`.
+- **Rounding.** `at` = bracket midpoint rounded up to the next millisecond; the bracket is at most 500 ms.
+- **Positions without speed.** Sampling and bisection use `positionOnly` (no central difference), same longitude.

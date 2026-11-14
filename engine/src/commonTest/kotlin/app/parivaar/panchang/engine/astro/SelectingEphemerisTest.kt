@@ -3,6 +3,7 @@ package app.parivaar.panchang.engine.astro
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 /** docs/specs/M01.md section 4, `SelectingEphemerisTest` (fakes only; no real backend). */
 class SelectingEphemerisTest {
@@ -71,6 +72,26 @@ class SelectingEphemerisTest {
                 assertFailsWith<EphemerisRangeException>("backendFor($jd)") { eph.backendFor(tt) }
                 assertFailsWith<EphemerisRangeException>("geoApparent($jd)") { eph.geoApparent(Body.SUN, tt) }
                 assertFailsWith<EphemerisRangeException>("noSpeed($jd)") { eph.geoApparentNoSpeed(Body.SUN, tt) }
+            }
+        }
+    }
+
+    @Test
+    fun rangeExceptionKeepsTheRequestedInstantOutOfItsText() {
+        // The requested instant can be a birth instant: it stays a property and never reaches message/toString.
+        val requested = JulianDay(BASE_TO + 123.456)
+        val thrown = listOf(
+            EphemerisRangeException(requested),
+            assertFailsWith<EphemerisRangeException> { SelectingEphemeris(precision(), base()).backendFor(requested) },
+            assertFailsWith<EphemerisRangeException> {
+                SelectingEphemeris(null, base()).geoApparent(Body.MOON, requested)
+            },
+        )
+        for (e in thrown) {
+            assertEquals(requested, e.tt)
+            for (text in listOf(e.message.orEmpty(), e.toString())) {
+                assertTrue(text.isNotBlank())
+                assertTrue(text.none { it.isDigit() }, "exception text carries digits")
             }
         }
     }

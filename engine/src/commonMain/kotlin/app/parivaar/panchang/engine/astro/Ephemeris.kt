@@ -25,6 +25,13 @@ interface Ephemeris {
     val validRange: ClosedRange<JulianDay>
 }
 
-/** Thrown when a TT Julian Day lies outside the range an [Ephemeris] can serve. */
+/**
+ * Thrown when a TT Julian Day lies outside the range an [Ephemeris] can serve.
+ *
+ * The requested instant can be a birth instant, so it is kept out of `message` and `toString` (they reach
+ * crash reports); callers that need it read [tt].
+ *
+ * @property tt the requested TT Julian Day; personal data, never log it
+ */
 class EphemerisRangeException(val tt: JulianDay) :
-    IllegalArgumentException("TT Julian Day ${tt.value} is outside the ephemeris range")
+    IllegalArgumentException("requested instant is outside the ephemeris range")

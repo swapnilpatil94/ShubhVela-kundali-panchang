@@ -3,7 +3,11 @@ plugins { id("panchang.kmp-library") }
 kotlin {
     android { namespace = "app.parivaar.panchang.engine" }
     sourceSets {
-        commonMain.dependencies { implementation(libs.kotlinx.datetime) }
+        commonMain.dependencies {
+            implementation(libs.kotlinx.datetime)
+            // Rule JSON, tree API only (Json.parseToJsonElement); no compiler plugin (M02 B1).
+            implementation(libs.kotlinx.serialization.json)
+        }
         // Astronomy Engine (MIT) is the base backend; jvm/android only, never commonMain (M01 C9).
         jvmMain {
             kotlin.srcDir("src/jvmShared/kotlin")
@@ -15,9 +19,13 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(project(":engine-golden"))
-            implementation(libs.kotlinx.serialization.json)
         }
     }
+}
+
+tasks.withType<Test>().configureEach {
+    systemProperty("pp.rulesDir", rootProject.file("rules").absolutePath)
+    inputs.dir(rootProject.file("rules"))
 }
 
 tasks.named<Test>("jvmTest") {
