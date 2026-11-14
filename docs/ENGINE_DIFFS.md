@@ -183,3 +183,46 @@ Temporary test, not committed, run on 2026-11-14. The committed gates are the B6
   throws `IllegalStateException`.
 - **Rounding.** `at` = bracket midpoint rounded up to the next millisecond; the bracket is at most 500 ms.
 - **Positions without speed.** Sampling and bisection use `positionOnly` (no central difference), same longitude.
+
+## M03 Panchang, [C1]-[C3] (2026-11-14)
+
+### Contracts (spec 2)
+- **Checks in constructors.** `LimbSpan` (index in range for the kind, start < end, not both kshaya and adhika),
+  `Window` (part >= 0, start < end), `DurmuhurtaSlot` (1..15), `EightPartTable` (night: all 7 weekdays; day: empty
+  or all 7; 8 ids `[A-Z_]+` per row), `VarjyamTable` (27 rows, offsets finite in [0, 56]), `PanchangTables`
+  (durmuhurta: all 7 weekdays) and `PanchangDay` (offset range, vaar = weekday of the date, sunrise < sunset <
+  nextSunrise) throw `IllegalArgumentException` with static text. Tables keep immutable copies of their input.
+- **Additions.** `LimbKind.firstIndex/lastIndex`, `LimbSpan.contains` (start <= x < end); internal
+  `requireUtcOffset`.
+
+### Limb solver (spec 3.1)
+- **Span containment wins over the floor rule.** `spanAt(at)` returns the span with start <= at < end. Within a
+  fraction of a millisecond of a boundary the floor rule on F(at) and the solved instant can disagree; the solved
+  instant decides (one span earlier or later), so `atSunrise` always exists and `spanAt` = `spans` element. `indexAt`
+  stays the pure floor rule.
+- **Cell search.** A boundary is located as the unique grid cell with g(t_m) < 0 <= g(t_m+1), searched from the
+  query's cell (forward if g < 0 there, else backward), cap 40 steps. This is the spec's start/end walk in normal
+  cases and the same cell from any query; inputs to Brent are then identical, so instants are bit-equal.
+- **Lazy ayanamsa.** TITHI and KARANA never evaluate the ayanamsa (they work under any id); the grid samples and
+  roots are cached per solver (bounded, cleared when the ayanamsa id changes). Caches change no bit.
+
+### Day and windows (spec 3.2, 3.3)
+- **HORA `part`.** Counted within each half: day horas 1..12 and night horas 1..12 with `night = true` (as
+  choghadiya parts 1..8 and night muhurtas 1..15). The lord uses h = 1..24 (night part p is h = 12 + p). The windows
+  fixture uses the same numbering.
+- **GOWRI** is reported only when a table with a non-empty day half is supplied; otherwise in `unavailable`.
+- **VARJYAM / AMRIT_KAAL** offsets: start + round((e - s) g / 60) in ns (Double; exact for integer g).
+- **Sun windows memo.** The calculator keeps the last 4 `sunWithFallback` windows (day D's second window is day
+  D + 1's first), keyed by (place, settings, window start).
+
+### Scratch pre-flight against the committed golden JSON (information only, not a gate)
+Temporary test, not committed, run on 2026-11-14 (8,300 limb city-days, 2,000 window city-days).
+- Precision (DE440): boundary max |dt| TITHI/KARANA 1 ms, NAKSHATRA/MOON_RASHI 3.4 ms, YOGA 5.5 ms (limits >= 1 s);
+  sun events 2 ms (5 s); windows 2 ms (5 s); PRINTED_6AM 0 ms (1 ms); fallback noon altitude < 0.0001 arcsec (4).
+  No flag, atSunrise (non-fragile), kshaya/adhika, index-sequence or window-list mismatch.
+- Base (Astronomy Engine): boundary max TITHI/KARANA 10.6 s (median 1.6 s), NAKSHATRA 7.9 s (1.2 s), YOGA 7.6 s
+  (1.5 s), MOON_RASHI 8.2 s (1.2 s); worst ratio to the per-boundary limit 0.46; sun events 1.6 s (10 s); windows
+  0.94 s (10 s); PRINTED_6AM 0 ms; no list or flag mismatch.
+- New moon 2024-04-08: 18:20:51.5Z (DE440), 18:20:55.1Z (Base), against the published 18:21.
+- JVM timing (Delhi, +330, warm): year 141 ms (DE440), 181 ms (Base), limit 400; one `day()` with a fresh
+  calculator, median 0.82 ms / 1.05 ms, limit 2 ms.

@@ -1,0 +1,9 @@
+{"version":1,"status":"VERIFY","sourceId":"src.traditional.unverified","night":{
+"SUNDAY":["SHUBH","AMRIT","CHAR","ROG","KAAL","LABH","UDVEG","SHUBH"],
+"MONDAY":["CHAR","ROG","KAAL","LABH","UDVEG","SHUBH","AMRIT","CHAR"],
+"TUESDAY":["KAAL","LABH","UDVEG","SHUBH","AMRIT","CHAR","ROG","KAAL"],
+"WEDNESDAY":["UDVEG","SHUBH","AMRIT","CHAR","ROG","KAAL","LABH","UDVEG"],
+"THURSDAY":["AMRIT","CHAR","ROG","KAAL","LABH","UDVEG","SHUBH","AMRIT"],
+"FRIDAY":["ROG","KAAL","LABH","UDVEG","SHUBH","AMRIT","CHAR","ROG"],
+"SATURDAY":["LABH","UDVEG","SHUBH","AMRIT","CHAR","ROG","KAAL","LABH"]
+}}

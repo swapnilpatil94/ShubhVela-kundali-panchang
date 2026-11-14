@@ -1,0 +1,9 @@
+{"version":1,"status":"VERIFY","sourceId":"src.traditional.unverified","weekdays":{
+"SUNDAY":[{"night":false,"muhurta":14}],
+"MONDAY":[{"night":false,"muhurta":9},{"night":false,"muhurta":12}],
+"TUESDAY":[{"night":false,"muhurta":4},{"night":true,"muhurta":7}],
+"WEDNESDAY":[{"night":false,"muhurta":8}],
+"THURSDAY":[{"night":false,"muhurta":6},{"night":false,"muhurta":12}],
+"FRIDAY":[{"night":false,"muhurta":4},{"night":false,"muhurta":9}],
+"SATURDAY":[{"night":false,"muhurta":1},{"night":false,"muhurta":2}]
+}}

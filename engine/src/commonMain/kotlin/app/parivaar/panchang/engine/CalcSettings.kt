@@ -6,6 +6,7 @@ import app.parivaar.panchang.engine.jyotish.DrekkanaVariant
 import app.parivaar.panchang.engine.jyotish.HoraVariant
 import app.parivaar.panchang.engine.jyotish.HouseSystem
 import app.parivaar.panchang.engine.jyotish.NodeType
+import app.parivaar.panchang.engine.panchang.TimingStyle
 
 /** What "sunrise" means: which point of the disc touches which horizon (docs/specs/M01.md section 3.8). */
 enum class SunriseConvention {
@@ -44,6 +45,8 @@ enum class HighLatitudeRule {
  * @property dashaYear length of the dasha year (docs/specs/M02.md section 3.4)
  * @property hora D2 rule set
  * @property drekkana D3 rule set
+ * @property timingStyle day used for Rahu kaal, Yamaganda and Gulika (docs/specs/M03.md section 3.3)
+ * @property abhijitOnWednesday report Abhijit muhurta on Wednesdays too (VERIFY: the default)
  */
 data class CalcSettings(
     val sunrise: SunriseConvention = SunriseConvention.UPPER_LIMB_REFRACTED,
@@ -56,6 +59,8 @@ data class CalcSettings(
     val dashaYear: DashaYear = DashaYear.JULIAN_365_25,
     val hora: HoraVariant = HoraVariant.PARASHARA,
     val drekkana: DrekkanaVariant = DrekkanaVariant.PARASHARA,
+    val timingStyle: TimingStyle = TimingStyle.ACTUAL_SUNRISE,
+    val abhijitOnWednesday: Boolean = false,
 ) {
     init {
         require(pressureHPa >= 0.0 && pressureHPa.isFinite()) { "pressure must be a finite value >= 0 hPa" }
