@@ -1,0 +1,4 @@
+{"version":1,"status":"VERIFY","sourceId":"src.traditional.unverified","festivals":[
+{"id":"vishu","name":"term:fest_vishu","status":"VERIFY","sourceId":"src.traditional.unverified","regions":["ml"],"rule":{"type":"sankranti","into":"MESHA","day":"before_three_fifths"}},
+{"id":"onam","name":"term:fest_onam","status":"VERIFY","sourceId":"src.traditional.unverified","regions":["ml"],"rule":{"type":"nakshatra_in_solar_month","nakshatra":21,"month":"SIMHA","region":"malayalam","kala":"sunrise","occurrence":"first","preceded_in_month_by":12}}
+]}

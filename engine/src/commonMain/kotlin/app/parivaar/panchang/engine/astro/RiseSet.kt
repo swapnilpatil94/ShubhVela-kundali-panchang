@@ -22,6 +22,16 @@ import kotlin.time.Instant
 enum class RiseSetKind { RISE, SET }
 
 /**
+ * Topocentric direction and distance of a body (internal, docs/specs/M04.md section 3.9).
+ *
+ * @property unit unit vector, true equator and equinox of date
+ * @property distanceKm observer-to-body distance, km
+ */
+internal class TopoVec(val unit: Vec3, val distanceKm: Double) {
+    override fun toString(): String = "TopoVec(redacted)"
+}
+
+/**
  * One horizon crossing.
  *
  * @property at instant of the crossing (UTC)
@@ -95,7 +105,7 @@ class RiseSet(private val eph: Ephemeris, private val tables: TimeTables = TimeT
      *
      * If the window holds at least one RISE and one SET, those real events are returned unchanged. Otherwise
      * the [CalcSettings.highLatitudeRule] convention applies and every returned event has `isFallback = true`:
-     * - LOCAL_NOON_PM_6H: RISE and SET at the instant of greatest Sun altitude in the window (to 1 s) minus and
+     * - LOCAL_NOON_PM_6H: RISE and SET at the instant of greatest Sun altitude in the window (to 1 ms) minus and
      *   plus 6 h; they may fall outside the window when the culmination is near one of its ends.
      * - NEAREST_DAY: for k = 1..183 the window k days earlier, then k days later; the events of the first one
      *   with both a RISE and a SET, moved by k days into this window. Empty when no such day exists (at the
@@ -131,7 +141,17 @@ class RiseSet(private val eph: Ephemeris, private val tables: TimeTables = TimeT
         return s.altitudeDeg - thresholdDeg(body, settings, s.distanceKm)
     }
 
-    /** Altitude and topocentric distance of the body centre (spec 3.8). */
+    /**
+     * Topocentric place of the centre of [body] (SUN or MOON) for a WGS84 observer at [place]: unit vector on
+     * the true equator and equinox of date, and distance in km. The same maths as the altitudes; for the
+     * eclipse engine (docs/specs/M04.md section 3.9).
+     */
+    internal fun topocentric(body: Body, place: Place, at: Instant): TopoVec {
+        val s = sight(body, Site(place), at)
+        return TopoVec(s.topocentricKm / s.distanceKm, s.distanceKm)
+    }
+
+    /** Altitude, topocentric distance and observer-to-body vector of the body centre (spec 3.8). */
     private fun sight(body: Body, site: Site, at: Instant): Sight {
         val tt = TimeScales.utcToTt(at, tables)
         val ut1 = TimeScales.ut1(at, tables)
@@ -156,7 +176,7 @@ class RiseSet(private val eph: Ephemeris, private val tables: TimeTables = TimeT
         val topocentric = equatorial - observer
         val distanceKm = topocentric.norm()
         val sinAltitude = (topocentric.dot(zenith) / distanceKm).coerceIn(-1.0, 1.0)
-        return Sight(asin(sinAltitude) * RAD_TO_DEG, distanceKm)
+        return Sight(asin(sinAltitude) * RAD_TO_DEG, distanceKm, topocentric)
     }
 
     /** The 600 s samples of a window; the last window of each body is kept (conventions share the samples). */
@@ -209,7 +229,7 @@ class RiseSet(private val eph: Ephemeris, private val tables: TimeTables = TimeT
         TimeScales.utcToTt(windowStart, tables) in eph.validRange &&
             TimeScales.utcToTt(windowStart + DAY_HOURS.hours, tables) in eph.validRange
 
-    private class Sight(val altitudeDeg: Double, val distanceKm: Double)
+    private class Sight(val altitudeDeg: Double, val distanceKm: Double, val topocentricKm: Vec3)
 
     private class Grid(
         val place: Place,
@@ -252,7 +272,8 @@ private const val DAY_HOURS = 24
 
 /** Widest bracket left around a returned crossing, seconds. */
 private const val BRACKET_SECONDS = 0.5
-private const val CULMINATION_BRACKET_SECONDS = 1.0
+/** Culmination bracket: 1 ms, so day-to-day fallback night lengths are smooth (docs/ENGINE_DIFFS.md M04). */
+private const val CULMINATION_BRACKET_SECONDS = 0.001
 private const val NEAREST_DAY_REACH = 183
 private val NOON_OFFSET: Duration = 6.hours
 

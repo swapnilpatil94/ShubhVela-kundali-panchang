@@ -1,0 +1,3 @@
+{"version":1,"status":"VERIFY","sourceId":"src.traditional.unverified","festivals":[
+{"id":"pana_sankranti","name":"term:fest_pana_sankranti","status":"VERIFY","sourceId":"src.traditional.unverified","regions":["or"],"rule":{"type":"sankranti","into":"MESHA","day":"civil"}}
+]}

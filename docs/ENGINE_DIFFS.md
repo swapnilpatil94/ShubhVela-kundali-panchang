@@ -226,3 +226,92 @@ Temporary test, not committed, run on 2026-11-14 (8,300 limb city-days, 2,000 wi
 - New moon 2024-04-08: 18:20:51.5Z (DE440), 18:20:55.1Z (Base), against the published 18:21.
 - JVM timing (Delhi, +330, warm): year 141 ms (DE440), 181 ms (Base), limit 400; one `day()` with a fresh
   calculator, median 0.82 ms / 1.05 ms, limit 2 ms.
+
+## M04 Calendar and festival engine, [C1]-[C3] (2026-11-14)
+
+### Contracts (spec 2, C1)
+- **Checks in constructors** (static messages, `IllegalArgumentException`): `TimeRange` start <= end (a point is
+  allowed); `Lunation` events ordered, at most 2 sankrantis, all inside [newMoon, nextNewMoon) and consecutive,
+  adhika iff none, masa = first sankranti's, kshayaMasa = second's; `LunarLabel` not adhika and kshaya at once,
+  kshaya masa follows masa; `SolarDate.day` 1..32; `Samvat` samvatsaras 1..60; `CalendarDay` tithi 1..30, solar
+  map keyed by its own region; `TithiAt` tithi non-empty, 1..30, no repeats, preferNakshatra 0..26;
+  `FixedGregorian` rejects dates absent even in a leap year (4/31, 2/30); `NakshatraInSolarMonth` 0..26;
+  `FestivalDef` id `[a-z0-9_]{1,40}`, nameKey = `term:fest_` + id, known regions, non-blank sourceId;
+  `FestivalSet` (defined in `CalendarTypes.kt`) copies its list and rejects duplicate ids; eclipse types check
+  solar/lunar consistency of kind, magnitudes and contact keys, sutak only when visible and not penumbral.
+
+### Lunar calendar (spec 3.1, C2)
+- **`lunations(from, to)`** returns the lunations whose new moon lies in [from, to); `newMoons`/`fullMoons`
+  return starts in [from, to). `sankrantis` searches from the UTC day boundary at or before `from` to the one at
+  or after `to` (M02 `Gochar` unchanged), then keeps [from, to).
+- **Purnimanta Krishna half** of a non-adhika lunation = (masa of the next non-adhika lunation, nija, kshaya
+  null), spec literal; the Shukla half keeps the amanta label including kshaya.
+- **Ephemeris edges.** With the bare DE440 excerpt (1900-01-01 to 2100-01-01 TT) the engine throws
+  `EphemerisRangeException` for anything that needs instants outside it: the first lunation of 1900 (its
+  day-anchored sankranti search starts at 1900-01-01T00:00Z, a few seconds before the excerpt in TT), era years
+  of early-1900 days (need the 1898-99 Chaitra/Kartika lunations), and 2100 rows. No clamp, no invented data;
+  `SelectingEphemeris` falls back to the Base backend in the app.
+- **Caches.** Bounded memo of lunations and era years keyed by (new moon, ayanamsa); results never change.
+
+### Solar calendars and days (spec 3.2-3.3, C3)
+- **`DayLookup.containing`**: in the ns gap between nextSunrise(d) and sunrise(d + 1) that an offset change can
+  open, the earlier day is returned.
+- **Year starts** (samvatsaraTamil, bangabda, kollam) use the latest year-start month (Mesha / Simha) dated <=
+  the date, found among sankrantis of the 370 days before the first requested date.
+- **Ayana** is read from the apparent sidereal Sun (`s.ayanamsa`) at the day's sunrise.
+- **`days()`** throws `PanchangUnavailableException` if any date of the run has no sun day (as M03 `days`).
+
+### Eclipses (spec 3.9, C6)
+- **`RiseSet.topocentric`** (internal) reads the observer-to-body vector that `sight` already computes (now
+  also kept in the private `Sight`); no expression or order changed, so every M01 value is unchanged bit for bit.
+- **Range of `global(from, to)`**: eclipses whose *greatest* lies in [from, to), from the syzygies of
+  [from - 1 d, to + 1 d); sorted (greatest, solar). Window-independent.
+- **Angles** between unit vectors use atan2(|a x b|, a . b) (well conditioned at small gamma); positions are
+  the position-only apparent places (`positionOnly`, same lon/lat/distance as `geoApparent`).
+- **Grids**: greatest = 600 s grid over the window from its start, golden section between the neighbours of the
+  lowest sample to 0.1 s; contacts walk 600 s steps out from greatest (local solar: from local maxAt) up to 8 h,
+  Brent to 1 ms; a contact without a sign change is omitted (then visible and sutak are null).
+- **Visibility**: `crossingDeg` sampled every 300 s from the interval start and at its end; a crossing between
+  samples refined by Brent to 1 ms; an endpoint above the horizon is the contact itself. A graze shorter than
+  the 300 s grid inside the interval is not seen.
+- **Local solar is geometric** (spec model, Earth transparent): a night-side site can get a LocalEclipse with
+  contacts and `visible = null` (e.g. Delhi 2024-04-08), matching the fixture; only `visible` gates sutak.
+- **Scratch pre-flight vs `eclipses.json`** (information only, not a gate): 230 eclipses on both backends, 0 kind
+  / presence / visibility / sutak mismatches. Max |error| Precision: greatest 0.13 s, gamma 2e-6", magnitudes
+  5e-6, lunar contacts 0.001 s, local solar contacts 0.096 s (0.03 of gate), horizon 0.002 s. Base: greatest
+  6.2 s, gamma 1.39", magnitudes 8.1e-4, lunar contacts 9.8 s (0.08 of gate), local solar contacts 13.4 s
+  (0.12 of gate), horizon 0.37 s. Global search 2000-2050 about 1-1.7 s JVM, local 12 sites 0.3-0.4 s.
+
+### Amendment 1 and festival engine (spec 3.4-3.7, C1 amendment + C4)
+- **Types.** `NakshatraInSolarMonth.precededBy` defaults to null (additive, so older callers still compile);
+  `TithiAt` and `BhadraStep.FreeIn` reject AHORATRA; `BhadraStep.NextDay` 1..60 ghatis; `Relative` days -3..3,
+  not 0; `FestivalSet` rejects a relative rule whose target is missing or relative. `SankrantiDay.SAME_DAY`
+  removed; ODIA = CIVIL.
+- **Flags.** SUN_FALLBACK on tithi rules only from days with positive coverage (C+), on Ekadashi from the fast day
+  and the parana day; on solar-month rules and non-CIVIL sankranti rules from the sun day of the date kept.
+  MOONRISE_NONE when any examined day (containing(start) - 1 .. containing(end) + 1) has no moonrise.
+- **NO_SUN_DAY.** A festival unit (lunation x tithi, Ekadashi, sankranti, solar month) that needs a missing sun
+  day is dropped; the rest of the run continues (one polar day no longer aborts a 20-year run).
+- **Relative.** Occurrence = target date + days, with the target's label and flags; tithi, kala and windows null.
+- **Nakshatra in a solar month.** muhurat = the nakshatra span within the kala (null for point kalas' zero length
+  case: the point itself is the window). NEAREST_FULL_MOON distance is to I_d with the end treated as inside.
+- **Bhadra.** V = VISHTI karana spans of `LimbSolver`; `after_bhadra_before_midnight` uses the first V span
+  overlapping the night of the chosen day.
+
+### M04 golden results, [B5]-[B7] (2026-11-14; both backends, gates as spec section 4)
+- **Shadow model and kala choices** are those of 3.9 and 3.4 above (spherical Earth, 1/85 enlargement; kala windows
+  per 3.4, AHORATRA added by Amendment 1). Limb endpoints of festival windows (L) are gated with the smallest
+  elongation rate (0.44 arcsec/s), because festival rows carry no rate; sankranti instants with the smallest Sun
+  rate (0.0396 arcsec/s), giving 1.23 s / 69 s (limb) and 3.5 s / 506 s (sankranti) on Precision / Base.
+- **Fragile rows**: lunations 0 / 0 (P / B); days 74 / 758 rows (per field at most 1.3 %); solar months fragile
+  6-12 / 157-173 per region (about 1.3-1.4 %); eclipses 16 / 78 of 2,161 (3.6 %); festivals by rule type
+  (Precision / Base): ekadashi 66 / 145, tithi_at 107 / 247, sankranti 17 / 51, nakshatra 6 / 7, relative 8 / 11.
+- **Base medians**: new moon 1.8 s, full moon 1.6 s (cap 30 s); sankranti max 54 s; eclipse contacts max 13.4 s.
+- **Benchmarks** (Delhi, median of 10 after 5 warm-ups, limit 400 ms): festivals year 226 ms Precision / 246 ms Base;
+  365 calendar days 287 ms / 337 ms; eclipse year (information) 62 ms / 33 ms.
+- **Open engine/oracle disagreements** (Tromso only, found by the festival golden test, not loosened): the engine
+  flags SUN_FALLBACK on `thai_pongal` (12 January 14 rows) where the oracle has no flag, and dates
+  `masik_shivratri` of December 2025 one day earlier (2025-12-17) than the oracle (2025-12-18).
+- **Resolved (oracle):** `thai_pongal` SUN_FALLBACK: the oracle took the flag from the days its month-start search touched, but a memo filled by `makar_sankranti` (same rule) skipped the search, so the identical rule lost the flag; it now recomputes; fixture regenerated (dates unchanged).
+- **Resolved (engine):** `masik_shivratri` 2025-12 Tromso: a MAX_COVERAGE nishita tie (12-17 vs 12-18, 12 ms apart) was inverted by the 1 s culmination bracket of `sunWithFallback` (noon noise ~0.3 s, fallback nights non-monotonic); bracket now 1 ms (still "to 1 s" of M01 3.8), engine gives 12-18 as the oracle; regression `FallbackNoonRegressionTest`.
+- Correction (2026-11-14): the two Tromso disagreements listed as open above are resolved in the following lines (oracle SUN_FALLBACK cache fix; engine fallback-noon bracket 1 ms).

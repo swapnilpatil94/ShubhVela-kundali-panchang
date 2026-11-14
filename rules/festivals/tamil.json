@@ -1,0 +1,6 @@
+{"version":1,"status":"VERIFY","sourceId":"src.traditional.unverified","festivals":[
+{"id":"puthandu","name":"term:fest_puthandu","status":"VERIFY","sourceId":"src.traditional.unverified","regions":["ta"],"rule":{"type":"sankranti","into":"MESHA","day":"before_sunset"}},
+{"id":"thai_pongal","name":"term:fest_thai_pongal","status":"VERIFY","sourceId":"src.traditional.unverified","regions":["ta"],"rule":{"type":"sankranti","into":"MAKARA","day":"before_sunset"}},
+{"id":"karthigai_deepam","name":"term:fest_karthigai_deepam","status":"VERIFY","sourceId":"src.traditional.unverified","regions":["ta"],"rule":{"type":"nakshatra_in_solar_month","nakshatra":2,"month":"VRISHCHIKA","region":"tamil","kala":"ahoratra","occurrence":"nearest_full_moon"}},
+{"id":"thaipusam","name":"term:fest_thaipusam","status":"VERIFY","sourceId":"src.traditional.unverified","regions":["ta"],"rule":{"type":"nakshatra_in_solar_month","nakshatra":7,"month":"MAKARA","region":"tamil","kala":"ahoratra","occurrence":"nearest_full_moon"}}
+]}
