@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="data_key_lost_title">Your saved family data can\'t be opened on this phone</string>
+    <string name="data_key_lost_body">The phone\'s security key for this data was reset, so it can\'t be read. You can restore a backup, import a family file or start fresh.</string>
+    <string name="data_key_unavailable_body">Your data is safe but can\'t be opened right now.</string>
+    <string name="data_try_again">Try again</string>
+    <string name="data_restore_backup">Restore backup</string>
+    <string name="data_import_file">Import a family file</string>
+    <string name="data_start_fresh">Start fresh</string>
+    <string name="data_start_fresh_confirm">Start fresh deletes the unreadable data on this phone. This can\'t be undone.</string>
+    <string name="import_error_auth">Wrong passphrase or damaged file</string>
+    <string name="import_error_format">This file isn\'t a family backup this app can read</string>
+    <string name="import_error_version">This file is from a newer app version</string>
+    <string name="import_error_too_large">This file is too large to be a family backup</string>
+    <string name="passphrase_too_short">Use at least %1$d characters</string>
+    <string name="export_file_name">family-backup.ppx</string>
+    <string name="delete_all_title">Delete all data</string>
+    <string name="delete_all_confirm">This deletes every profile, saved place and bond on this phone, and its security keys. This can\'t be undone.</string>
+</resources>

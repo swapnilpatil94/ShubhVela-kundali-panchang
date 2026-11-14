@@ -53,6 +53,7 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(project(":core:designsystem"))
+    implementation(project(":core:data"))
     implementation(project(":core:geo"))
     implementation(project(":core:model"))
     implementation(project(":engine"))

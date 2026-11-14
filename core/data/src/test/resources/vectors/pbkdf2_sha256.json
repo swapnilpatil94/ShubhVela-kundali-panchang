@@ -1,0 +1,10 @@
+{
+"algorithm":"PBKDF2-HMAC-SHA256","normalization":"NFC","encoding":"UTF-8",
+"cases":[
+{"name":"rfc7914_1","password":"passwd","passwordNfcUtf8Hex":"706173737764","saltHex":"73616c74","iterations":1,"dkLen":64,"dkHex":"55ac046e56e3089fec1691c22544b605f94185216dde0465e68b9d57c20dacbc49ca9cccf179b645991664b39d77ef317c71b845b1e30bd509112041d3a19783"},
+{"name":"rfc7914_2","password":"Password","passwordNfcUtf8Hex":"50617373776f7264","saltHex":"4e61436c","iterations":80000,"dkLen":64,"dkHex":"4ddcd8f60b98be21830cee5ef22701f9641a4418d04c0414aeff08876b34ab56a1d425a1225833549adb841b51c9b3176a272bdebba1d078478f62b397f33c8d"},
+{"name":"pp_export","password":"pp-test-passphrase","passwordNfcUtf8Hex":"70702d746573742d70617373706872617365","saltHex":"000102030405060708090a0b0c0d0e0f","iterations":600000,"dkLen":32,"dkHex":"0aecd0ffc84c6f454f05930b6d0646ca03b3105a58b1e2fa85a95e0f7b8dc50b"},
+{"name":"nfc_precomposed","password":"\u0958abcdefghij","passwordNfcUtf8Hex":"e0a495e0a4bc6162636465666768696a","saltHex":"00000000000000000000000000000000","iterations":1000,"dkLen":32,"dkHex":"ee491985178bc8b02df06497301a7e260c6e9353b1bf0093f5e1b025fb98a257"},
+{"name":"nfc_decomposed","password":"\u0915\u093cabcdefghij","passwordNfcUtf8Hex":"e0a495e0a4bc6162636465666768696a","saltHex":"00000000000000000000000000000000","iterations":1000,"dkLen":32,"dkHex":"ee491985178bc8b02df06497301a7e260c6e9353b1bf0093f5e1b025fb98a257"}
+]
+}
