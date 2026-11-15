@@ -315,3 +315,25 @@ Temporary test, not committed, run on 2026-11-14 (8,300 limb city-days, 2,000 wi
 - **Resolved (oracle):** `thai_pongal` SUN_FALLBACK: the oracle took the flag from the days its month-start search touched, but a memo filled by `makar_sankranti` (same rule) skipped the search, so the identical rule lost the flag; it now recomputes; fixture regenerated (dates unchanged).
 - **Resolved (engine):** `masik_shivratri` 2025-12 Tromso: a MAX_COVERAGE nishita tie (12-17 vs 12-18, 12 ms apart) was inverted by the 1 s culmination bracket of `sunWithFallback` (noon noise ~0.3 s, fallback nights non-monotonic); bracket now 1 ms (still "to 1 s" of M01 3.8), engine gives 12-18 as the oracle; regression `FallbackNoonRegressionTest`.
 - Correction (2026-11-14): the two Tromso disagreements listed as open above are resolved in the following lines (oracle SUN_FALLBACK cache fix; engine fallback-noon bracket 1 ms).
+
+## M07R Sky geometry, [B5] (2026-11-15)
+New additive API `engine/sky/SkyGeometry.kt` (no existing output changes). Golden: `sky_geometry.json` from
+`tools/oracle/gen_sky.py` (Skyfield 1.55 + DE440, 2,004 UTC epochs 1900-2099, 6 bodies, 8 places).
+- **Phase angle and ring tilt on geometric directions.** The engine's places are apparent; the annual aberration
+  is removed with the Meeus 23.2 Earth velocity (kappa 20.49552", e and perihelion polynomials of ch. 23/25, the
+  inverse relativistic boost of `Apparent.aberrate`) and the solar deflection with the first-order inverse of
+  ERFA `ld`. Residual vs the barycentric velocity about 0.02". Without this the Moon's phase angle is off by up to
+  ~20". The Base backend has no deflection but the inverse is applied anyway (<= 1.5" for Mercury 1 degree from the
+  Sun; Base gates carry a 2" margin for it).
+- **Elongation, bright limb chi, parallactic q** use the apparent places as seen (geocentric). q: Meeus 14.1 in the
+  cos(phi)-multiplied atan2 form (defined at the poles), geodetic latitude, LAST = GAST (`EarthOrientation`) + east
+  longitude. chi: Meeus 48.5 on RA/Dec from the rise/set conversion (true obliquity, `eclipticToTrueEquator`).
+- **Saturn ring pole = IAU WGCCRE 2009** (alpha0 40.589 - 0.036 T, delta0 83.537 - 0.004 T, ICRF, T in Julian
+  centuries; TT used for TDB), rotated to the true ecliptic of date with `gcrsToEclipticOfDate`. The spec's Meeus
+  ch. 45 polynomials (i = 28.075216 - 0.012998 T + 0.000004 T^2, Omega = 169.508470 + 1.394681 T + 0.000412 T^2)
+  describe a pole about 82-100" away (1900-2100), i.e. up to ~0.025 degree in B. Saturn system barycentre
+  (DE440) for the planet, as in M01.
+- **Gates** (`SkyGeometryGoldenTest`, derived from the M01 position gates; see the class comment): Precision max
+  error / limit: elongation <= 3e-4, phase <= 0.32, k <= 0.16, chi*sin(psi) <= 0.006, B 0.05, q*sin(z) 0.02; Base
+  <= 0.18, 0.24, 0.16, 0.13, 0.25, 0.18. chi and q are gated weighted by sin(elongation) / sin(zenith distance)
+  because both are undefined at 0 (new moon; body at the zenith).
