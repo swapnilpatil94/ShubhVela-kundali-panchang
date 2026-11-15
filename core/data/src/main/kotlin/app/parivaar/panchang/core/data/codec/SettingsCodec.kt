@@ -4,6 +4,7 @@ import app.parivaar.panchang.core.model.profile.RecordId
 import app.parivaar.panchang.core.model.settings.AppSettings
 import app.parivaar.panchang.engine.CalcSettings
 import app.parivaar.panchang.engine.HighLatitudeRule
+import app.parivaar.panchang.core.model.settings.CalendarView
 import app.parivaar.panchang.core.model.settings.ChartStyle
 import app.parivaar.panchang.core.model.settings.PresetSource
 import app.parivaar.panchang.core.model.settings.ReminderKind
@@ -92,6 +93,7 @@ internal object SettingsCodec {
             "onboardingDone" to bool(s.onboardingDone),
             "showCityOnWidgets" to bool(s.showCityOnWidgets),
             "travelMode" to bool(s.travelMode),
+            "calendarView" to enumName(s.calendarView),
         )
 
     /** Keys added after payload v1: a missing key reads as its default; unknown keys are still rejected. */
@@ -99,7 +101,7 @@ internal object SettingsCodec {
         setOf(
             "homePlaceId", "monthSystem", "presetSource", "ekadashi", "chartStyle", "themeMode",
             "dynamicColor", "badaText", "reduceMotion", "reminders", "onboardingDone",
-            "showCityOnWidgets", "travelMode",
+            "showCityOnWidgets", "travelMode", "calendarView",
         )
 
     private fun Reader.remindersOr(present: Set<String>): Set<ReminderKind> {
@@ -143,6 +145,7 @@ internal object SettingsCodec {
                     showCityOnWidgets =
                         if ("showCityOnWidgets" in present) boolean("showCityOnWidgets") else d.showCityOnWidgets,
                     travelMode = if ("travelMode" in present) boolean("travelMode") else d.travelMode,
+                    calendarView = enumOr(present, "calendarView", CalendarView.entries, d.calendarView),
                 )
             }
         }

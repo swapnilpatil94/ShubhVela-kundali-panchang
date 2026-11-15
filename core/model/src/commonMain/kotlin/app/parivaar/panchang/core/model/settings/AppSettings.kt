@@ -25,6 +25,8 @@ data class AppSettings(
     val showCityOnWidgets: Boolean = false,
     /** M08 M3: offer a timings update when the time zone changes. */
     val travelMode: Boolean = false,
+    /** M09 B6: calendar presentation (standard unless the regional views are enabled). */
+    val calendarView: CalendarView = CalendarView.STANDARD,
 ) {
     override fun toString(): String = "AppSettings(redacted)"
 }

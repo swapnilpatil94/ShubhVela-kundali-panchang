@@ -24,7 +24,7 @@ import app.parivaar.panchang.feature.aaj.R
 
 /** A label and a value on one line (wraps at large font scales). */
 @Composable
-internal fun FactRow(label: String, value: String, modifier: Modifier = Modifier) {
+fun FactRow(label: String, value: String, modifier: Modifier = Modifier) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PpSpace.m), verticalAlignment = Alignment.Top) {
         Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
@@ -33,7 +33,7 @@ internal fun FactRow(label: String, value: String, modifier: Modifier = Modifier
 
 /** One limb (tithi, nakshatra, ...) with each span's end time in the place's local time. */
 @Composable
-internal fun LimbCard(kind: LimbKind, spans: List<LimbSpan>, day: PanchangDay, names: AajNames, fmt: TimeFmt) {
+fun LimbCard(kind: LimbKind, spans: List<LimbSpan>, day: PanchangDay, names: AajNames, fmt: TimeFmt) {
     val res = androidx.compose.ui.platform.LocalContext.current.resources
     PpCard(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(PpSpace.s)) {
