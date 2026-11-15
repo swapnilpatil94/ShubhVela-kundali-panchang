@@ -36,7 +36,10 @@ fun TimeWindowCard(
     activeLabel: String? = null,
     note: String? = null,
 ) {
-    PpCard(modifier.fillMaxWidth().semantics { activeLabel?.let { stateDescription = it } }) {
+    PpCard(
+        modifier.fillMaxWidth().semantics { activeLabel?.let { stateDescription = it } },
+        warn = quality == TimeQuality.INAUSPICIOUS && activeLabel != null,
+    ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(PpSpace.xs)) {
                 Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)

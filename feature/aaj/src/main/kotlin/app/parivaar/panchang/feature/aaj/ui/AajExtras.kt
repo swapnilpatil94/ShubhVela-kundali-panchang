@@ -101,7 +101,7 @@ internal fun ActionsRow(extras: AajExtras, script: () -> List<String>, card: () 
     var choosing by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(PpSpace.s)) {
         when (extras.speech) {
-            SpeechUi.Ready -> PpButton(stringResource(R.string.aaj_speak), { extras.onSpeak(script()) }, PpButtonStyle.Outline)
+            SpeechUi.Ready -> PpButton(stringResource(R.string.aaj_speak), { extras.onSpeak(script()) }, PpButtonStyle.Primary)
             SpeechUi.Speaking -> {
                 val state = stringResource(R.string.aaj_speak_state_speaking)
                 PpButton(

@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import app.parivaar.panchang.core.designsystem.PanchangTheme
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 import app.parivaar.panchang.core.designsystem.components.PpCard
 import app.parivaar.panchang.core.designsystem.preview.PpPreviews
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
@@ -66,7 +68,7 @@ fun TransitsScreen(
             TextButton({ onMonth(-1) }, Modifier.heightIn(min = PpSpace.minTouchTarget)) {
                 Text(stringResource(R.string.transits_prev_month))
             }
-            Text(monthLabel, style = MaterialTheme.typography.titleMedium)
+            Text(monthLabel, style = PpType.displayS, color = PpTheme.ratna.text)
             TextButton({ onMonth(1) }, Modifier.heightIn(min = PpSpace.minTouchTarget)) {
                 Text(stringResource(R.string.transits_next_month))
             }
@@ -75,10 +77,10 @@ fun TransitsScreen(
         if (events.isEmpty()) Text(stringResource(R.string.transits_empty))
         for (e in events) {
             PpCard(Modifier.fillMaxWidth()) {
-                Text(line(e, names, fmt), style = MaterialTheme.typography.bodyLarge)
+                Text(line(e, names, fmt), style = PpType.body, color = PpTheme.ratna.text)
             }
         }
-        Text(stringResource(R.string.transits_footer), style = MaterialTheme.typography.bodySmall)
+        Text(stringResource(R.string.transits_footer), style = PpType.meta, color = PpTheme.ratna.text3)
     }
 }
 

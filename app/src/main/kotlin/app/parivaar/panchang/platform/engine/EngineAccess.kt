@@ -118,7 +118,7 @@ class EngineAccess @Inject constructor(
         val fest = FestivalEngine(eph)
         val ecl = EclipseSearch(eph)
         val cal = CalendarCalculator(eph)
-        val aaj = EngineAajEngine(calc, cal, fest, ecl, sets)
+        val aaj = EngineAajEngine(calc, cal, fest, ecl, sets, eph)
         val recurring = sets.filter { it.file.startsWith("recurring") }.flatMap { s -> s.defs.map { it.id } }.toSet()
         // Same calculators as everything else; calls are serialised by the lock on `aaj` (see onEngine).
         val direct = DirectCalendarEngine(calc, cal, fest, ecl, ChartCalculator(eph), Gochar(eph), defs, recurring)
@@ -142,7 +142,8 @@ class EngineAccess @Inject constructor(
         val e = engine
         val eph = SelectingEphemeris(null, AstronomyEngineEphemeris())
         EngineAajEngine(
-            PanchangCalculator(eph, e.tables), CalendarCalculator(eph), FestivalEngine(eph), EclipseSearch(eph), e.sets,
+            PanchangCalculator(eph, e.tables), CalendarCalculator(eph), FestivalEngine(eph), EclipseSearch(eph),
+            e.sets, eph,
         )
     }
 

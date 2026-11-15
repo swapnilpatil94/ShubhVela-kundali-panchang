@@ -2,6 +2,14 @@
 <resources>
     <string name="cal_title">Calendar</string>
     <string name="cal_today">Today</string>
+    <string name="cal_cell_tithi_s">S%1$d</string>
+    <string name="cal_cell_tithi_k">K%1$d</string>
+    <string name="cal_hero_eyebrow">%1$s · %2$s</string>
+    <string name="cal_hero_day">Day details</string>
+    <string name="cal_regional_festivals_mr">सण व उत्सव</string>
+    <string name="cal_regional_festivals_gu" translatable="false">તહેવારો અને ઉત્સવો</string>
+    <string name="cal_regional_festival_item">%1$s %2$s</string>
+    <string name="guide_eyebrow_utsav">Utsav</string>
     <string name="cal_prev_month">Previous month</string>
     <string name="cal_next_month">Next month</string>
     <string name="cal_glyph_prev" translatable="false">‹</string>

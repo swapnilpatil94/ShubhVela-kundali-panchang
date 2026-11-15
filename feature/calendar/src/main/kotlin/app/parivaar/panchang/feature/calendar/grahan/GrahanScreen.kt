@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import app.parivaar.panchang.core.designsystem.PanchangTheme
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 import app.parivaar.panchang.core.designsystem.components.PpCard
 import app.parivaar.panchang.core.designsystem.preview.PpPreviews
 import app.parivaar.panchang.engine.calendar.Contact
@@ -77,7 +79,7 @@ fun GrahanScreen(
             TextButton(onClick = { onYear(year - 1) }, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget)) {
                 Text(stringResource(R.string.grahan_prev_year))
             }
-            Text(stringResource(R.string.grahan_year, year), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.grahan_year, year), style = PpType.displayS, color = PpTheme.ratna.text)
             TextButton(onClick = { onYear(year + 1) }, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget)) {
                 Text(stringResource(R.string.grahan_next_year))
             }
@@ -85,7 +87,7 @@ fun GrahanScreen(
         if (items.isEmpty()) Text(stringResource(R.string.grahan_empty))
         for (it in items) EclipseCard(it, names, fmt)
         if (items.any { it.sutak != null }) {
-            Text(stringResource(R.string.grahan_footer), style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.grahan_footer), style = PpType.meta, color = PpTheme.ratna.text3)
         }
     }
 }
@@ -99,9 +101,9 @@ private fun title(e: GrahanItem, names: AajNames): String = when {
 
 @Composable
 private fun EclipseCard(e: GrahanItem, names: AajNames, fmt: CalFormat) {
-    val tone = if (e.seenHere) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+    val tone = if (e.seenHere) PpTheme.ratna.text else PpTheme.ratna.text3
     PpCard(Modifier.fillMaxWidth()) {
-        Text(title(e, names), style = MaterialTheme.typography.titleSmall, color = tone)
+        Text(title(e, names), style = PpType.displayS, color = tone)
         Text(stringResource(R.string.grahan_greatest, fmt.dateTime(e.greatest)), color = tone)
         e.magnitude?.let { Text(stringResource(R.string.grahan_magnitude, fmt.number(it, 2)), color = tone) }
         if (!e.seenHere) {

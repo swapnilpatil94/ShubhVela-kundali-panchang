@@ -16,12 +16,15 @@
         android:maxLines="1" />
     <Chronometer
         android:id="@+id/rahu_chrono"
+        android:fontFeatureSettings="lnum, tnum"
+        android:fontFamily="serif"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/pp_widget_accent"
-        android:textSize="20sp" />
+        android:textSize="24sp" />
     <TextView
         android:id="@+id/rahu_range"
+        android:fontFeatureSettings="lnum, tnum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/pp_widget_text"

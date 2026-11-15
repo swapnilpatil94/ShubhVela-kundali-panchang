@@ -38,6 +38,12 @@ class AajNames(private val res: Resources, private val packageName: String) {
     fun graha(code: String?): String =
         Graha.entries.firstOrNull { it.name == code }?.let { arr(R.array.aaj_graha_names)[it.ordinal] }.orEmpty()
 
+    /** Vaar name of [dayOfWeek] (ISO 1 = Monday .. 7 = Sunday). */
+    fun vaar(isoDay: Int): String = arr(R.array.aaj_vaar_names)[isoDay % WEEK]
+
+    /** Gem name by `Gem.ordinal`. */
+    fun gem(ordinal: Int): String = arr(R.array.aaj_gem_names)[ordinal]
+
     fun choghadiya(code: String?): String =
         Choghadiya.entries.firstOrNull { it.name == code }?.let { arr(R.array.aaj_choghadiya_names)[it.ordinal] }.orEmpty()
 
@@ -116,5 +122,6 @@ class AajNames(private val res: Resources, private val packageName: String) {
     private companion object {
         const val TITHI_HALF = 15
         const val LAST_TITHI = 30
+        const val WEEK = 7
     }
 }

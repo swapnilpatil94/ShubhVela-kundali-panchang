@@ -5,7 +5,17 @@ package app.parivaar.panchang.feature.aaj.ui
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import app.parivaar.panchang.core.designsystem.PanchangTheme
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.planets.PlanetBody
+import app.parivaar.panchang.core.designsystem.planets.PlanetLight
+import app.parivaar.panchang.engine.calendar.EclipseKind
+import app.parivaar.panchang.engine.calendar.GlobalEclipse
+import app.parivaar.panchang.engine.calendar.LocalEclipse
+import app.parivaar.panchang.engine.calendar.TimeRange
+import app.parivaar.panchang.feature.aaj.HoraSky
 import app.parivaar.panchang.core.designsystem.components.ProofInfo
 import app.parivaar.panchang.core.designsystem.preview.PpPreviews
 import app.parivaar.panchang.engine.calendar.Ayana
@@ -78,8 +88,23 @@ private val actions = AajActions({}, {}, {}, {}, {})
 
 @Composable
 private fun Show(ui: AajUi, now: Instant = t(10.0)) = PanchangTheme {
-    AajScreenContent(ui, now, "Pune", "AB", actions)
+    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(PpTheme.ratna.bg0)) {
+        AajScreenContent(ui, now, "Pune", "AB", actions, Modifier, AajExtras.None, HoraSky(PlanetBody.MARS, PlanetLight(0.3f, 0f, 0.95f, null)))
+    }
 }
+
+private fun eventContent(): AajUi.Content {
+    val c = content(t(10.0))
+    val e = LocalEclipse(
+        GlobalEclipse(false, t(12.0), 0.3, EclipseKind.LUNAR_TOTAL, 1.2, 2.1, emptyMap()), EclipseKind.LUNAR_TOTAL, 1.2, t(12.0),
+        emptyMap(), TimeRange(t(11.0), t(13.0)), null,
+    )
+    return c.copy(eclipse = e)
+}
+
+@PpPreviews
+@Composable
+private fun AajEventDayPreview() = Show(eventContent())
 
 @PpPreviews
 @Composable

@@ -35,6 +35,9 @@ fun lerpArgb(from: Long, to: Long, fraction: Double): Long {
 /** `xContainer = lerp(surface, x, 0.18)`. */
 fun containerOf(surface: Long, role: Long): Long = lerpArgb(surface, role, 0.18)
 
+/** Chip tint: `lerp(surface, role, 0.10)`; light enough to read as a pill, dark enough for role-coloured text at AA. */
+fun chipContainerOf(surface: Long, role: Long): Long = lerpArgb(surface, role, 0.10)
+
 /** Returns [h in 0..360, s, l] (HSL, s and l in 0..1). */
 fun argbToHsl(argb: Long): DoubleArray {
     val r = ((argb shr 16) and 0xFF) / 255.0

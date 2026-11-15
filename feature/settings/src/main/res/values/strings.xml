@@ -22,6 +22,8 @@
     <string name="settings_bada_text">Bada Text</string>
     <string name="settings_bada_text_hint">Makes all text 20% larger, on top of the system font size.</string>
     <string name="settings_reduce_motion">Reduce motion</string>
+    <string name="settings_reduce_transparency">Reduce transparency</string>
+    <string name="settings_reduce_transparency_hint">Solid backgrounds instead of frosted glass. Also used automatically in battery saver.</string>
     <string name="settings_reduce_motion_hint">Replaces animations with instant changes.</string>
     <string name="settings_language_hint">Texts not yet translated appear in English.</string>
     <string name="settings_state_on">On</string>

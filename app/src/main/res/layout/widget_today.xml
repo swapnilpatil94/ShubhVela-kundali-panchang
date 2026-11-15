@@ -8,19 +8,27 @@
     android:gravity="center_vertical"
     android:orientation="vertical"
     android:padding="16dp">
+    <ImageView
+        android:id="@+id/today_gem_bar"
+        android:layout_width="32dp"
+        android:layout_height="3dp"
+        android:importantForAccessibility="no"
+        android:background="@color/pp_widget_accent" />
     <TextView
         android:id="@+id/today_title"
-        android:textStyle="bold"
+        android:fontFamily="serif"
+        android:textStyle="normal"
         android:layout_marginBottom="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/pp_widget_text"
-        android:textSize="22sp"
+        android:textSize="24sp"
         android:ellipsize="end"
         android:layout_marginTop="2dp"
         android:maxLines="1" />
     <TextView
         android:id="@+id/today_tithi"
+        android:fontFeatureSettings="lnum, tnum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/pp_widget_text"
@@ -30,6 +38,7 @@
         android:maxLines="1" />
     <TextView
         android:id="@+id/today_nakshatra"
+        android:fontFeatureSettings="lnum, tnum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/pp_widget_text"
@@ -39,6 +48,7 @@
         android:maxLines="1" />
     <TextView
         android:id="@+id/today_sun"
+        android:fontFeatureSettings="lnum, tnum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/pp_widget_text_dim"
@@ -48,6 +58,7 @@
         android:maxLines="1" />
     <TextView
         android:id="@+id/today_next"
+        android:fontFeatureSettings="lnum, tnum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/pp_widget_accent"

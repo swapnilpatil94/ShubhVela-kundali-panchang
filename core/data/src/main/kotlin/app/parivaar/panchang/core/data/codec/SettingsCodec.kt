@@ -89,6 +89,7 @@ internal object SettingsCodec {
             "dynamicColor" to bool(s.dynamicColor),
             "badaText" to bool(s.badaText),
             "reduceMotion" to bool(s.reduceMotion),
+            "reduceTransparency" to bool(s.reduceTransparency),
             "reminders" to JsonArray(s.reminders.sortedBy { it.ordinal }.map { JsonPrimitive(it.name) }),
             "onboardingDone" to bool(s.onboardingDone),
             "showCityOnWidgets" to bool(s.showCityOnWidgets),
@@ -100,7 +101,7 @@ internal object SettingsCodec {
     private val newKeys =
         setOf(
             "homePlaceId", "monthSystem", "presetSource", "ekadashi", "chartStyle", "themeMode",
-            "dynamicColor", "badaText", "reduceMotion", "reminders", "onboardingDone",
+            "dynamicColor", "badaText", "reduceMotion", "reduceTransparency", "reminders", "onboardingDone",
             "showCityOnWidgets", "travelMode", "calendarView",
         )
 
@@ -140,6 +141,8 @@ internal object SettingsCodec {
                     dynamicColor = if ("dynamicColor" in present) boolean("dynamicColor") else d.dynamicColor,
                     badaText = if ("badaText" in present) boolean("badaText") else d.badaText,
                     reduceMotion = if ("reduceMotion" in present) boolean("reduceMotion") else d.reduceMotion,
+                    reduceTransparency =
+                        if ("reduceTransparency" in present) boolean("reduceTransparency") else d.reduceTransparency,
                     reminders = remindersOr(present),
                     onboardingDone = if ("onboardingDone" in present) boolean("onboardingDone") else d.onboardingDone,
                     showCityOnWidgets =

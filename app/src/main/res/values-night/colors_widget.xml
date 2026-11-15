@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="pp_widget_bg">#1E1F3F</color>
-    <color name="pp_widget_text">#F3ECE0</color>
-    <color name="pp_widget_text_dim">#CFC6B8</color>
-    <color name="pp_widget_accent">#F2B36B</color>
+    <!-- Ratna Night. Mirrors WidgetPalette. -->
+    <color name="pp_widget_bg">#E00E1222</color>
+    <color name="pp_widget_hairline">#29EDE6D6</color>
+    <color name="pp_widget_text">#EDE6D6</color>
+    <color name="pp_widget_text_dim">#B8AF9C</color>
+    <color name="pp_widget_accent">#E7C85A</color>
 </resources>

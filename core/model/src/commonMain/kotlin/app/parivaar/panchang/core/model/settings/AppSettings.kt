@@ -19,6 +19,8 @@ data class AppSettings(
     val dynamicColor: Boolean = false,
     val badaText: Boolean = false,
     val reduceMotion: Boolean = false,
+    /** M07R D4: solid surfaces instead of glass blur. Also forced by battery saver. */
+    val reduceTransparency: Boolean = false,
     val reminders: Set<ReminderKind> = emptySet(),
     val onboardingDone: Boolean = false,
     /** M08 D2: the city appears on widgets only when this is on. Never in notifications. */

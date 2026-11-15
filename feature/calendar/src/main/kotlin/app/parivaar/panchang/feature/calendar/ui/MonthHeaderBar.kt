@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,7 +20,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.components.PpButton
+import app.parivaar.panchang.core.designsystem.components.PpButtonStyle
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 import app.parivaar.panchang.core.model.settings.CalendarView
 import app.parivaar.panchang.feature.calendar.MonthHeader
 import app.parivaar.panchang.feature.calendar.R
@@ -56,28 +59,29 @@ fun MonthHeaderBar(
     } else {
         stringResource(R.string.cal_samvat_shaka, RegionalText.number(header.samvat.shaka, view, locale))
     }
+    val r = PpTheme.ratna
     Column(modifier.fillMaxWidth().padding(horizontal = PpSpace.s)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PpSpace.xs)) {
-            TextButton(onClick = onPrev, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget).widthIn(min = PpSpace.minTouchTarget).semantics { contentDescription = prevDesc }) { Text(prev) }
-            TextButton(onClick = onPick, modifier = Modifier.weight(1f).heightIn(min = PpSpace.minTouchTarget)) {
-                Text(monthTitle(header.ym, locale), style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
-            }
-            TextButton(onClick = onNext, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget).widthIn(min = PpSpace.minTouchTarget).semantics { contentDescription = nextDesc }) { Text(next) }
-        }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PpSpace.s)) {
             Text(
-                res.getString(R.string.cal_header_months, masaNames, samvat), Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                res.getString(R.string.cal_header_months, masaNames, samvat), Modifier.weight(1f).padding(start = PpSpace.s),
+                style = PpType.eyebrow, color = r.text3,
             )
-            if (showToday) TextButton(onClick = onToday, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget)) { Text(stringResource(R.string.cal_today)) }
+            if (showToday) PpButton(stringResource(R.string.cal_today), onToday, PpButtonStyle.Outline)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PpSpace.xs)) {
+            TextButton(onClick = onPrev, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget).widthIn(min = PpSpace.minTouchTarget).semantics { contentDescription = prevDesc }) { Text(prev, color = r.text2) }
+            TextButton(onClick = onPick, modifier = Modifier.weight(1f).heightIn(min = PpSpace.minTouchTarget)) {
+                Text(monthTitle(header.ym, locale), style = PpType.displayXl, color = r.text, modifier = Modifier.semantics { heading() })
+            }
+            TextButton(onClick = onNext, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget).widthIn(min = PpSpace.minTouchTarget).semantics { contentDescription = nextDesc }) { Text(next, color = r.text2) }
         }
         if (header.masaChanges.isNotEmpty()) {
             val fmt = java.time.format.DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale, "MMMd"), locale)
             val dates = header.masaChanges.joinToString { fmt.format(java.time.LocalDate.ofEpochDay(it.toEpochDays())) }
-            Text(stringResource(R.string.cal_masa_change, dates), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.cal_masa_change, dates), style = PpType.meta, color = r.text3)
         }
         header.adhika?.let {
-            Text(stringResource(R.string.cal_adhika_notice, names.masa(it.masa)), style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.cal_adhika_notice, names.masa(it.masa)), style = PpType.meta, color = r.text2)
         }
     }
 }

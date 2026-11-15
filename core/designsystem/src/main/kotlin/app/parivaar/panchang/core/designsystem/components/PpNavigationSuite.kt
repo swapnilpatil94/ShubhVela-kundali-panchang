@@ -1,96 +1,69 @@
-@file:Suppress("MatchingDeclarationName")
+@file:Suppress("MatchingDeclarationName", "LongParameterList", "MaxLineLength")
 
 package app.parivaar.panchang.core.designsystem.components
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import app.parivaar.panchang.core.designsystem.R
+import app.parivaar.panchang.core.designsystem.surfaces.LocalGlassBackdrop
+import app.parivaar.panchang.core.designsystem.surfaces.glassSource
+import app.parivaar.panchang.core.designsystem.surfaces.rememberGlassBackdrop
+import app.parivaar.panchang.core.designsystem.tokens.Gem
 
-data class NavItem(val key: String, @StringRes val label: Int, @DrawableRes val icon: Int)
+/** Bottom space a screen that scrolls under the dock must keep clear (zero when the suite already pads the content). */
+val LocalDockInset = compositionLocalOf { 0.dp }
 
-private val RAIL_MIN_WIDTH = 600.dp
+/** [center] marks the Aaj orb entry (else the middle item is the orb). */
+data class NavItem(val key: String, @StringRes val label: Int, @DrawableRes val icon: Int, val center: Boolean = false)
 
-/** Bar below 600 dp width, rail at 600 dp or more. */
+/**
+ * Root navigation: content with a floating [GlassDock] over it (no rail on tablets; the dock is centred, max 480 dp).
+ * The content is the glass source; the dock samples it. Content gets bottom room for the dock via [DockSpec.FOOTPRINT].
+ * Same first four parameters as before; [gem], [orb] and [dockVisible] are new with defaults.
+ */
 @Composable
 fun PpNavigationSuite(
     items: List<NavItem>,
     selected: String,
     onSelect: (String) -> Unit,
+    gem: Gem = Gem.PUKHRAJ,
+    orb: OrbUi? = null,
+    dockVisible: Boolean = true,
+    underDock: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val selectedText = stringResource(R.string.state_selected)
-    val colors = MaterialTheme.colorScheme
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        if (maxWidth >= RAIL_MIN_WIDTH) {
-            Row(Modifier.fillMaxSize()) {
-                NavigationRail(containerColor = colors.surfaceContainer) {
-                    items.forEach { item ->
-                        val isSel = item.key == selected
-                        NavigationRailItem(
-                            selected = isSel, onClick = { onSelect(item.key) },
-                            icon = { Icon(painterResource(item.icon), contentDescription = null) },
-                            label = { NavLabel(stringResource(item.label)) },
-                            modifier = Modifier.semantics { if (isSel) stateDescription = selectedText },
-                        )
-                    }
-                }
-                Column(Modifier.weight(1f).fillMaxSize()) { content() }
-            }
+    val backdrop = rememberGlassBackdrop()
+    val orbUi = orb ?: OrbUi(OrbTone.NEUTRAL, null, null, stringResource(R.string.orb_a11y_neutral))
+    Box(Modifier.fillMaxSize()) {
+        // underDock: the screen scrolls beneath the dock and pads its own bottom by LocalDockInset (M07R B7).
+        val contentBox = if (underDock) {
+            Modifier.fillMaxSize().glassSource(backdrop)
         } else {
-            Column(Modifier.fillMaxSize()) {
-                Column(Modifier.weight(1f)) { content() }
-                NavigationBar(containerColor = colors.surfaceContainer) {
-                    items.forEach { item ->
-                        val isSel = item.key == selected
-                        NavigationBarItem(
-                            selected = isSel, onClick = { onSelect(item.key) },
-                            icon = { Icon(painterResource(item.icon), contentDescription = null) },
-                            label = { NavLabel(stringResource(item.label)) },
-                            modifier = Modifier.semantics { if (isSel) stateDescription = selectedText },
-                        )
-                    }
-                }
-            }
+            Modifier.fillMaxSize().glassSource(backdrop).navigationBarsPadding().padding(bottom = (DockSpec.HEIGHT + DockSpec.MARGIN).dp)
+        }
+        val inset = if (underDock) {
+            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + DockSpec.FOOTPRINT.dp
+        } else {
+            0.dp
+        }
+        Box(contentBox) { CompositionLocalProvider(LocalDockInset provides inset, content = content) }
+        CompositionLocalProvider(LocalGlassBackdrop provides backdrop) {
+            GlassDock(items, selected, gem, orbUi, dockVisible, onSelect, Modifier.align(Alignment.BottomCenter))
         }
     }
 }
-
-/**
- * Single-line label. At large font scales the size shrinks so the effective text stays near 14 sp-equivalent and
- * fits its slot; ellipsis is the last resort. The full text stays in the semantics for TalkBack.
- */
-@Composable
-private fun NavLabel(text: String) {
-    val fontScale = LocalDensity.current.fontScale
-    val base = MaterialTheme.typography.labelMedium
-    val shrink = (MAX_LABEL_SCALE / fontScale).coerceAtMost(1f)
-    Text(
-        text,
-        style = base.copy(fontSize = base.fontSize * shrink),
-        maxLines = 1,
-        softWrap = false,
-        overflow = TextOverflow.Ellipsis,
-    )
-}
-
-private const val MAX_LABEL_SCALE = 1.3f

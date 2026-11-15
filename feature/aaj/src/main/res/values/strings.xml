@@ -228,4 +228,47 @@
         <item>Sun</item><item>Moon</item><item>Mars</item><item>Mercury</item><item>Jupiter</item><item>Venus</item>
         <item>Saturn</item><item>Rahu</item><item>Ketu</item>
     </string-array>
+
+    <!-- M07R B7: Ratna Glass Aaj -->
+    <string name="abhi_good_hi">अभी शुभ समय है</string>
+    <string name="abhi_wait_hi">थोड़ा रुकें</string>
+    <string name="aaj_abhi_detail">%1$s choghadiya · %2$d min left</string>
+    <string name="aaj_abhi_detail_none">%1$s choghadiya</string>
+    <string name="aaj_greet_morning">Shubh prabhat</string>
+    <string name="aaj_greet_afternoon">Shubh dopahar</string>
+    <string name="aaj_greet_evening">Shubh sandhya</string>
+    <string name="aaj_greet_night">Shubh ratri</string>
+    <string name="aaj_meta_hora">Hora now · %1$s until %2$s</string>
+    <string name="aaj_eyebrow_place_date">%1$s · %2$s</string>
+    <string name="aaj_gem_chip">%1$s · %2$s</string>
+    <string name="aaj_title_plain">Aaj</string>
+    <string name="aaj_planet_cd_hora">Planet of the current hora: %1$s</string>
+    <string name="aaj_path_sunrise">%1$s sunrise</string>
+    <string name="aaj_path_sunset">sunset %1$s</string>
+    <string name="aaj_path_now">Now</string>
+    <string name="aaj_path_cd">Today\'s day arc. Sunrise %1$s, sunset %2$s. %3$s Tap for how the parts are calculated.</string>
+    <string name="aaj_path_cd_part">%1$s %2$s to %3$s, %4$s.</string>
+    <string name="aaj_path_cd_now">Now is %1$s.</string>
+    <string name="aaj_next_rahu">Rahu Kaal</string>
+    <string name="aaj_next_rahu_passed">Already passed today</string>
+    <string name="aaj_next_best">Best · %1$s</string>
+    <string name="aaj_next_see_all">See all timings</string>
+    <string name="aaj_next_hide_all">Hide timings</string>
+    <string name="aaj_next_none">No more marked windows today</string>
+    <string name="aaj_sky_eyebrow">This week in the sky</string>
+    <string name="aaj_sky_sub">Visible %1$s · tap to read</string>
+    <string name="aaj_sky_sub_plain">Tap to read</string>
+    <string name="aaj_sky_cd">%1$s. %2$s</string>
+    <string name="aaj_panchang_eyebrow">Panchang · %1$s %2$s · VS %3$d</string>
+    <string name="aaj_panchang_eyebrow_plain">Panchang</string>
+    <string name="aaj_limb_till">till %1$s</string>
+    <string name="aaj_limb_row_cd">%1$s, %2$s, %3$s</string>
+    <string-array name="aaj_vaar_names">
+        <item>Ravivaar</item><item>Somvaar</item><item>Mangalvaar</item><item>Budhvaar</item>
+        <item>Guruvaar</item><item>Shukravaar</item><item>Shanivaar</item>
+    </string-array>
+    <string-array name="aaj_gem_names">
+        <item>Manikya</item><item>Moti</item><item>Moonga</item><item>Panna</item><item>Pukhraj</item>
+        <item>Heera</item><item>Neelam</item><item>Gomed</item><item>Lehsunia</item>
+    </string-array>
 </resources>

@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +30,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.runtime.LaunchedEffect
 import app.parivaar.panchang.R
+import app.parivaar.panchang.core.designsystem.PpTheme
 import app.parivaar.panchang.core.designsystem.components.PpButton
+import app.parivaar.panchang.core.designsystem.tokens.PpShapes
 import app.parivaar.panchang.core.designsystem.components.PpButtonStyle
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
 import app.parivaar.panchang.core.designsystem.R as DsR
@@ -61,7 +64,8 @@ fun SearchPalette(onPick: (Dest) -> Unit, onDismiss: () -> Unit) {
     LaunchedEffect(Unit) { focus.requestFocus() }
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        val r = PpTheme.ratna
+        Surface(Modifier.fillMaxSize(), color = r.bg0) {
             Column(
                 Modifier.fillMaxSize().safeDrawingPadding().padding(PpSpace.l),
                 verticalArrangement = Arrangement.spacedBy(PpSpace.m),
@@ -72,15 +76,25 @@ fun SearchPalette(onPick: (Dest) -> Unit, onDismiss: () -> Unit) {
                     modifier = Modifier.fillMaxWidth().focusRequester(focus),
                     singleLine = true,
                     label = { Text(stringResource(R.string.search_hint)) },
+                    shape = PpShapes.lacquer,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = r.gold, unfocusedBorderColor = r.text3,
+                        focusedContainerColor = r.ink3, unfocusedContainerColor = r.ink3,
+                    ),
                 )
                 if (query.isNotBlank() && results.isEmpty()) {
-                    Text(stringResource(R.string.search_no_results), style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        stringResource(R.string.search_no_results),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = r.text2,
+                    )
                 }
                 LazyColumn(Modifier.weight(1f)) {
                     items(results) { e ->
                         Text(
                             labelFor.getValue(e.dest),
                             style = MaterialTheme.typography.titleMedium,
+                            color = r.text,
                             modifier =
                                 Modifier.fillMaxWidth()
                                     .defaultMinSize(minHeight = PpSpace.minTouchTarget)

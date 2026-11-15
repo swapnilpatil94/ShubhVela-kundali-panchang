@@ -3,6 +3,10 @@ package app.parivaar.panchang.feature.aaj
 import app.parivaar.panchang.core.model.profile.RecordId
 import app.parivaar.panchang.engine.CalcSettings
 import app.parivaar.panchang.engine.Place
+import app.parivaar.panchang.engine.astro.Body
+import app.parivaar.panchang.engine.astro.Ephemeris
+import app.parivaar.panchang.engine.sky.BodyLight
+import app.parivaar.panchang.engine.sky.SkyGeometry
 import app.parivaar.panchang.engine.calendar.CalendarCalculator
 import app.parivaar.panchang.engine.calendar.CalendarDay
 import app.parivaar.panchang.engine.calendar.EclipseSearch
@@ -33,6 +37,9 @@ interface AajEngine {
 
     /** Limb spans over the civil day (used when the Sun has no rise or set). */
     fun limbSpans(date: LocalDate, offsetSeconds: Int, place: Place, s: CalcSettings): Map<LimbKind, List<LimbSpan>>
+
+    /** Lighting geometry of the Moon or a planet for the sky header's hora planet; null when unavailable. */
+    fun skyLight(body: Body, at: Instant, place: Place): BodyLight? = null
 }
 
 class EngineAajEngine(
@@ -41,7 +48,12 @@ class EngineAajEngine(
     private val festivals: FestivalEngine,
     private val eclipses: EclipseSearch,
     private val festivalSets: List<FestivalSet>,
+    private val ephemeris: Ephemeris? = null,
 ) : AajEngine {
+    @Synchronized
+    override fun skyLight(body: Body, at: Instant, place: Place): BodyLight? =
+        ephemeris?.let { SkyGeometry.light(it, body, at, place) }
+
     @Synchronized
     override fun days(first: LocalDate, count: Int, place: Place, s: CalcSettings, off: (LocalDate) -> Int) =
         PpPerf.time("engine.days(run)") { panchang.days(first, count, place, s, off) }

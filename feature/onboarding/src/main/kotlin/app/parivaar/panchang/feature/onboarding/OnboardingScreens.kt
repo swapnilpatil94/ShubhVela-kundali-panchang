@@ -8,6 +8,20 @@ package app.parivaar.panchang.feature.onboarding
 import android.text.format.DateFormat
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.AnnotatedString
+import app.parivaar.panchang.core.designsystem.components.ToggleRow
+import app.parivaar.panchang.core.designsystem.sky.SkyHeader
+import app.parivaar.panchang.core.designsystem.sky.SkyHeaderUi
+import app.parivaar.panchang.core.designsystem.tokens.PpType
+import app.parivaar.panchang.core.designsystem.tokens.gemFor
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,8 +46,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -117,15 +129,29 @@ fun OnboardingHost(
         }
     }
 
+    val progress = stringResource(R.string.onb_step_progress, state.step.ordinal + 1, OnboardingStep.entries.size)
     Column(
         modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).imePadding()
-            .verticalScroll(rememberScrollState()).padding(PpSpace.xxl),
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(PpSpace.l),
     ) {
-        Text(
-            stringResource(R.string.onb_step_progress, state.step.ordinal + 1, OnboardingStep.entries.size),
-            style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        val pad = Modifier.padding(horizontal = PpSpace.screen)
+        if (state.step == OnboardingStep.LANGUAGE) {
+            // Sky header on step 1 only (spec M07R section 3).
+            val gem = remember { gemFor(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek) }
+            SkyHeader(
+                SkyHeaderUi(
+                    gem, progress.uppercase(), stringResource(R.string.onb_language_title),
+                    AnnotatedString(stringResource(R.string.onb_language_body)),
+                ),
+            )
+        } else {
+            Text(
+                progress.uppercase(), style = PpType.eyebrow, color = PpTheme.ratna.text2,
+                modifier = pad.padding(top = PpSpace.xxl),
+            )
+        }
+        Column(pad.padding(bottom = PpSpace.xxl), verticalArrangement = Arrangement.spacedBy(PpSpace.l)) {
         when (state.step) {
             OnboardingStep.LANGUAGE -> LanguageStep(state, machine, onOpenPrivacy)
             OnboardingStep.CITY -> CityStep(state, machine) { rationale = true }
@@ -134,7 +160,7 @@ fun OnboardingHost(
             OnboardingStep.REMINDERS -> RemindersStep(state, machine)
         }
         if (state.error == OnboardingError.SAVE_FAILED) {
-            Text(stringResource(R.string.onb_save_failed), color = MaterialTheme.colorScheme.error)
+            Text(stringResource(R.string.onb_save_failed), color = PpTheme.ratna.kumkum)
         }
         PpButton(
             text = stringResource(if (state.step == OnboardingStep.REMINDERS) R.string.onb_finish else R.string.onb_continue),
@@ -159,6 +185,7 @@ fun OnboardingHost(
         if (state.canSkip) PpButton(stringResource(R.string.onb_skip), machine::skip, PpButtonStyle.Tonal, modifier = Modifier.fillMaxWidth())
         if (state.step != OnboardingStep.LANGUAGE) {
             PpButton(stringResource(R.string.onb_back), { machine.back() }, PpButtonStyle.Outline, modifier = Modifier.fillMaxWidth())
+        }
         }
     }
 
@@ -186,44 +213,44 @@ fun OnboardingHost(
 
 @Composable
 private fun StepTitle(title: Int, body: Int) {
-    Text(stringResource(title), style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
-    Text(stringResource(body), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(stringResource(title), style = PpType.displayL, color = PpTheme.ratna.text, modifier = Modifier.semantics { heading() })
+    Text(stringResource(body), style = MaterialTheme.typography.bodyLarge, color = PpTheme.ratna.text2)
 }
 
-/** Selected state is shown by a thicker border and a check icon, never colour alone. */
+/** Selected state is a gold border plus a check icon, never colour alone. Lacquer-look tile, radio semantics. */
 @Composable
 private fun ChoiceCard(title: String, desc: String?, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val scheme = MaterialTheme.colorScheme
-    Surface(
-        modifier = modifier.heightIn(min = PpSpace.minTouchTarget)
-            .selectable(selected = selected, onClick = onClick, role = Role.RadioButton),
-        shape = PpShapes.medium,
-        color = scheme.surfaceContainer,
-        border = BorderStroke(if (selected) 2.dp else 1.dp, if (selected) PpTheme.colors.primaryText else scheme.outlineVariant),
+    val r = PpTheme.ratna
+    val border = if (selected) BorderStroke(1.5.dp, r.gold) else BorderStroke(1.dp, r.line)
+    Row(
+        modifier.heightIn(min = PpSpace.minTouchTarget).clip(PpShapes.lacquer)
+            .background(Brush.verticalGradient(listOf(r.lacquerTop, r.lacquerBottom)))
+            .border(border, PpShapes.lacquer)
+            .selectable(selected = selected, onClick = onClick, role = Role.RadioButton)
+            .padding(PpSpace.l),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PpSpace.s),
     ) {
-        Row(Modifier.padding(PpSpace.m), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PpSpace.s)) {
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-                if (desc != null) Text(desc, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
-            }
-            if (selected) {
-                Icon(painterResource(DsR.drawable.ic_quality_auspicious), contentDescription = stringResource(R.string.onb_language_selected), tint = PpTheme.colors.primaryText, modifier = Modifier.size(24.dp))
-            }
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, color = r.text)
+            if (desc != null) Text(desc, style = MaterialTheme.typography.bodyMedium, color = r.text2)
+        }
+        if (selected) {
+            Icon(painterResource(DsR.drawable.ic_quality_auspicious), contentDescription = stringResource(R.string.onb_language_selected), tint = r.gold, modifier = Modifier.size(24.dp))
         }
     }
 }
 
 @Composable
 private fun LanguageStep(state: OnboardingState, machine: OnboardingMachine, onOpenPrivacy: () -> Unit) {
-    StepTitle(R.string.onb_language_title, R.string.onb_language_body)
     LanguageOptions.all.chunked(2).forEach { row ->
-        Row(horizontalArrangement = Arrangement.spacedBy(PpSpace.s), modifier = Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.spacedBy(PpSpace.s), modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max)) {
             row.forEach { opt ->
-                ChoiceCard(stringResource(opt.nameRes), null, state.localeTag == opt.tag, { machine.setLocale(opt.tag) }, Modifier.weight(1f))
+                ChoiceCard(stringResource(opt.nameRes), null, state.localeTag == opt.tag, { machine.setLocale(opt.tag) }, Modifier.weight(1f).fillMaxHeight())
             }
         }
     }
-    Text(stringResource(R.string.onb_privacy_promise), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+    Text(stringResource(R.string.onb_privacy_promise), style = MaterialTheme.typography.bodyMedium, color = PpTheme.ratna.text2, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
     PpButton(stringResource(R.string.onb_privacy_link), onOpenPrivacy, PpButtonStyle.Outline, modifier = Modifier.fillMaxWidth())
 }
 
@@ -241,18 +268,23 @@ private fun PlacePicker(picker: PlacePickerState, onQuery: (String) -> Unit, onC
     if (chosen != null) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PpSpace.s)) {
             Icon(painterResource(DsR.drawable.ic_location), contentDescription = null, tint = PpTheme.colors.primaryText)
-            Text(stringResource(R.string.onb_city_chosen, placeLabel(chosen)), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.onb_city_chosen, placeLabel(chosen)), style = MaterialTheme.typography.titleMedium, color = PpTheme.ratna.text)
         }
     }
     OutlinedTextField(
         value = picker.query, onValueChange = onQuery, singleLine = true, modifier = Modifier.fillMaxWidth(),
+        shape = PpShapes.lacquer,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = PpTheme.ratna.gold, unfocusedBorderColor = PpTheme.ratna.text3,
+            focusedContainerColor = PpTheme.ratna.ink3, unfocusedContainerColor = PpTheme.ratna.ink3,
+        ),
         label = { Text(stringResource(R.string.onb_city_search_label)) },
         supportingText = if (picker.query.trim().length == 1) ({ Text(stringResource(R.string.onb_city_hint)) }) else null,
     )
     picker.results.forEach { hit ->
         val label = placeLabel(hit.place)
         Text(
-            label, style = MaterialTheme.typography.bodyLarge,
+            label, style = MaterialTheme.typography.bodyLarge, color = PpTheme.ratna.text,
             modifier = Modifier.fillMaxWidth().heightIn(min = PpSpace.minTouchTarget)
                 .clickable(role = Role.Button) { onChoose(hit.place) }.padding(vertical = PpSpace.m),
         )
@@ -270,7 +302,7 @@ private fun CityStep(state: OnboardingState, machine: OnboardingMachine, onUseLo
             LocationMessage.UNAVAILABLE -> R.string.onb_location_unavailable
             LocationMessage.NO_MATCH -> R.string.onb_location_no_match
         }
-        Text(stringResource(res), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(res), style = MaterialTheme.typography.bodyMedium, color = PpTheme.ratna.text2)
     }
 }
 
@@ -299,12 +331,12 @@ private fun BirthStep(state: OnboardingState, machine: OnboardingMachine) {
     var datePicker by remember { mutableStateOf(false) }
     var timePicker by remember { mutableStateOf(false) }
     StepTitle(R.string.onb_birth_title, R.string.onb_birth_body)
-    Text(stringResource(R.string.onb_birth_date), style = MaterialTheme.typography.titleMedium)
+    Text(stringResource(R.string.onb_birth_date), style = MaterialTheme.typography.titleMedium, color = PpTheme.ratna.text)
     PpButton(
         state.birthDate?.let { formatDate(it) } ?: stringResource(R.string.onb_birth_date_pick),
         { datePicker = true }, PpButtonStyle.Outline, modifier = Modifier.fillMaxWidth(),
     )
-    Text(stringResource(R.string.onb_birth_time), style = MaterialTheme.typography.titleMedium)
+    Text(stringResource(R.string.onb_birth_time), style = MaterialTheme.typography.titleMedium, color = PpTheme.ratna.text)
     PpButton(
         state.birthTime?.let { stringResource(R.string.onb_birth_time_value, it.hour, it.minute) }
             ?: stringResource(R.string.onb_birth_time_pick),
@@ -316,16 +348,16 @@ private fun BirthStep(state: OnboardingState, machine: OnboardingMachine) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(checked = state.timeUnknown, onCheckedChange = null)
-        Text(stringResource(R.string.onb_birth_time_unknown), Modifier.padding(start = PpSpace.s))
+        Text(stringResource(R.string.onb_birth_time_unknown), Modifier.padding(start = PpSpace.s), color = PpTheme.ratna.text)
     }
-    Text(stringResource(R.string.onb_birth_place), style = MaterialTheme.typography.titleMedium)
+    Text(stringResource(R.string.onb_birth_place), style = MaterialTheme.typography.titleMedium, color = PpTheme.ratna.text)
     if (state.home.selected != null && state.birthPlace.selected == null) {
         PpButton(stringResource(R.string.onb_birth_same_place), machine::useHomeAsBirthPlace, PpButtonStyle.Tonal, modifier = Modifier.fillMaxWidth())
     }
     PlacePicker(state.birthPlace, machine::setBirthQuery, machine::chooseBirthPlace)
     when (state.error) {
-        OnboardingError.BIRTH_INCOMPLETE -> Text(stringResource(R.string.onb_birth_incomplete), color = MaterialTheme.colorScheme.error)
-        OnboardingError.BIRTH_DATE_INVALID -> Text(stringResource(R.string.onb_birth_date_invalid), color = MaterialTheme.colorScheme.error)
+        OnboardingError.BIRTH_INCOMPLETE -> Text(stringResource(R.string.onb_birth_incomplete), color = PpTheme.ratna.kumkum)
+        OnboardingError.BIRTH_DATE_INVALID -> Text(stringResource(R.string.onb_birth_date_invalid), color = PpTheme.ratna.kumkum)
         else -> Unit
     }
     if (datePicker) {
@@ -423,15 +455,20 @@ private fun RemindersStep(state: OnboardingState, machine: OnboardingMachine) {
         ReminderKind.SUNRISE_BRAHMA to R.string.onb_reminder_sunrise_brahma,
     )
     labels.forEach { (kind, label) ->
-        val on = kind in state.reminders
-        Row(
-            Modifier.fillMaxWidth().heightIn(min = PpSpace.minTouchTarget)
-                .toggleable(on, role = Role.Switch) { machine.setReminder(kind, it) },
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PpSpace.m),
-        ) {
-            Text(stringResource(label), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-            Switch(checked = on, onCheckedChange = null)
-        }
+        ToggleRow(stringResource(label), null, kind in state.reminders, onChange = { machine.setReminder(kind, it) })
     }
-    if (state.notificationDenied) Text(stringResource(R.string.onb_reminders_denied), style = MaterialTheme.typography.bodyMedium)
+    if (state.notificationDenied) Text(stringResource(R.string.onb_reminders_denied), style = MaterialTheme.typography.bodyMedium, color = PpTheme.ratna.text2)
+}
+
+@app.parivaar.panchang.core.designsystem.preview.PpPreviews
+@Composable
+private fun LanguageTilesPreview() = app.parivaar.panchang.core.designsystem.PanchangTheme {
+    Column(Modifier.padding(PpSpace.l), verticalArrangement = Arrangement.spacedBy(PpSpace.s)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(PpSpace.s), modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max)) {
+            ChoiceCard(stringResource(R.string.lang_hi), null, true, {}, Modifier.weight(1f).fillMaxHeight())
+            ChoiceCard(stringResource(R.string.lang_en), null, false, {}, Modifier.weight(1f).fillMaxHeight())
+        }
+        ChoiceCard(stringResource(R.string.onb_tradition_north), stringResource(R.string.onb_tradition_north_desc), true, {}, Modifier.fillMaxWidth())
+        ToggleRow(stringResource(R.string.onb_reminder_vrat_eve), null, true, onChange = {})
+    }
 }

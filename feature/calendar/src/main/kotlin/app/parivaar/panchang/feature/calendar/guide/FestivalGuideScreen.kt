@@ -3,13 +3,16 @@
 package app.parivaar.panchang.feature.calendar.guide
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import app.parivaar.panchang.core.designsystem.PanchangTheme
-import app.parivaar.panchang.core.designsystem.components.PpCard
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.RatnaMoodScope
+import app.parivaar.panchang.core.designsystem.surfaces.Lacquer
+import app.parivaar.panchang.core.designsystem.tokens.PpType
+import app.parivaar.panchang.core.designsystem.tokens.RatnaMood
 import app.parivaar.panchang.core.designsystem.preview.PpPreviews
 import app.parivaar.panchang.engine.calendar.FestivalDef
 import app.parivaar.panchang.engine.calendar.FestivalOccurrence
@@ -62,46 +65,57 @@ private fun kalaRes(k: Kala): Int = when (k) {
     Kala.AHORATRA -> R.string.guide_kala_ahoratra
 }
 
-/** Stateless festival guide page (Dest.FestivalGuide). Body text arrives with the M11 content packs. */
+/**
+ * Stateless festival guide page (Dest.FestivalGuide), in the Utsav mood (D5). Body text arrives with the M11 content
+ * packs; steps (FestivalSteps) wait for that data, so only the engine-bound dates and rule are shown. One hero card.
+ */
 @Composable
 fun FestivalGuideScreen(ui: FestivalGuideUi, names: AajNames, fmt: CalFormat, onBack: () -> Unit) {
+    RatnaMoodScope(RatnaMood.UTSAV) { GuideBody(ui, names, fmt, onBack) }
+}
+
+@Composable
+private fun GuideBody(ui: FestivalGuideUi, names: AajNames, fmt: CalFormat, onBack: () -> Unit) {
     val nameRes = FestivalNames.nameRes(ui.id)
+    val r = PpTheme.ratna
     ScreenFrame(
         title = if (nameRes != null) stringResource(nameRes) else ui.id,
         backLabel = stringResource(R.string.guide_back),
         onBack = onBack,
+        eyebrow = stringResource(R.string.guide_eyebrow_utsav),
     ) {
-        Text(stringResource(R.string.guide_next_dates), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.guide_next_dates), style = PpType.eyebrow, color = r.text2)
         if (ui.dates.isEmpty()) {
-            Text(stringResource(R.string.guide_no_dates))
+            Text(stringResource(R.string.guide_no_dates), style = PpType.body, color = r.text)
         }
-        for (d in ui.dates) {
-            PpCard(Modifier.fillMaxWidth()) {
-                Text(fmt.date(d.date), style = MaterialTheme.typography.titleSmall)
+        ui.dates.forEachIndexed { i, d ->
+            Lacquer(Modifier.fillMaxWidth(), hero = i == 0) {
+                Text(fmt.date(d.date), style = if (i == 0) PpType.displayS else PpType.body, color = r.text)
                 d.window?.takeIf { it.start != it.end }?.let {
                     Text(
                         stringResource(R.string.guide_range, fmt.time(it.start), fmt.time(it.end)),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = PpType.body, color = r.text2,
                     )
                 }
             }
         }
-        PpCard(Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.guide_rule_title), style = MaterialTheme.typography.titleSmall)
-            if (ui.tithis.isEmpty() && ui.kala == null) Text(stringResource(R.string.guide_rule_other))
+        Lacquer(Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.guide_rule_title), style = PpType.displayS, color = r.text)
+            if (ui.tithis.isEmpty() && ui.kala == null) Text(stringResource(R.string.guide_rule_other), style = PpType.body, color = r.text2)
             if (ui.tithis.isNotEmpty()) {
                 val list = ui.tithis.joinToString(", ") { names.limbSpan(LimbKind.TITHI, it) }
-                Text(stringResource(R.string.guide_rule_tithi, list))
+                Text(stringResource(R.string.guide_rule_tithi, list), style = PpType.body, color = r.text2)
             }
-            ui.kala?.let { Text(stringResource(R.string.guide_rule_kala, stringResource(kalaRes(it)))) }
+            ui.kala?.let { Text(stringResource(R.string.guide_rule_kala, stringResource(kalaRes(it))), style = PpType.body, color = r.text2) }
             Text(
                 stringResource(
                     if (ui.status == RuleStatus.APPROVED) R.string.guide_status_approved else R.string.guide_status_verify,
                 ),
+                style = PpType.body, color = r.text2,
             )
-            Text(stringResource(R.string.guide_source, ui.sourceId), style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.guide_source, ui.sourceId), style = PpType.meta, color = r.text3)
         }
-        Text(stringResource(R.string.guide_more_coming), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.guide_more_coming), style = PpType.body, color = r.text3)
     }
 }
 

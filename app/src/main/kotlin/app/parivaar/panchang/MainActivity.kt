@@ -165,7 +165,10 @@ class MainActivity : ComponentActivity() {
             if (tag != null && tag != appliedTag()) LocaleApplier.apply(this@MainActivity, tag)
         }
 
-        PanchangTheme(settings.themeMode, settings.dynamicColor, settings.badaText, settings.reduceMotion) {
+        PanchangTheme(
+            settings.themeMode, settings.dynamicColor, settings.badaText, settings.reduceMotion,
+            reduceTransparency = settings.reduceTransparency,
+        ) {
             Surface(Modifier.fillMaxSize()) {
                 Box(Modifier.fillMaxSize().safeDrawingPadding()) {
                     when (ui) {

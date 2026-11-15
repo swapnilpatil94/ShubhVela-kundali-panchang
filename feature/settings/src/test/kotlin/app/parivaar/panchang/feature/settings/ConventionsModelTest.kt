@@ -102,9 +102,13 @@ class ConventionsModelTest {
         m.setDynamicColor(true)
         m.setBadaText(false)
         m.setReduceMotion(true)
+        m.setReduceTransparency(true)
         m.setLocaleTag("hi")
         assertEquals(
-            base.copy(themeMode = ThemeMode.LIGHT, dynamicColor = true, badaText = false, reduceMotion = true, localeTag = "hi"),
+            base.copy(
+                themeMode = ThemeMode.LIGHT, dynamicColor = true, badaText = false, reduceMotion = true,
+                reduceTransparency = true, localeTag = "hi",
+            ),
             repo.s.value,
         )
     }

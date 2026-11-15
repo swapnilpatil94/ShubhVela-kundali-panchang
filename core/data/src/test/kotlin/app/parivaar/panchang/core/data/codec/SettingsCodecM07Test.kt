@@ -18,7 +18,7 @@ class SettingsCodecM07Test {
     private val newKeys =
         setOf(
             "homePlaceId", "monthSystem", "presetSource", "ekadashi", "chartStyle", "themeMode",
-            "dynamicColor", "badaText", "reduceMotion", "reminders", "onboardingDone",
+            "dynamicColor", "badaText", "reduceMotion", "reduceTransparency", "reminders", "onboardingDone",
         )
     private val full =
         AppSettings(
@@ -34,6 +34,7 @@ class SettingsCodecM07Test {
             dynamicColor = true,
             badaText = true,
             reduceMotion = true,
+            reduceTransparency = true,
             reminders = setOf(ReminderKind.SUNRISE_BRAHMA, ReminderKind.VRAT_EVE),
             onboardingDone = true,
         )

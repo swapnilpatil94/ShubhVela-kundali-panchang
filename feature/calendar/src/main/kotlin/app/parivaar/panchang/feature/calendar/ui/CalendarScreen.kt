@@ -2,11 +2,22 @@
 
 package app.parivaar.panchang.feature.calendar.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.ui.semantics.heading
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.RatnaMoodScope
+import app.parivaar.panchang.core.designsystem.components.PpButton
+import app.parivaar.panchang.core.designsystem.components.PpButtonStyle
+import app.parivaar.panchang.core.designsystem.surfaces.Lacquer
+import app.parivaar.panchang.core.designsystem.tokens.PpType
+import app.parivaar.panchang.core.designsystem.tokens.RatnaMood
+import app.parivaar.panchang.engine.panchang.LimbKind
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,7 +26,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -113,7 +123,9 @@ fun CalendarContent(
     val names = remember(locale, context.resources) { ResCalendarNames(context.resources, context.packageName, locale) }
     var picker by remember { mutableStateOf(false) }
     var jump by remember { mutableStateOf(false) }
-    Column(modifier.fillMaxSize()) {
+    val paper = regionalEnabled && view != CalendarView.STANDARD
+    val screen: @Composable () -> Unit = {
+    Column(modifier.fillMaxSize().background(PpTheme.ratna.bg0)) {
         PpTopBar(stringResource(R.string.cal_title), subtitle, avatarInitials, actions.onAvatar, actions.onSearch)
         when (ui) {
             MonthUi.NoPlace -> EmptyState(
@@ -129,6 +141,9 @@ fun CalendarContent(
             is MonthUi.Content -> Body(ui, false, selected, names, view, locale, tradition, regionalEnabled, actions, onSelect, onPrev, onNext, onToday, { picker = true }, { jump = true })
         }
     }
+    }
+    // Regional wall views use the Paper mood, scoped to this screen only (DESIGN_V2 section 3).
+    if (paper) RatnaMoodScope(RatnaMood.PAPER, screen) else screen()
     val shown = (ui as? MonthUi.Content) ?: (ui as? MonthUi.Loading)?.stale
     if (picker && shown != null) {
         MonthYearPicker(shown.key.ym, shown.today.year, locale, { picker = false; onShow(it) }, { picker = false })
@@ -163,7 +178,7 @@ private fun Body(
     onPick: () -> Unit,
     onJump: () -> Unit,
 ) {
-    Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(PpSpace.s)) {
+    Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(PpSpace.m)) {
         MonthHeaderBar(c.header, view, names, locale, c.today.yearMonth != c.key.ym, onPrev, onNext, onToday, onPick)
         val traditionGroup = stringResource(R.string.cal_tradition_group)
         FlowRow(Modifier.padding(horizontal = PpSpace.l).semantics { contentDescription = traditionGroup }, horizontalArrangement = Arrangement.spacedBy(PpSpace.s)) {
@@ -182,13 +197,18 @@ private fun Body(
         }
         MonthGrid(c, dimmed, selected, names, view, locale, { onSelect(it) }, onPrev, onNext)
         Legend(names)
-        FlowRow(Modifier.padding(horizontal = PpSpace.s)) {
-            TextButton(onClick = onJump) { Text(stringResource(R.string.cal_jump_festival)) }
-            TextButton(onClick = actions.onGrahan) { Text(stringResource(R.string.cal_open_grahan)) }
-            TextButton(onClick = actions.onTransits) { Text(stringResource(R.string.cal_open_transits)) }
-            TextButton(onClick = { actions.onShareIcs(c.key.ym.year) }) { Text(stringResource(R.string.cal_share_ics)) }
+        if (view != CalendarView.STANDARD && regionalEnabled) {
+            FestivalList(c, names, view)
+        } else {
+            TodayHero(c, names, locale, onOpenDay = { onSelect(it) })
         }
-        Text(stringResource(R.string.cal_footer), Modifier.padding(horizontal = PpSpace.l), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        FlowRow(Modifier.padding(horizontal = PpSpace.l), horizontalArrangement = Arrangement.spacedBy(PpSpace.s)) {
+            PpButton(stringResource(R.string.cal_jump_festival), onJump, PpButtonStyle.Outline)
+            PpButton(stringResource(R.string.cal_open_grahan), actions.onGrahan, PpButtonStyle.Outline)
+            PpButton(stringResource(R.string.cal_open_transits), actions.onTransits, PpButtonStyle.Outline)
+            PpButton(stringResource(R.string.cal_share_ics), { actions.onShareIcs(c.key.ym.year) }, PpButtonStyle.Outline)
+        }
+        Text(stringResource(R.string.cal_footer), Modifier.padding(horizontal = PpSpace.l), style = PpType.meta, color = PpTheme.ratna.text3)
         Spacer(Modifier.height(PpSpace.xxl))
     }
 }
@@ -201,9 +221,47 @@ private fun Legend(names: ResCalendarNames) {
     val kshaya = stringResource(R.string.cal_mark_glyph_kshaya)
     FlowRow(Modifier.padding(horizontal = PpSpace.l), horizontalArrangement = Arrangement.spacedBy(PpSpace.m)) {
         Marker.entries.forEach {
-            Text(stringResource(R.string.cal_legend_item, names.markerGlyph(it), names.markerName(it)), style = MaterialTheme.typography.labelSmall)
+            Text(stringResource(R.string.cal_legend_item, names.markerGlyph(it), names.markerName(it)), style = PpType.label, color = PpTheme.ratna.text3)
         }
-        Text(stringResource(R.string.cal_legend_item, vriddha, stringResource(R.string.cal_flag_vriddhi)), style = MaterialTheme.typography.labelSmall)
-        Text(stringResource(R.string.cal_legend_item, kshaya, stringResource(R.string.cal_flag_kshaya)), style = MaterialTheme.typography.labelSmall)
+        Text(stringResource(R.string.cal_legend_item, vriddha, stringResource(R.string.cal_flag_vriddhi)), style = PpType.label, color = PpTheme.ratna.text3)
+        Text(stringResource(R.string.cal_legend_item, kshaya, stringResource(R.string.cal_flag_kshaya)), style = PpType.label, color = PpTheme.ratna.text3)
+    }
+}
+
+/**
+ * Today hero (one `hero` Lacquer on the screen). Utsav mood only when today has a festival occurrence, not a vrat-only
+ * day (D5). Everything is read from the already built month; no engine call.
+ */
+@Composable
+private fun TodayHero(c: MonthUi.Content, names: ResCalendarNames, locale: Locale, onOpenDay: (LocalDate) -> Unit) {
+    val cell = UtsavDays.todayCell(c) ?: return
+    val fmt = remember(locale) { java.time.format.DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale, "MMMEd"), locale) }
+    val date = fmt.format(java.time.LocalDate.ofEpochDay(cell.date.toEpochDays()))
+    val tithi = names.aaj.limbSpan(LimbKind.TITHI, cell.tithi)
+    val festivals = cell.festivalIds.joinToString(", ") { names.festivalName(it) }
+    val utsav = UtsavDays.isUtsav(cell.festivalIds)
+    val body: @Composable () -> Unit = {
+        val r = PpTheme.ratna
+        Lacquer(Modifier.fillMaxWidth().padding(horizontal = PpSpace.l), hero = true) {
+            Text(stringResource(R.string.cal_hero_eyebrow, date, tithi), style = PpType.eyebrow, color = r.gold)
+            Text(festivals.ifEmpty { tithi }, style = PpType.displayM, color = r.text, modifier = Modifier.padding(top = PpSpace.xs).semantics { heading() })
+            PpButton(stringResource(R.string.cal_hero_day), { onOpenDay(cell.date) }, PpButtonStyle.Outline, modifier = Modifier.padding(top = PpSpace.m))
+        }
+    }
+    if (utsav) RatnaMoodScope(RatnaMood.UTSAV, body) else body()
+}
+
+/** Wall-calendar festival list under the Paper grid: day number and name, from the cached month. */
+@Composable
+private fun FestivalList(c: MonthUi.Content, names: ResCalendarNames, view: CalendarView) {
+    val locale = LocalConfiguration.current.locales[0]
+    val items = c.weeks.flatten().filter { it.inMonth && it.festivalIds.isNotEmpty() }.flatMap { cell ->
+        cell.festivalIds.map { stringResource(R.string.cal_regional_festival_item, RegionalText.number(cell.date.day, view, locale), names.festivalName(it)) }
+    }
+    if (items.isEmpty()) return
+    val r = PpTheme.ratna
+    Lacquer(Modifier.fillMaxWidth().padding(horizontal = PpSpace.l)) {
+        Text(stringResource(if (view == CalendarView.GUJARATI) R.string.cal_regional_festivals_gu else R.string.cal_regional_festivals_mr), style = PpType.body.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold), color = r.kumkum)
+        Text(items.joinToString(" · "), style = PpType.body, color = r.text, modifier = Modifier.padding(top = PpSpace.xs))
     }
 }

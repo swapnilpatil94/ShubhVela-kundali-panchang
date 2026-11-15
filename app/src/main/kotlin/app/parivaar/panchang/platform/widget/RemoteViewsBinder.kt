@@ -10,6 +10,7 @@ import android.widget.RemoteViews
 import app.parivaar.panchang.R
 import app.parivaar.panchang.engine.panchang.Window
 import app.parivaar.panchang.feature.aaj.widget.WidgetModel
+import kotlinx.datetime.DayOfWeek
 import kotlin.time.Instant
 
 /** Maps a [WidgetModel] to views. A null model means no home place is chosen yet. */
@@ -35,6 +36,17 @@ internal class RemoteViewsBinder(private val context: Context, private val text:
             }
         }
 
+    private fun dark(): Boolean =
+        context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+    /** Weekday gem on the key line and the accent bar; everything else comes from the night/day colour resources. */
+    private fun tintGem(rv: RemoteViews, vaarName: String) {
+        val gem = widgetPalette(dark(), DayOfWeek.valueOf(vaarName)).gem.toInt()
+        rv.setTextColor(R.id.today_title, gem)
+        rv.setInt(R.id.today_gem_bar, "setBackgroundColor", gem)
+    }
+
     fun today(model: WidgetModel?): RemoteViews {
         val rv = RemoteViews(context.packageName, R.layout.widget_today)
         open(rv)
@@ -45,6 +57,7 @@ internal class RemoteViewsBinder(private val context: Context, private val text:
         when (model) {
             is WidgetModel.Today -> {
                 setText(rv, R.id.today_title, text.vaar(model.vaar.ordinal))
+                tintGem(rv, model.vaar.name)
                 setText(rv, R.id.today_tithi, context.getString(R.string.widget_tithi_line, text.tithi(model.tithi), text.time(model.tithi.end)))
                 setText(rv, R.id.today_nakshatra, context.getString(R.string.widget_nakshatra_line, text.nakshatra(model.nakshatra), text.time(model.nakshatra.end)))
                 setText(rv, R.id.today_sun, text.range(model.sunrise, model.sunset).let { (a, z) -> context.getString(R.string.widget_sun_line, a, z) })

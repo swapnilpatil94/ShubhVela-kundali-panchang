@@ -5,6 +5,7 @@ package app.parivaar.panchang.core.designsystem.components
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -35,11 +36,10 @@ private data class ChipLook(
     @StringRes val name: Int,
 )
 
-/** Always icon + label + colour; never colour alone. */
+/** Gold / kumkum / okay pill. Always icon + label + colour; never colour alone. */
 @Composable
 fun PpChip(label: String, quality: TimeQuality, modifier: Modifier = Modifier) {
     val pp = PpTheme.colors
-    val scheme = MaterialTheme.colorScheme
     val look = when (quality) {
         TimeQuality.AUSPICIOUS -> ChipLook(
             pp.auspiciousBg, pp.auspiciousFg, R.drawable.ic_quality_auspicious, R.string.quality_auspicious,
@@ -48,7 +48,7 @@ fun PpChip(label: String, quality: TimeQuality, modifier: Modifier = Modifier) {
             pp.inauspiciousBg, pp.inauspiciousFg, R.drawable.ic_quality_inauspicious, R.string.quality_inauspicious,
         )
         TimeQuality.NEUTRAL -> ChipLook(
-            scheme.surfaceVariant, scheme.onSurface, R.drawable.ic_quality_neutral, R.string.quality_neutral,
+            pp.neutralBg, pp.neutralFg, R.drawable.ic_quality_neutral, R.string.quality_neutral,
         )
     }
     val description = stringResource(R.string.chip_description, label, stringResource(look.name))
@@ -56,6 +56,7 @@ fun PpChip(label: String, quality: TimeQuality, modifier: Modifier = Modifier) {
         modifier = modifier
             .semantics(mergeDescendants = true) { contentDescription = description }
             .background(look.bg, PpShapes.pill)
+            .border(1.dp, look.fg.copy(alpha = 0.30f), PpShapes.pill)
             .padding(horizontal = PpSpace.m, vertical = PpSpace.s),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PpSpace.xs),

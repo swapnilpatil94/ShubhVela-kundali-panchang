@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -22,7 +21,9 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import app.parivaar.panchang.core.designsystem.PpTheme
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 import app.parivaar.panchang.core.model.settings.CalendarView
 import app.parivaar.panchang.feature.calendar.MonthUi
 import app.parivaar.panchang.feature.calendar.R
@@ -41,7 +42,7 @@ internal fun WeekdayRow(first: kotlinx.datetime.DayOfWeek, locale: Locale) {
             val d = java.time.DayOfWeek.of((first.ordinal + k) % 7 + 1)
             Text(
                 d.getDisplayName(TextStyle.SHORT, locale), Modifier.weight(1f), textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = PpType.label, color = if (d == java.time.DayOfWeek.SUNDAY) PpTheme.ratna.kumkum else PpTheme.ratna.text3,
             )
         }
     }

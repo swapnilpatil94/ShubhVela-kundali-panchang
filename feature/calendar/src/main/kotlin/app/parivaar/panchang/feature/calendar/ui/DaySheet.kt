@@ -32,6 +32,9 @@ import app.parivaar.panchang.core.designsystem.components.PpButton
 import app.parivaar.panchang.core.designsystem.components.PpButtonStyle
 import app.parivaar.panchang.core.designsystem.components.PpCard
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.tokens.PpShapes
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 import app.parivaar.panchang.engine.calendar.FestivalOccurrence
 import app.parivaar.panchang.engine.calendar.LocalEclipse
 import app.parivaar.panchang.engine.calendar.LunarLabel
@@ -45,6 +48,7 @@ import app.parivaar.panchang.feature.aaj.ui.ProofCopy
 import app.parivaar.panchang.feature.aaj.ui.TimeFmt
 import app.parivaar.panchang.feature.calendar.DayDetail
 import app.parivaar.panchang.feature.calendar.R
+import androidx.compose.ui.unit.dp
 import java.util.Locale
 import app.parivaar.panchang.feature.aaj.R as AajR
 
@@ -69,12 +73,12 @@ fun DaySheet(
     val res = context.resources
     val fmt = remember(detail, locale) { TimeFmt(detail.offsetSeconds, detail.date, DateFormat.is24HourFormat(context), locale) }
     var explain by remember { mutableStateOf(false) }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), shape = PpShapes.sheetTop, containerColor = PpTheme.ratna.ink3, tonalElevation = 0.dp) {
         Column(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = PpSpace.l),
             verticalArrangement = Arrangement.spacedBy(PpSpace.m),
         ) {
-            Text(fmt.date(detail.date), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
+            Text(fmt.date(detail.date), style = PpType.displayM, modifier = Modifier.semantics { heading() })
             val day = detail.day
             if (day == null) {
                 Text(stringResource(R.string.cal_day_no_sun), style = MaterialTheme.typography.bodyLarge)

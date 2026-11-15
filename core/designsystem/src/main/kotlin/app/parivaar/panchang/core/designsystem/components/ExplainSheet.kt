@@ -17,6 +17,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import app.parivaar.panchang.core.designsystem.surfaces.GlassSurface
+import app.parivaar.panchang.core.designsystem.surfaces.LocalGlassBackdrop
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -44,9 +47,11 @@ fun ExplainSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         shape = PpShapes.sheetTop,
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
+        containerColor = Color.Transparent,
+        tonalElevation = 0.dp,
     ) {
+        // Glass sheet: chrome. Solid ink3 plus gold hairline when there is no backdrop or Reduce Transparency is on.
+        GlassSurface(LocalGlassBackdrop.current, PpShapes.sheetTop, Modifier.fillMaxWidth()) {
         Column(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
                 .padding(horizontal = PpSpace.xxl, vertical = PpSpace.s),
@@ -63,6 +68,7 @@ fun ExplainSheet(
                 stringResource(R.string.explain_footer), style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
         }
     }
 }

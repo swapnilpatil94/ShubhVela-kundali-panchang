@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
+import app.parivaar.panchang.core.designsystem.surfaces.GlassSurface
+import app.parivaar.panchang.core.designsystem.surfaces.LocalGlassBackdrop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +39,7 @@ fun PpTopBar(
     onAvatar: () -> Unit,
     onSearch: () -> Unit,
 ) {
+    GlassSurface(LocalGlassBackdrop.current, BAR_SHAPE, Modifier.fillMaxWidth()) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = PpSpace.l, vertical = PpSpace.s),
         verticalAlignment = Alignment.CenterVertically,
@@ -55,7 +60,7 @@ fun PpTopBar(
         val menuLabel = stringResource(R.string.cd_profile_menu)
         Box(
             modifier = Modifier.size(PpSpace.minTouchTarget)
-                .background(MaterialTheme.colorScheme.secondaryContainer, CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                 .clickable(onClickLabel = menuLabel, role = Role.Button, onClick = onAvatar)
                 .semantics { contentDescription = menuLabel },
             contentAlignment = Alignment.Center,
@@ -67,4 +72,8 @@ fun PpTopBar(
             }
         }
     }
+    }
 }
+
+/** Glass bar: chrome, so glass (solid when no backdrop is provided). */
+private val BAR_SHAPE = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)

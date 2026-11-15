@@ -68,6 +68,7 @@ class AppearanceModel(private val repo: SettingsRepository, private val scope: C
     fun setBadaText(v: Boolean) = write { it.copy(badaText = v) }
 
     fun setReduceMotion(v: Boolean) = write { it.copy(reduceMotion = v) }
+    fun setReduceTransparency(v: Boolean) = write { it.copy(reduceTransparency = v) }
 
     fun setTravelMode(v: Boolean) = write { it.copy(travelMode = v) }
 

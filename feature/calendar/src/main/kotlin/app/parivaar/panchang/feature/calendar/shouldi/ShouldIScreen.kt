@@ -22,7 +22,9 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
 import app.parivaar.panchang.core.designsystem.PanchangTheme
-import app.parivaar.panchang.core.designsystem.components.PpCard
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.surfaces.Lacquer
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 import app.parivaar.panchang.core.designsystem.preview.PpPreviews
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
 import app.parivaar.panchang.engine.calendar.TimeRange
@@ -81,8 +83,11 @@ private fun matches(labelRes: Int, query: String): Boolean =
 @Composable
 private fun AnswerCard(a: ShouldIAnswer, fmt: CalFormat) {
     var open by rememberSaveable { mutableStateOf(false) }
-    PpCard(Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }) {
-        Text(verdictLine(a, fmt), style = MaterialTheme.typography.titleMedium)
+    val r = PpTheme.ratna
+    // One hero per screen: the verdict. Gold border only for a good window; kumkum for not favoured (words always carry the meaning).
+    val good = a.verdict == Verdict.GOOD_NOW || a.verdict == Verdict.GOOD_LATER || a.verdict == Verdict.TOMORROW
+    Lacquer(Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, hero = good, warn = a.verdict == Verdict.NOT_FAVOURED_TODAY) {
+        Text(verdictLine(a, fmt), style = PpType.displayM, color = r.text)
         val best = a.best
         if (best != null && (a.verdict == Verdict.GOOD_NOW || a.verdict == Verdict.TOMORROW)) {
             Text(
@@ -99,7 +104,7 @@ private fun AnswerCard(a: ShouldIAnswer, fmt: CalFormat) {
             }
         }
         Text(
-            stringResource(R.string.should_i_footer), style = MaterialTheme.typography.bodySmall,
+            stringResource(R.string.should_i_footer), style = PpType.meta, color = r.text3,
             modifier = Modifier.padding(top = PpSpace.s),
         )
     }

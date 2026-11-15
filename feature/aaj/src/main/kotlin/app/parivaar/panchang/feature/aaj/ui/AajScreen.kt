@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
@@ -19,20 +20,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.parivaar.panchang.core.designsystem.components.EmptyState
 import app.parivaar.panchang.core.designsystem.components.ErrorState
-import app.parivaar.panchang.core.designsystem.components.ExplainSheet
 import app.parivaar.panchang.core.designsystem.components.LoadingState
+import app.parivaar.panchang.core.designsystem.components.LocalDockInset
 import app.parivaar.panchang.core.designsystem.components.PpButton
 import app.parivaar.panchang.core.designsystem.components.PpButtonStyle
 import app.parivaar.panchang.core.designsystem.components.PpCard
@@ -40,9 +38,9 @@ import app.parivaar.panchang.core.designsystem.components.PpTopBar
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
 import app.parivaar.panchang.feature.aaj.AajModel
 import app.parivaar.panchang.feature.aaj.AajUi
+import app.parivaar.panchang.feature.aaj.HoraSky
 import app.parivaar.panchang.feature.aaj.PpPerf
 import app.parivaar.panchang.feature.aaj.R
-import app.parivaar.panchang.feature.aaj.travel.TravelUi
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import app.parivaar.panchang.core.designsystem.R as DsR
@@ -68,9 +66,10 @@ fun AajScreen(
 ) {
     val ui by model.ui.collectAsState()
     val now by model.tick.collectAsState()
+    val sky by model.sky.collectAsState()
     ClockChangeEffect(model::refresh)
     LaunchedEffect(ui is AajUi.Content) { if (ui is AajUi.Content) PpPerf.mark("aaj.firstContentComposed") }
-    AajScreenContent(ui, now, subtitle, avatarInitials, actions, modifier, extras)
+    AajScreenContent(ui, now, subtitle, avatarInitials, actions, modifier, extras, sky)
 }
 
 @Composable
@@ -104,9 +103,11 @@ fun AajScreenContent(
     actions: AajActions,
     modifier: Modifier = Modifier,
     extras: AajExtras = AajExtras.None,
+    sky: HoraSky? = null,
 ) {
     Column(modifier.fillMaxSize()) {
-        PpTopBar(stringResource(DsR.string.tab_aaj), subtitle, avatarInitials, actions.onAvatar, actions.onSearch)
+        // The day content draws its own sky header with search and profile over it; every other state keeps the bar.
+        if (ui !is AajUi.Content) PpTopBar(stringResource(DsR.string.tab_aaj), subtitle, avatarInitials, actions.onAvatar, actions.onSearch)
         when (ui) {
             AajUi.Loading -> LoadingState(stringResource(R.string.aaj_loading))
             AajUi.NoPlace -> EmptyState(
@@ -121,7 +122,7 @@ fun AajScreenContent(
                 listOf(stringResource(R.string.aaj_retry) to actions.onRetry),
             )
             is AajUi.PolarDay -> PolarDayContent(ui, actions)
-            is AajUi.Content -> DayContent(ui, now, actions, extras)
+            is AajUi.Content -> DayContent(ui, now, sky, subtitle, avatarInitials, actions, extras)
         }
     }
 }
@@ -140,11 +141,9 @@ internal fun rememberFmt(offsetSeconds: Int, shown: LocalDate): TimeFmt {
     return remember(offsetSeconds, shown, locale) { TimeFmt(offsetSeconds, shown, DateFormat.is24HourFormat(context), locale) }
 }
 
-private val ScreenPadding = PaddingValues(horizontal = PpSpace.l, vertical = PpSpace.m)
-
 @Composable
-private fun InfoCard(title: String, body: String) {
-    PpCard(Modifier.padding(bottom = PpSpace.m)) {
+internal fun InfoCard(title: String, body: String, modifier: Modifier = Modifier) {
+    PpCard(modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(PpSpace.xs)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -157,7 +156,7 @@ private fun PolarDayContent(ui: AajUi.PolarDay, actions: AajActions) {
     val names = rememberNames()
     val fmt = rememberFmt(0, ui.date)
     val res = LocalContext.current.resources
-    LazyColumn(contentPadding = ScreenPadding, verticalArrangement = Arrangement.spacedBy(PpSpace.m)) {
+    LazyColumn(contentPadding = PaddingValues(start = PpSpace.l, end = PpSpace.l, top = PpSpace.m, bottom = LocalDockInset.current + PpSpace.l), verticalArrangement = Arrangement.spacedBy(PpSpace.m)) {
         item { InfoCard(stringResource(R.string.aaj_polar_title), stringResource(R.string.aaj_polar_body)) }
         item {
             Column(verticalArrangement = Arrangement.spacedBy(PpSpace.m)) {
@@ -175,56 +174,5 @@ private fun PolarDayContent(ui: AajUi.PolarDay, actions: AajActions) {
             }
         }
         item { PpButton(stringResource(R.string.aaj_how_calculated), actions.onOpenConventions, PpButtonStyle.Outline) }
-    }
-}
-
-@Composable
-private fun DayContent(c: AajUi.Content, now: Instant, actions: AajActions, extras: AajExtras) {
-    val names = rememberNames()
-    val fmt = rememberFmt(c.day.utcOffsetSeconds, c.date)
-    val res = LocalContext.current.resources
-    var explain by rememberSaveable { mutableStateOf(false) }
-    var full by rememberSaveable { mutableStateOf(false) }
-    val day = c.day
-    val locale = LocalConfiguration.current.locales[0]
-    LazyColumn(contentPadding = ScreenPadding, verticalArrangement = Arrangement.spacedBy(PpSpace.m)) {
-        if (c.travel && extras.travel !is TravelUi.InPlace) item { InfoCard(stringResource(R.string.aaj_travel_banner), "") }
-        if (extras.travel != TravelUi.Idle) item { TravelSection(extras.travel, extras) }
-        item {
-            HeaderCard(
-                verdict = headerText(res, names, fmt, c.header), dateText = fmt.date(c.date), arc = arcOf(day, now),
-                sunrise = fmt.time(day.sunrise), sunset = fmt.time(day.sunset), onHow = { explain = true },
-            )
-        }
-        if (c.highLatitude.isNotEmpty()) {
-            item { InfoCard(stringResource(R.string.aaj_high_latitude_title), stringResource(R.string.aaj_high_latitude_body)) }
-        }
-        item {
-            ActionsRow(
-                extras,
-                script = { speechScript(res, names, fmt, c, now) },
-                card = { shareModel(res, names, fmt, c, extras, locale) },
-            )
-        }
-        item { TimingsSection(c, now, names, fmt) }
-        item {
-            PpButton(
-                stringResource(R.string.aaj_section_full) + " · " +
-                    stringResource(if (full) R.string.aaj_collapse else R.string.aaj_expand),
-                { full = !full }, PpButtonStyle.Outline,
-            )
-        }
-        if (full) item { FullPanchang(c, names, fmt) }
-    }
-    if (explain) {
-        ExplainSheet(
-            title = stringResource(R.string.aaj_explain_title),
-            explanation = stringResource(R.string.aaj_explain_body),
-            howCalculated = ProofCopy.how(res, c.highLatitude.isNotEmpty()),
-            traditionNote = stringResource(R.string.aaj_explain_tradition),
-            proof = ProofCopy.label(res, c.proof),
-            onChangeConventions = { explain = false; actions.onOpenConventions() },
-            onDismiss = { explain = false },
-        )
     }
 }

@@ -13,6 +13,8 @@ class StringPlaceholderGuardTest {
     private val numeric = mapOf(
         "cal_dots_more" to "Int", // DayCellView: more = festivalIds.size - 2
         "grahan_year" to "Int", // GrahanScreen: year
+        "cal_cell_tithi_s" to "Int", // DayCellView: tithi within the paksha, 1..15
+        "cal_cell_tithi_k" to "Int", // DayCellView: tithi within the paksha, 1..15
     )
 
     @Test fun `only the listed strings use numeric placeholders`() {

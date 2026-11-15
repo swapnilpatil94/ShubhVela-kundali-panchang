@@ -29,6 +29,9 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.tokens.PpShapes
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 import app.parivaar.panchang.feature.calendar.R
 import java.time.format.TextStyle
 import java.util.Locale
@@ -54,7 +57,8 @@ fun MonthYearPicker(
     LaunchedEffect(Unit) { list.scrollToItem((years.indexOf(year) - 1).coerceAtLeast(0)) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.cal_pick_title)) },
+        shape = PpShapes.lacquer, containerColor = PpTheme.ratna.lacquerTop,
+        title = { Text(stringResource(R.string.cal_pick_title), style = PpType.displayS) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(PpSpace.s)) {
                 Text(stringResource(R.string.cal_pick_year), style = MaterialTheme.typography.labelLarge)

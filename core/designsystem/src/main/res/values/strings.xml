@@ -27,4 +27,9 @@
     <string name="explain_change_conventions">Change conventions</string>
     <string name="explain_close">Close</string>
     <string name="explain_footer">Traditional interpretation, not a scientific prediction.</string>
+    <string name="orb_a11y_good">Aaj. Good time now, until %1$s.</string>
+    <string name="orb_a11y_wait">Aaj. Better to wait, until %1$s.</string>
+    <string name="orb_a11y_neutral">Aaj. Open today\'s timings.</string>
+    <string name="dock_a11y">Main navigation</string>
+    <string name="cd_gem_chip">Gem of the day: %1$s</string>
 </resources>

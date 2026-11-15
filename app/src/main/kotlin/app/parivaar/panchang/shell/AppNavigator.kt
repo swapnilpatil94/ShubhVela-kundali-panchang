@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.StateFlow
 enum class Tab { AAJ, CALENDAR, KUNDLI, BONDS, BHAKTI }
 
 sealed interface Dest {
+    /** Immersive sacred or full-screen destinations (aarti, jap, reveal) hide the dock. None exist yet. */
+    val immersive: Boolean get() = false
+
     data class Root(val tab: Tab) : Dest
 
     data object Settings : Dest

@@ -26,8 +26,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.tokens.PpShapes
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 import app.parivaar.panchang.engine.calendar.FestivalOccurrence
 import app.parivaar.panchang.feature.calendar.R
+import androidx.compose.ui.unit.dp
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
@@ -47,9 +51,9 @@ fun FestivalJumpSheet(
     var query by remember { mutableStateOf("") }
     LaunchedEffect(year) { items = load(year).filter { it.id !in MARKER_IDS } }
     val fmt = remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale) }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), shape = PpShapes.sheetTop, containerColor = PpTheme.ratna.ink3, tonalElevation = 0.dp) {
         Column(Modifier.padding(horizontal = PpSpace.l)) {
-            Text(stringResource(R.string.cal_jump_festival), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
+            Text(stringResource(R.string.cal_jump_festival), style = PpType.displayS, modifier = Modifier.semantics { heading() })
             OutlinedTextField(
                 value = query, onValueChange = { query = it }, singleLine = true,
                 label = { Text(stringResource(R.string.cal_jump_search)) },
@@ -65,7 +69,7 @@ fun FestivalJumpSheet(
                     items(shown, key = { it.id + it.date }) { o ->
                         Column(Modifier.fillMaxWidth().heightIn(min = PpSpace.minTouchTarget).clickable { onPick(o) }.padding(vertical = PpSpace.s)) {
                             Text(names.festivalName(o.id), style = MaterialTheme.typography.titleSmall)
-                            Text(fmt.format(java.time.LocalDate.ofEpochDay(o.date.toEpochDays())), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(fmt.format(java.time.LocalDate.ofEpochDay(o.date.toEpochDays())), style = PpType.meta, color = PpTheme.ratna.text3)
                         }
                     }
                 }

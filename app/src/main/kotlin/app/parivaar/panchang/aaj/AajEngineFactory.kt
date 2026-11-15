@@ -30,4 +30,7 @@ class LazyAajEngine(private val context: Context) : AajEngine {
 
     override fun limbSpans(date: LocalDate, offsetSeconds: Int, place: Place, s: CalcSettings) =
         delegate.limbSpans(date, offsetSeconds, place, s)
+
+    override fun skyLight(body: app.parivaar.panchang.engine.astro.Body, at: kotlin.time.Instant, place: Place) =
+        delegate.skyLight(body, at, place)
 }

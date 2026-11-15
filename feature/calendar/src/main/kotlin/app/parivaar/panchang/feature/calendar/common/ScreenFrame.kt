@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength")
+
 package app.parivaar.panchang.feature.calendar.common
 
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +13,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -27,20 +32,23 @@ internal fun ScreenFrame(
     title: String,
     backLabel: String,
     onBack: () -> Unit,
+    eyebrow: String? = null,
     content: @Composable () -> Unit,
 ) {
-    Column(Modifier.fillMaxSize()) {
+    val r = PpTheme.ratna
+    Column(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(r.bg0, r.bg1)))) {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = PpSpace.s, vertical = PpSpace.xs),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClick = onBack, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget)) { Text(backLabel) }
+            TextButton(onClick = onBack, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget)) { Text(backLabel, color = r.text2) }
         }
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = PpSpace.l),
             verticalArrangement = Arrangement.spacedBy(PpSpace.m),
         ) {
-            Text(title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
+            if (eyebrow != null) Text(eyebrow, style = PpType.eyebrow, color = r.gold)
+            Text(title, style = PpType.displayL, color = r.text, modifier = Modifier.semantics { heading() })
             content()
             Spacer(Modifier.height(PpSpace.xxl))
         }

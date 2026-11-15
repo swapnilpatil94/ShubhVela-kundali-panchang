@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -67,12 +68,45 @@ class AajModel(
         }
     }.stateIn(scope, SharingStarted.WhileSubscribed(STOP_MS), clock.now())
 
+    /** Hora planet lighting for the sky header; computed on [compute], cached per minute, never on a config change. */
+    private val _sky = MutableStateFlow<HoraSky?>(null)
+    val sky: StateFlow<HoraSky?> = _sky
+
+    @Volatile private var skyPlace: Place? = null
+
     init {
+        scope.launch { runSky() }
         // Inputs that do not change the calculation (theme, font scale, ...) compare equal and are skipped.
         scope.launch { combine(inputs.distinctUntilChanged(), refreshes) { i, _ -> i }.collectLatest { guarded(it) } }
     }
 
     fun refresh() { refreshes.value += 1 }
+
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
+    private suspend fun runSky() {
+        var last: Pair<app.parivaar.panchang.core.designsystem.planets.PlanetBody, Long>? = null
+        val minutes = tick.map { it.epochSeconds / SECONDS_PER_MINUTE }.distinctUntilChanged()
+        combine(ui, minutes) { u, minute -> u to minute }
+            .collectLatest { (u, minute) ->
+                val place = skyPlace
+                val body = if (u is AajUi.Content && place != null) {
+                    horaBodyAt(u.days, Instant.fromEpochSeconds(minute * SECONDS_PER_MINUTE))
+                } else {
+                    null
+                }
+                if (body == null || place == null) { _sky.value = null; last = null; return@collectLatest }
+                if (last == body to minute) return@collectLatest
+                _sky.value = try {
+                    val at = Instant.fromEpochSeconds(minute * SECONDS_PER_MINUTE)
+                    withContext(compute) { horaSkyOf(engine, body, at, place) }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    null
+                }
+                last = body to minute
+            }
+    }
 
     // Any engine failure becomes the Failed state, never a crash.
     @Suppress("TooGenericExceptionCaught", "SwallowedException")
@@ -89,7 +123,8 @@ class AajModel(
     @Suppress("ReturnCount")
     private suspend fun run(i: AajInputs?) {
         PpPerf.mark("aaj.run.start")
-        if (i == null) { _ui.value = AajUi.NoPlace; return }
+        if (i == null) { skyPlace = null; _ui.value = AajUi.NoPlace; return }
+        skyPlace = i.place.toEnginePlace()
         while (true) {
             val now = clock.now()
             val ctx = i.place.tzContext()
@@ -191,6 +226,7 @@ class AajModel(
     private companion object {
         const val DAYS = 3
         const val SECONDS_PER_DAY = 86_400L
+        const val SECONDS_PER_MINUTE = 60L
         const val TICK_MS = 1_000L
         const val STOP_MS = 5_000L
         const val MIN_WAIT_MS = 1_000L

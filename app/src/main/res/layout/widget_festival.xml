@@ -16,10 +16,11 @@
         android:maxLines="1" />
     <TextView
         android:id="@+id/fest_name"
+        android:fontFamily="serif"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/pp_widget_text"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:maxLines="3" />
     <TextView
         android:id="@+id/fest_in"

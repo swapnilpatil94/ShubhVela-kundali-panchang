@@ -52,6 +52,11 @@ class TimeFmt(
             res.getString(R.string.aaj_range, withRef(res, from, a), withRef(res, to, b))
         }
 
+    /** "Sat 15 Nov". */
+    fun dateShort(d: LocalDate): String =
+        DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "EEEdMMM"), locale)
+            .format(java.time.LocalDate.ofEpochDay(d.toEpochDays().toLong()))
+
     fun date(d: LocalDate): String =
         DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale)
             .format(java.time.LocalDate.ofEpochDay(d.toEpochDays().toLong()))

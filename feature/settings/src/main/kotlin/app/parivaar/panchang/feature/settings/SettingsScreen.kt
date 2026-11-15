@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -56,13 +55,13 @@ fun SettingsScreen(
     ) {
         ScreenTitle(R.string.settings_title)
 
-        PpCard(Modifier.fillMaxWidth()) {
+        PpCard(Modifier.fillMaxWidth(), mergeSemantics = false) {
             SectionTitle(R.string.settings_section_appearance)
             val theme = settings.themeMode
             themeChoices.forEach { c ->
                 ChoiceGroupRow(c, c.value == theme) { appearance.setThemeMode(c.value) }
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (SHOW_DYNAMIC_COLOR && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 SwitchRow(
                     R.string.settings_dynamic_color, R.string.settings_dynamic_color_hint,
                     settings.dynamicColor, appearance::setDynamicColor,
@@ -76,9 +75,13 @@ fun SettingsScreen(
                 R.string.settings_reduce_motion, R.string.settings_reduce_motion_hint,
                 settings.reduceMotion, appearance::setReduceMotion,
             )
+            SwitchRow(
+                R.string.settings_reduce_transparency, R.string.settings_reduce_transparency_hint,
+                settings.reduceTransparency, appearance::setReduceTransparency,
+            )
         }
 
-        PpCard(Modifier.fillMaxWidth()) {
+        PpCard(Modifier.fillMaxWidth(), mergeSemantics = false) {
             SectionTitle(R.string.settings_section_today)
             SwitchRow(
                 R.string.settings_travel_mode, R.string.settings_travel_mode_hint,
@@ -107,18 +110,6 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SectionTitle(res: Int) =
-    Text(stringResource(res), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-
-@Composable
-private fun Hint(res: Int) =
-    Text(
-        stringResource(res),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-
-@Composable
 private fun <T> ChoiceGroupRow(c: Choice<T>, selected: Boolean, onClick: () -> Unit) {
     // Reuse the radio-group row look by rendering a one-item group body without its own card.
     RadioRow(stringResource(c.label), null, selected, onClick)
@@ -126,7 +117,7 @@ private fun <T> ChoiceGroupRow(c: Choice<T>, selected: Boolean, onClick: () -> U
 
 @Composable
 private fun LanguageGroup(languages: List<LanguageChoice>, selectedTag: String?, onSelect: (String) -> Unit) {
-    PpCard(Modifier.fillMaxWidth()) {
+    PpCard(Modifier.fillMaxWidth(), mergeSemantics = false) {
         SectionTitle(R.string.settings_section_language)
         Hint(R.string.settings_language_hint)
         languages.forEach { RadioRow(it.nativeName, null, it.tag == selectedTag) { onSelect(it.tag) } }
@@ -156,3 +147,6 @@ private fun SettingsPreview() =
             {},
         )
     }
+
+/** Ratna Glass ignores wallpaper colours (decision D6); the stored setting and its model write stay. */
+private const val SHOW_DYNAMIC_COLOR = false
