@@ -14,7 +14,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.parivaar.panchang.core.designsystem.components.NavItem
 import app.parivaar.panchang.core.designsystem.components.PpNavigationSuite
 import app.parivaar.panchang.core.model.settings.AppSettings
-import app.parivaar.panchang.feature.aaj.AajPlaceholderScreen
+import app.parivaar.panchang.feature.aaj.AajModel
+import app.parivaar.panchang.feature.aaj.ui.AajActions
+import app.parivaar.panchang.feature.aaj.ui.AajExtras
+import app.parivaar.panchang.feature.aaj.ui.AajScreen
 import app.parivaar.panchang.feature.bhakti.BhaktiPlaceholderScreen
 import app.parivaar.panchang.feature.bonds.BondsPlaceholderScreen
 import app.parivaar.panchang.feature.calendar.CalendarPlaceholderScreen
@@ -45,6 +48,8 @@ fun ShellScreen(
     languages: List<LanguageChoice>,
     conventions: ConventionsModel,
     appearance: AppearanceModel,
+    aaj: AajModel,
+    aajExtras: AajExtras,
     modifier: Modifier = Modifier,
 ) {
     val navigator =
@@ -72,7 +77,17 @@ fun ShellScreen(
             when (dest) {
                 is Dest.Root ->
                     when (tab) {
-                        Tab.AAJ -> AajPlaceholderScreen(homePlaceName, null, avatar, search)
+                        Tab.AAJ ->
+                            AajScreen(
+                                aaj, homePlaceName, null,
+                                AajActions(
+                                    onAvatar = avatar, onSearch = search,
+                                    onChooseCity = { navigator.push(Dest.Settings) },
+                                    onOpenConventions = { navigator.push(Dest.Conventions) },
+                                    onRetry = aaj::refresh,
+                                ),
+                                aajExtras,
+                            )
                         Tab.CALENDAR -> CalendarPlaceholderScreen(homePlaceName, null, avatar, search)
                         Tab.KUNDLI -> KundliPlaceholderScreen(homePlaceName, null, avatar, search)
                         Tab.BONDS -> BondsPlaceholderScreen(homePlaceName, null, avatar, search)

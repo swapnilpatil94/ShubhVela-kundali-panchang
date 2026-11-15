@@ -78,6 +78,18 @@ fun SettingsScreen(
             )
         }
 
+        PpCard(Modifier.fillMaxWidth()) {
+            SectionTitle(R.string.settings_section_today)
+            SwitchRow(
+                R.string.settings_travel_mode, R.string.settings_travel_mode_hint,
+                settings.travelMode, appearance::setTravelMode,
+            )
+            SwitchRow(
+                R.string.settings_show_city, R.string.settings_show_city_hint,
+                settings.showCityOnWidgets, appearance::setShowCityOnWidgets,
+            )
+        }
+
         if (languages.isNotEmpty()) {
             val selected = languages.firstOrNull { it.tag == settings.localeTag }?.tag
             LanguageGroup(languages, selected, appearance::setLocaleTag)

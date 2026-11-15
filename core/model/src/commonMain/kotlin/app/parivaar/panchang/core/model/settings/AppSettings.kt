@@ -21,6 +21,10 @@ data class AppSettings(
     val reduceMotion: Boolean = false,
     val reminders: Set<ReminderKind> = emptySet(),
     val onboardingDone: Boolean = false,
+    /** M08 D2: the city appears on widgets only when this is on. Never in notifications. */
+    val showCityOnWidgets: Boolean = false,
+    /** M08 M3: offer a timings update when the time zone changes. */
+    val travelMode: Boolean = false,
 ) {
     override fun toString(): String = "AppSettings(redacted)"
 }

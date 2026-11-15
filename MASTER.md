@@ -686,7 +686,7 @@ worker/ (R3)       Cloudflare Worker (TypeScript) AI proxy, @anthropic-ai/sdk
   - Run in telemetry-only mode for 2 weeks before enforcing.
 
 ### Platform (PLATFORM)
-- Set `android:exported` explicitly on every component. Only the launcher activity, the App Links activity, Glance receivers and the billing/ads SDK components are exported.
+- Set `android:exported` explicitly on every component. Only the launcher activity, the App Links activity, the home-screen widget providers (Glance receivers, or classic `AppWidgetProvider`s until Glance is adopted), the Quick Settings `TileService` (protected by `BIND_QUICK_SETTINGS_TILE`) and the billing/ads SDK components are exported.
 - `android:intentMatchingFlags="enforceIntentFilter"` (Android 16 safer intents).
 - **Deep links:**
   - Allow-list the host and path.
@@ -697,6 +697,7 @@ worker/ (R3)       Cloudflare Worker (TypeScript) AI proxy, @anthropic-ai/sdk
 - **Permissions:**
   - `POST_NOTIFICATIONS`, requested in context.
   - `SCHEDULE_EXACT_ALARM` only if the user turns on "exact alerts"; the default is WorkManager or windowed alarms. See the exact-alarm policy note in ENGINE.md, Notifications.
+  - `RECEIVE_BOOT_COMPLETED`, only to re-plan reminders and widget refreshes after a reboot (ENGINE.md §10); the receiver is not exported beyond the system broadcast.
   - Photo Picker for avatars, with no media permissions.
   - **No** contacts, location (city is searched manually; there is an optional one-shot coarse location using `ACCESS_COARSE_LOCATION` with in-context rationale), phone or SMS permissions.
 

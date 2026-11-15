@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_today_desc">Today: tithi, nakshatra, sunrise, sunset and the next timing window</string>
+    <string name="widget_rahu_desc">Countdown to the next Rahu kaal</string>
+    <string name="widget_festival_desc">The next festival and how many days away it is</string>
+    <string name="widget_label_today">Panchang today</string>
+    <string name="widget_label_rahu">Next Rahu kaal</string>
+    <string name="widget_label_festival">Next festival</string>
+    <string name="tile_label">Rahu kaal</string>
+    <string name="widget_set_city">Set city</string>
+    <string name="widget_set_city_hint">Open ShubhVela and choose your city</string>
+    <string name="widget_unavailable">Timings unavailable here today</string>
+    <string name="widget_rahu_active">Rahu kaal</string>
+    <string name="widget_rahu_next">Next Rahu kaal</string>
+    <string name="widget_rahu_range">%1$s–%2$s</string>
+    <string name="widget_no_festival">No festival in the next 60 days</string>
+    <string name="widget_festival_label">Next festival</string>
+    <string name="widget_in_days">in %1$d days</string>
+    <string name="widget_tomorrow">Tomorrow</string>
+    <string name="widget_today_word">Today</string>
+    <string name="widget_next_day">(next day)</string>
+    <string name="widget_previous_day">(previous day)</string>
+    <string name="widget_other_day">(%1$s)</string>
+    <string name="widget_tithi_line">%1$s until %2$s</string>
+    <string name="widget_nakshatra_line">%1$s until %2$s</string>
+    <string name="widget_sun_line">Sunrise %1$s · Sunset %2$s</string>
+    <string name="widget_next_line">%1$s %2$s–%3$s</string>
+    <string name="widget_next_active">%1$s now, until %2$s</string>
+    <string name="widget_tithi_shukla">Shukla %1$s</string>
+    <string name="widget_tithi_krishna">Krishna %1$s</string>
+    <string name="widget_purnima">Purnima</string>
+    <string name="widget_amavasya">Amavasya</string>
+    <string name="widget_cd_today">Today\'s panchang. Tap to open ShubhVela.</string>
+    <string name="widget_cd_rahu">Rahu kaal countdown. Tap to open ShubhVela.</string>
+    <string name="widget_cd_festival">Next festival. Tap to open ShubhVela.</string>
+    <string name="tile_rahu">Rahu kaal %1$s</string>
+    <string name="tile_set_city">Set city</string>
+    <string name="tile_unavailable">Timings unavailable</string>
+
+    <string-array name="widget_vaar">
+        <item>Sunday</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+    </string-array>
+    <string-array name="widget_tithi_names">
+        <item>Pratipada</item>
+        <item>Dwitiya</item>
+        <item>Tritiya</item>
+        <item>Chaturthi</item>
+        <item>Panchami</item>
+        <item>Shashthi</item>
+        <item>Saptami</item>
+        <item>Ashtami</item>
+        <item>Navami</item>
+        <item>Dashami</item>
+        <item>Ekadashi</item>
+        <item>Dwadashi</item>
+        <item>Trayodashi</item>
+        <item>Chaturdashi</item>
+    </string-array>
+    <string-array name="widget_nakshatra_names">
+        <item>Ashwini</item>
+        <item>Bharani</item>
+        <item>Krittika</item>
+        <item>Rohini</item>
+        <item>Mrigashira</item>
+        <item>Ardra</item>
+        <item>Punarvasu</item>
+        <item>Pushya</item>
+        <item>Ashlesha</item>
+        <item>Magha</item>
+        <item>Purva Phalguni</item>
+        <item>Uttara Phalguni</item>
+        <item>Hasta</item>
+        <item>Chitra</item>
+        <item>Swati</item>
+        <item>Vishakha</item>
+        <item>Anuradha</item>
+        <item>Jyeshtha</item>
+        <item>Mula</item>
+        <item>Purva Ashadha</item>
+        <item>Uttara Ashadha</item>
+        <item>Shravana</item>
+        <item>Dhanishta</item>
+        <item>Shatabhisha</item>
+        <item>Purva Bhadrapada</item>
+        <item>Uttara Bhadrapada</item>
+        <item>Revati</item>
+    </string-array>
+    <string name="widget_win_rahu_kaal">Rahu kaal</string>
+    <string name="widget_win_yamaganda">Yamaganda</string>
+    <string name="widget_win_gulika">Gulika</string>
+    <string name="widget_win_abhijit">Abhijit muhurta</string>
+    <string name="widget_win_brahma_muhurta">Brahma muhurta</string>
+    <string name="widget_win_durmuhurta">Durmuhurta</string>
+    <string name="widget_win_varjyam">Varjyam</string>
+    <string name="widget_win_amrit_kaal">Amrit kaal</string>
+    <string name="widget_win_bhadra">Bhadra</string>
+    <string name="widget_cg_shubh">Shubh choghadiya</string>
+    <string name="widget_cg_amrit">Amrit choghadiya</string>
+    <string name="widget_cg_char">Char choghadiya</string>
+    <string name="widget_cg_labh">Labh choghadiya</string>
+    <string name="widget_cg_rog">Rog choghadiya</string>
+    <string name="widget_cg_kaal">Kaal choghadiya</string>
+    <string name="widget_cg_udveg">Udveg choghadiya</string>
+</resources>

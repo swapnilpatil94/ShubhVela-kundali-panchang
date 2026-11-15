@@ -4,6 +4,22 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.parivaar.panchang.R
+import android.widget.Toast
+import app.parivaar.panchang.aaj.LazyAajEngine
+import app.parivaar.panchang.core.model.geo.GeoPlace
+import app.parivaar.panchang.core.model.geo.tzContext
+import kotlinx.coroutines.flow.first
+import app.parivaar.panchang.core.model.profile.RecordId
+import app.parivaar.panchang.feature.aaj.R as AajR
+import app.parivaar.panchang.feature.aaj.share.ShareCardModel
+import app.parivaar.panchang.feature.aaj.share.ShareFormat
+import app.parivaar.panchang.feature.aaj.speech.AajSpeaker
+import app.parivaar.panchang.feature.aaj.travel.TravelMode
+import app.parivaar.panchang.platform.share.ShareController
+import app.parivaar.panchang.platform.travel.AppCoarseLocator
+import app.parivaar.panchang.platform.travel.PermissionBridge
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import app.parivaar.panchang.core.data.DataVault
 import app.parivaar.panchang.core.data.PlaceRepository
 import app.parivaar.panchang.core.data.ProfileRepository
@@ -13,6 +29,9 @@ import app.parivaar.panchang.core.geo.OffsetResolver
 import app.parivaar.panchang.core.geo.PlaceSearch
 import app.parivaar.panchang.core.model.place.SavedPlace
 import app.parivaar.panchang.core.model.settings.AppSettings
+import app.parivaar.panchang.feature.aaj.AajCache
+import app.parivaar.panchang.feature.aaj.AajInputs
+import app.parivaar.panchang.feature.aaj.AajModel
 import app.parivaar.panchang.feature.onboarding.OnboardingMachine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -43,11 +62,11 @@ class ShellViewModel
     constructor(
         vault: DataVault,
         private val settingsRepo: SettingsRepository,
-        places: PlaceRepository,
         profiles: ProfileRepository,
-        search: PlaceSearch,
-        offsets: OffsetResolver,
-        @ApplicationContext context: Context,
+        private val search: PlaceSearch,
+        private val offsets: OffsetResolver,
+        @ApplicationContext private val context: Context,
+        private val places: PlaceRepository,
     ) : ViewModel() {
         val gate = AppGateModel(vault, settingsRepo, viewModelScope, Dispatchers.IO)
 
@@ -65,6 +84,71 @@ class ShellViewModel
                     kotlinx.coroutines.flow.combine(flow, settings) { recs, s -> homeName(recs.items, s) }
                 }
                 .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+        /** Stored settings only (no default placeholder), so Today never computes with defaults first. */
+        private val readySettings =
+            vault.state.flatMapLatest { if (it == VaultState.Ready) settingsRepo.settings.catch { } else emptyFlow() }
+
+        /** Today tab: home place + settings in, engine work on one background thread, geo calls on IO. */
+        val aaj: AajModel by lazy {
+            val inputs =
+                vault.state
+                    .flatMapLatest { if (it == VaultState.Ready) places.observeAll().catch { } else emptyFlow() }
+                    .let { f ->
+                        kotlinx.coroutines.flow.combine(f, readySettings, travel.place) { recs, s, away ->
+                            aajInputs(recs.items, s, away)
+                        }
+                    }
+            AajModel(
+                inputs, LazyAajEngine(context), offsets, AajCache(), Clock.System, viewModelScope,
+                Dispatchers.Default.limitedParallelism(1), Dispatchers.IO,
+            )
+        }
+
+        /** The activity's permission request, reached through a bridge that survives `recreate()`. */
+        val permissionBridge = PermissionBridge()
+
+        /** Travel mode: the session travel place lives here, in memory only. */
+        val travel: TravelMode by lazy {
+            TravelMode(search, AppCoarseLocator(context), permissionBridge, viewModelScope, Dispatchers.IO)
+        }
+
+        /** Read-aloud over the platform engine (offline voices only); started when the Today tab shows. */
+        val speaker: AajSpeaker by lazy { AajSpeaker(context) }
+
+        private val shareController by lazy { ShareController(context) }
+
+        init {
+            viewModelScope.launch(Dispatchers.IO) { shareController.purge() }
+        }
+
+        /** Renders the share image off the main thread, then opens the system share sheet. */
+        fun share(activity: Context, format: ShareFormat, model: ShareCardModel) {
+            viewModelScope.launch {
+                val uri = withContext(Dispatchers.IO) { shareController.prepare(format, model) }
+                if (uri == null) {
+                    Toast.makeText(activity, AajR.string.aaj_share_failed, Toast.LENGTH_SHORT).show()
+                } else {
+                    activity.startActivity(shareController.chooser(uri))
+                }
+            }
+        }
+
+        /** A time zone change: compares the device offset with the home place's offset at this instant. */
+        fun onTimeZoneChanged() {
+            viewModelScope.launch(Dispatchers.IO) {
+                val s = settings.value
+                val home = places.observeAll().catch { }.first().items.firstOrNull { it.id == s.homePlaceId }?.place
+                val now = Clock.System.now()
+                val homeOffset = home?.let { offsets.offsetAt(now, it.tzContext()).offsetSeconds }
+                val device = java.util.TimeZone.getDefault().getOffset(now.toEpochMilliseconds()) / MILLIS
+                travel.onTimeZoneChanged(s.travelMode, device, homeOffset)
+            }
+        }
+
+        override fun onCleared() {
+            speaker.shutdown()
+        }
 
         val conventions = ConventionsModel(settingsRepo, viewModelScope)
         val appearance = AppearanceModel(settingsRepo, viewModelScope)
@@ -86,6 +170,22 @@ class ShellViewModel
             )
         }
 
+        // Started with the activity, so Today's first content is ready as soon as the vault opens.
+        init {
+            aaj.refresh()
+        }
+
+        private fun aajInputs(items: List<SavedPlace>, s: AppSettings, away: GeoPlace?): AajInputs? {
+            val home = items.firstOrNull { it.id == s.homePlaceId } ?: return null
+            // The travel place is a session value (a derived record id, never stored); home is untouched.
+            val place = away ?: home.place
+            val id = if (away != null) RecordId("%032x".format(away.id)) else home.id
+            // TODO(owner): derive the festival region from the home place; "all" shows only pan-India rules.
+            return AajInputs(place, id, away != null, s.defaultCalc, s.monthSystem, "all", s.ekadashi)
+        }
+
         private fun homeName(items: List<SavedPlace>, s: AppSettings): String? =
             items.firstOrNull { it.id == s.homePlaceId }?.place?.name
     }
+
+private const val MILLIS = 1000

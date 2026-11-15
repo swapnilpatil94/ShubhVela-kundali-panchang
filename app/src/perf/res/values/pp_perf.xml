@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PpPerf timing log (names and durations only): on in debug and perf builds, off in release. -->
+    <bool name="pp_perf_log">true</bool>
+</resources>

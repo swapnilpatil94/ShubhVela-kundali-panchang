@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notify_channel_vrat_eve">Vrat reminders</string>
+    <string name="notify_channel_vrat_eve_desc">An evening reminder before a vrat or Ekadashi</string>
+    <string name="notify_channel_family">Family dates</string>
+    <string name="notify_channel_family_desc">An evening reminder before a family date</string>
+    <string name="notify_channel_grahan">Grahan</string>
+    <string name="notify_channel_grahan_desc">An evening reminder before an eclipse visible from your city</string>
+    <string name="notify_channel_daily">Daily times</string>
+    <string name="notify_channel_daily_desc">A reminder when Brahma muhurta begins</string>
+    <string name="notify_title">ShubhVela</string>
+    <string name="notify_public">ShubhVela: a reminder</string>
+    <string name="notify_ekadashi_parana">Ekadashi tomorrow. Parana %1$s–%2$s</string>
+    <string name="notify_vrat_generic">A vrat is tomorrow</string>
+    <string name="notify_grahan">Grahan tomorrow, visible %1$s–%2$s</string>
+    <string name="notify_family">A family date is tomorrow</string>
+    <string name="notify_brahma">Brahma muhurta has begun. Sunrise %1$s</string>
+</resources>

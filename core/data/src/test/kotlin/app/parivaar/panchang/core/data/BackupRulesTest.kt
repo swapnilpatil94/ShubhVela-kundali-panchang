@@ -53,14 +53,19 @@ class BackupRulesTest {
         assertEquals("true", app.getAttribute("android:allowBackup"))
         assertEquals("@xml/pp_data_extraction_rules", app.getAttribute("android:dataExtractionRules"))
         assertEquals("@xml/pp_backup_rules", app.getAttribute("android:fullBackupContent"))
-        // M07 adds exactly these two (MASTER Part 5); anything else fails this test.
+        // M07 added the first two, M08 added RECEIVE_BOOT_COMPLETED (all listed in MASTER Part 5);
+        // anything else fails this test.
         val perms = manifest.getElementsByTagName("uses-permission")
         val names = (0 until perms.length).map { (perms.item(it) as Element).getAttribute("android:name") }.toSet()
         assertEquals(
-            setOf("android.permission.ACCESS_COARSE_LOCATION", "android.permission.POST_NOTIFICATIONS"),
+            setOf(
+                "android.permission.ACCESS_COARSE_LOCATION",
+                "android.permission.POST_NOTIFICATIONS",
+                "android.permission.RECEIVE_BOOT_COMPLETED",
+            ),
             names,
         )
-        assertEquals(2, perms.length)
+        assertEquals(3, perms.length)
         assertEquals(0, manifest.getElementsByTagName("uses-permission-sdk-23").length)
     }
 }

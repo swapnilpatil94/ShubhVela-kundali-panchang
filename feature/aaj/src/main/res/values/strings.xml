@@ -1,5 +1,231 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="aaj_placeholder_title">Coming soon</string>
-    <string name="aaj_placeholder_body">The day\'s panchang will appear here in a coming update.</string>
+    <!-- States -->
+    <string name="aaj_loading">Calculating today\'s panchang</string>
+    <string name="aaj_no_place_title">Choose your city</string>
+    <string name="aaj_no_place_body">Today\'s timings are worked out on this device from your city\'s sunrise.</string>
+    <string name="aaj_no_place_action">Choose city</string>
+    <string name="aaj_nonexistent_title">This date does not exist in this time zone</string>
+    <string name="aaj_nonexistent_body">The clock skipped this day. Pick another day in the calendar.</string>
+    <string name="aaj_failed_title">Today\'s panchang could not be calculated</string>
+    <string name="aaj_failed_body">Nothing was sent anywhere. Please try again.</string>
+    <string name="aaj_retry">Try again</string>
+    <string name="aaj_polar_title">Sun does not rise or set here today</string>
+    <string name="aaj_polar_body">Only the lunar limbs are shown. Timings that depend on sunrise and sunset are not available.</string>
+    <string name="aaj_high_latitude_title">Near the poles</string>
+    <string name="aaj_high_latitude_body">The Sun rises or sets at unusual times here, so sunrise-based timings use a fallback rule. Treat them as approximate.</string>
+    <string name="aaj_travel_banner">Showing timings for where you are now.</string>
+    <string name="aaj_not_available">Not available yet</string>
+    <string name="aaj_not_rated">Not rated</string>
+
+    <!-- Header (tier 1) -->
+    <string name="aaj_header_good">Good for new work until %1$s</string>
+    <string name="aaj_header_wait">%1$s until %2$s. Next good time %3$s</string>
+    <string name="aaj_header_wait_no_next">%1$s until %2$s</string>
+    <string name="aaj_header_next_good">Next good time %1$s–%2$s</string>
+    <string name="aaj_header_tomorrow">Today\'s good times are over. Tomorrow from %1$s</string>
+    <string name="aaj_header_resume">Today\'s good times are over for now. Next from %1$s</string>
+    <string name="aaj_header_tomorrow_none">Today\'s good times are over</string>
+    <string name="aaj_header_unavailable">Timings unavailable here today</string>
+    <string name="aaj_footer">Traditional interpretation, not a scientific prediction.</string>
+    <string name="aaj_how_calculated">How this is calculated</string>
+    <string name="aaj_arc_good">Good time</string>
+    <string name="aaj_arc_wait">Wait</string>
+    <string name="aaj_arc_description">Sunrise %1$s, sunset %2$s. %3$s</string>
+    <string name="aaj_arc_now">Now is %1$s of the way through the daylight.</string>
+
+    <!-- Timings (tier 2) -->
+    <string name="aaj_section_timings">Timings</string>
+    <string name="aaj_section_next">Next window</string>
+    <string name="aaj_section_windows">Today\'s windows</string>
+    <string name="aaj_section_choghadiya_day">Choghadiya, day</string>
+    <string name="aaj_section_choghadiya_night">Choghadiya, night</string>
+    <string name="aaj_section_hora">Hora</string>
+    <string name="aaj_section_not_available">Not available yet</string>
+    <string name="aaj_range">%1$s – %2$s</string>
+    <string name="aaj_next_day_suffix">next day</string>
+    <string name="aaj_previous_day_suffix">previous day</string>
+    <string name="aaj_time_with_note">%1$s (%2$s)</string>
+    <string name="aaj_now">Now</string>
+    <string name="aaj_countdown_starts">Starts in %1$d:%2$02d:%3$02d</string>
+    <string name="aaj_countdown_ends">Ends in %1$d:%2$02d:%3$02d</string>
+    <string name="aaj_expand">Show</string>
+    <string name="aaj_collapse">Hide</string>
+
+    <!-- Full panchang (tier 3) -->
+    <string name="aaj_section_full">Full panchang</string>
+    <string name="aaj_limb_tithi">Tithi</string>
+    <string name="aaj_limb_nakshatra">Nakshatra</string>
+    <string name="aaj_limb_yoga">Yoga</string>
+    <string name="aaj_limb_karana">Karana</string>
+    <string name="aaj_limb_moon_rashi">Moon sign</string>
+    <string name="aaj_limb_until">%1$s until %2$s</string>
+    <string name="aaj_limb_from_until">%1$s from %2$s until %3$s</string>
+    <string name="aaj_limb_paksha_name">%1$s %2$s</string>
+    <string name="aaj_badge_kshaya">Kshaya</string>
+    <string name="aaj_badge_adhika">Adhika</string>
+    <string name="aaj_badge_kshaya_note">Ends before the next sunrise, so it does not name a day.</string>
+    <string name="aaj_badge_adhika_note">Lasts through two sunrises.</string>
+    <string name="aaj_paksha_shukla">Shukla</string>
+    <string name="aaj_paksha_krishna">Krishna</string>
+    <string name="aaj_amavasya">Amavasya</string>
+    <string name="aaj_sun_moon">Sun and Moon</string>
+    <string name="aaj_sunrise">Sunrise</string>
+    <string name="aaj_sunset">Sunset</string>
+    <string name="aaj_moon_phase">Moon phase</string>
+    <string name="aaj_calendar">Calendar</string>
+    <string name="aaj_masa_amanta">Month (amanta)</string>
+    <string name="aaj_masa_purnimanta">Month (purnimanta)</string>
+    <string name="aaj_masa_adhika">Adhika %1$s</string>
+    <string name="aaj_masa_kshaya">%1$s (kshaya follows)</string>
+    <string name="aaj_samvat_vikram">Vikram samvat</string>
+    <string name="aaj_samvat_shaka">Shaka samvat</string>
+    <string name="aaj_ritu">Ritu</string>
+    <string name="aaj_ayana">Ayana</string>
+    <string name="aaj_shool">Dishashool</string>
+    <string name="aaj_festivals">Festivals and vrats</string>
+    <string name="aaj_festivals_loading">Checking festivals</string>
+    <string name="aaj_festivals_none">No festival or vrat today.</string>
+    <string name="aaj_parana">Parana %1$s</string>
+    <string name="aaj_eclipse_title">Eclipse visible from your place</string>
+    <string name="aaj_eclipse_body">%1$s, visible %2$s</string>
+    <string name="aaj_tradition_footer">Traditional interpretation, not a scientific prediction.</string>
+
+    <!-- Travel mode -->
+    <string name="aaj_travel_offer_title">Time zone changed</string>
+    <string name="aaj_travel_offer_body">Update timings for where you are?</string>
+    <string name="aaj_travel_update">Update</string>
+    <string name="aaj_travel_not_now">Not now</string>
+    <string name="aaj_travel_rationale_title">Use your location once?</string>
+    <string name="aaj_travel_rationale_body">ShubhVela can use your approximate location one time, on this device, to find the nearest city. It is not stored, logged or sent anywhere. Your home city stays as it is.</string>
+    <string name="aaj_travel_continue">Continue</string>
+    <string name="aaj_travel_cancel">Cancel</string>
+    <string name="aaj_travel_locating">Finding your city</string>
+    <string name="aaj_travel_in_place">You\'re in %1$s: timings updated</string>
+    <string name="aaj_travel_back_home">Back to home</string>
+    <string name="aaj_travel_denied">Location was not shared. Timings stay for your home city.</string>
+    <string name="aaj_travel_no_fix">Your location could not be found. Timings stay for your home city.</string>
+    <string name="aaj_travel_no_place">No city was found near you. Timings stay for your home city.</string>
+    <string name="aaj_travel_dismiss">Close</string>
+
+    <!-- Read aloud -->
+    <string name="aaj_speak">Read aloud</string>
+    <string name="aaj_speak_stop">Stop reading</string>
+    <string name="aaj_speak_state_speaking">Reading aloud</string>
+    <string name="aaj_speak_unavailable">Read-aloud needs a voice installed on this device for this language. It never uses the internet.</string>
+    <string name="aaj_speech_date">Today is %1$s</string>
+    <string name="aaj_speech_next">Next window: %1$s, from %2$s to %3$s</string>
+    <string name="aaj_speech_now">Now: %1$s, until %2$s</string>
+    <string name="aaj_speech_window">%1$s, %2$s</string>
+
+    <!-- Share -->
+    <string name="aaj_share">Share</string>
+    <string name="aaj_share_title">Share today\'s panchang</string>
+    <string name="aaj_share_square">Square image</string>
+    <string name="aaj_share_story">Story image</string>
+    <string name="aaj_share_chooser">Share image</string>
+    <string name="aaj_share_failed">The image could not be created.</string>
+    <string name="aaj_share_limb">%1$s: %2$s</string>
+    <string name="aaj_share_brand">ShubhVela</string>
+    <string name="aaj_share_language">Language: %1$s</string>
+
+    <!-- Explain sheet -->
+    <string name="aaj_explain_title">How today\'s timings are worked out</string>
+    <string name="aaj_explain_body">Your device computes the Sun and Moon positions for your city and finds sunrise, sunset and when each tithi, nakshatra, yoga and karana changes. Nothing is sent anywhere.</string>
+    <string name="aaj_explain_how">Windows such as Rahu kaal divide the daylight into equal parts by weekday. Good time is the choghadiya Amrit, Shubh and Labh, plus Abhijit muhurta, with the waiting windows removed.</string>
+    <string name="aaj_explain_tradition">Which windows count as good is a traditional rule of thumb. Families and regions differ. You can change the calculation conventions in Settings.</string>
+    <string name="aaj_proof_difference_note">Times can differ from other apps by about 1 minute because of sunrise convention, refraction, altitude and ephemeris.</string>
+    <string name="aaj_proof_backend_precision">JPL DE440 (high precision)</string>
+    <string name="aaj_proof_backend_base">Astronomy Engine (base)</string>
+    <string name="aaj_proof_backend_unknown">Not reported</string>
+    <string name="aaj_proof_sunrise_upper_limb">Upper edge of the Sun on the refracted horizon</string>
+    <string name="aaj_proof_sunrise_center_refracted">Centre of the Sun on the refracted horizon</string>
+    <string name="aaj_proof_sunrise_center_geometric">Centre of the Sun on the geometric horizon</string>
+    <string name="aaj_proof_ayanamsa_lahiri">Lahiri (Chitrapaksha)</string>
+    <string name="aaj_proof_ayanamsa_true_chitra">True Chitra</string>
+    <string name="aaj_proof_ayanamsa_kp_new">Krishnamurti (KP new)</string>
+    <string name="aaj_proof_ayanamsa_raman">Raman</string>
+    <string name="aaj_proof_ayanamsa_yukteshwar">Yukteshwar</string>
+
+    <!-- Window and table names -->
+    <string name="aaj_window_rahu_kaal">Rahu kaal</string>
+    <string name="aaj_window_yamaganda">Yamaganda</string>
+    <string name="aaj_window_gulika">Gulika kaal</string>
+    <string name="aaj_window_abhijit">Abhijit muhurta</string>
+    <string name="aaj_window_brahma_muhurta">Brahma muhurta</string>
+    <string name="aaj_window_durmuhurta">Durmuhurta</string>
+    <string name="aaj_window_varjyam">Varjyam</string>
+    <string name="aaj_window_amrit_kaal">Amrit kaal</string>
+    <string name="aaj_window_bhadra">Bhadra</string>
+    <string name="aaj_window_panchak">Panchak</string>
+    <string name="aaj_window_choghadiya">Choghadiya</string>
+    <string name="aaj_window_hora">Hora</string>
+    <string name="aaj_window_gowri">Gowri panchangam</string>
+    <string name="aaj_window_vijaya">Vijaya muhurta</string>
+    <string name="aaj_window_godhuli">Godhuli</string>
+    <string name="aaj_window_do_ghati">Do-ghati</string>
+    <string name="aaj_window_lagna">Lagna table</string>
+    <string name="aaj_choghadiya_with_lord">%1$s (%2$s)</string>
+
+    <string name="aaj_eclipse_solar_partial">Partial solar eclipse</string>
+    <string name="aaj_eclipse_solar_annular">Annular solar eclipse</string>
+    <string name="aaj_eclipse_solar_total">Total solar eclipse</string>
+    <string name="aaj_eclipse_lunar_penumbral">Penumbral lunar eclipse</string>
+    <string name="aaj_eclipse_lunar_partial">Partial lunar eclipse</string>
+    <string name="aaj_eclipse_lunar_total">Total lunar eclipse</string>
+
+    <string-array name="aaj_tithi_names">
+        <item>Pratipada</item><item>Dwitiya</item><item>Tritiya</item><item>Chaturthi</item><item>Panchami</item>
+        <item>Shashthi</item><item>Saptami</item><item>Ashtami</item><item>Navami</item><item>Dashami</item>
+        <item>Ekadashi</item><item>Dwadashi</item><item>Trayodashi</item><item>Chaturdashi</item><item>Purnima</item>
+    </string-array>
+    <string-array name="aaj_nakshatra_names">
+        <item>Ashwini</item><item>Bharani</item><item>Krittika</item><item>Rohini</item><item>Mrigashira</item>
+        <item>Ardra</item><item>Punarvasu</item><item>Pushya</item><item>Ashlesha</item><item>Magha</item>
+        <item>Purva Phalguni</item><item>Uttara Phalguni</item><item>Hasta</item><item>Chitra</item><item>Swati</item>
+        <item>Vishakha</item><item>Anuradha</item><item>Jyeshtha</item><item>Mula</item><item>Purva Ashadha</item>
+        <item>Uttara Ashadha</item><item>Shravana</item><item>Dhanishta</item><item>Shatabhisha</item>
+        <item>Purva Bhadrapada</item><item>Uttara Bhadrapada</item><item>Revati</item>
+    </string-array>
+    <string-array name="aaj_yoga_names">
+        <item>Vishkambha</item><item>Priti</item><item>Ayushman</item><item>Saubhagya</item><item>Shobhana</item>
+        <item>Atiganda</item><item>Sukarma</item><item>Dhriti</item><item>Shula</item><item>Ganda</item>
+        <item>Vriddhi</item><item>Dhruva</item><item>Vyaghata</item><item>Harshana</item><item>Vajra</item>
+        <item>Siddhi</item><item>Vyatipata</item><item>Variyan</item><item>Parigha</item><item>Shiva</item>
+        <item>Siddha</item><item>Sadhya</item><item>Shubha</item><item>Shukla</item><item>Brahma</item>
+        <item>Indra</item><item>Vaidhriti</item>
+    </string-array>
+    <string-array name="aaj_karana_names">
+        <item>Kimstughna</item><item>Bava</item><item>Balava</item><item>Kaulava</item><item>Taitila</item>
+        <item>Gara</item><item>Vanija</item><item>Vishti</item><item>Shakuni</item><item>Chatushpada</item>
+        <item>Naga</item>
+    </string-array>
+    <string-array name="aaj_rashi_names">
+        <item>Mesha</item><item>Vrishabha</item><item>Mithuna</item><item>Karka</item><item>Simha</item>
+        <item>Kanya</item><item>Tula</item><item>Vrishchika</item><item>Dhanu</item><item>Makara</item>
+        <item>Kumbha</item><item>Meena</item>
+    </string-array>
+    <string-array name="aaj_masa_names">
+        <item>Chaitra</item><item>Vaishakha</item><item>Jyeshtha</item><item>Ashadha</item><item>Shravana</item>
+        <item>Bhadrapada</item><item>Ashvina</item><item>Kartika</item><item>Margashirsha</item><item>Pausha</item>
+        <item>Magha</item><item>Phalguna</item>
+    </string-array>
+    <string-array name="aaj_ritu_names">
+        <item>Vasanta</item><item>Grishma</item><item>Varsha</item><item>Sharad</item><item>Hemanta</item>
+        <item>Shishira</item>
+    </string-array>
+    <string-array name="aaj_ayana_names">
+        <item>Uttarayana</item><item>Dakshinayana</item>
+    </string-array>
+    <string-array name="aaj_direction_names">
+        <item>East</item><item>South</item><item>West</item><item>North</item>
+    </string-array>
+    <string-array name="aaj_choghadiya_names">
+        <item>Udveg</item><item>Char</item><item>Labh</item><item>Amrit</item><item>Kaal</item><item>Shubh</item>
+        <item>Rog</item>
+    </string-array>
+    <string-array name="aaj_graha_names">
+        <item>Sun</item><item>Moon</item><item>Mars</item><item>Mercury</item><item>Jupiter</item><item>Venus</item>
+        <item>Saturn</item><item>Rahu</item><item>Ketu</item>
+    </string-array>
 </resources>

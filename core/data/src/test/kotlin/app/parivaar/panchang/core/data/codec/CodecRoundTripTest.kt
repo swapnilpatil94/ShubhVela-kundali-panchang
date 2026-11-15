@@ -105,13 +105,14 @@ class CodecRoundTripTest {
         val bytes = fixture.readBytes()
         val doc = FamilyDocument.fromBytes(bytes)
         assertEquals(F.doc, doc)
-        // M07: re-encoding == frozen JSON plus exactly the 11 new settings keys, at their default values.
+        // M07: re-encoding == frozen JSON plus exactly the 13 new settings keys, at their default values.
         val frozen = PpJson.parseToJsonElement(bytes.decodeToString()) as JsonObject
         val reencoded = doc.toJson()
         val newKeys =
             setOf(
                 "homePlaceId", "monthSystem", "presetSource", "ekadashi", "chartStyle", "themeMode",
                 "dynamicColor", "badaText", "reduceMotion", "reminders", "onboardingDone",
+                "showCityOnWidgets", "travelMode",
             )
         val settings = reencoded["settings"] as JsonObject
         assertEquals(newKeys, settings.keys - (frozen["settings"] as JsonObject).keys)

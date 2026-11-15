@@ -64,6 +64,10 @@ class AppearanceModel(private val repo: SettingsRepository, private val scope: C
 
     fun setReduceMotion(v: Boolean) = write { it.copy(reduceMotion = v) }
 
+    fun setTravelMode(v: Boolean) = write { it.copy(travelMode = v) }
+
+    fun setShowCityOnWidgets(v: Boolean) = write { it.copy(showCityOnWidgets = v) }
+
     /** Persists the tag only; the host applies the locale (`LocaleApplier`). */
     fun setLocaleTag(tag: String) = write { it.copy(localeTag = tag) }
 

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:minHeight="48dp"
+    android:orientation="vertical"
+    android:padding="10dp">
+    <TextView
+        android:id="@+id/rahu_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pp_widget_text_dim"
+        android:textSize="13sp"
+        android:maxLines="1" />
+    <Chronometer
+        android:id="@+id/rahu_chrono"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pp_widget_accent"
+        android:textSize="20sp" />
+    <TextView
+        android:id="@+id/rahu_range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pp_widget_text"
+        android:textSize="13sp"
+        android:maxLines="1" />
+    <TextView
+        android:id="@+id/rahu_city"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pp_widget_text_dim"
+        android:textSize="12sp"
+        android:maxLines="1" />
+</LinearLayout>

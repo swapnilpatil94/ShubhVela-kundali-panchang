@@ -7,7 +7,23 @@ plugins {
     id("panchang.quality")
 }
 
+// The rule files the engine reads at run time, staged into assets/rules (single source: /rules).
+val stageRuleAssets = tasks.register<Sync>("stageRuleAssets") {
+    from(rootProject.file("rules")) {
+        include("durmuhurta.json", "choghadiya.json", "festivals/*.json")
+        into("rules")
+    }
+    into(layout.buildDirectory.dir("generated/ruleAssets"))
+}
+
+tasks.configureEach {
+    if (name != "stageRuleAssets" && Regex("(?i).*(lint|assets).*").matches(name)) dependsOn(stageRuleAssets)
+}
+
 android {
+    // The perf build type uses the release stubs (no debug gate) so it behaves like a shipped build.
+    sourceSets.maybeCreate("perf").kotlin.directories.add("src/release/kotlin")
+    sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/ruleAssets").get().asFile)
     namespace = "app.parivaar.panchang"
     compileSdk = 36
     buildToolsVersion = "36.0.0"
@@ -22,6 +38,12 @@ android {
     }
 
     buildTypes {
+        // Release-like speed (not debuggable) with the debug key and PpPerf timings, for measuring startup on a device.
+        create("perf") {
+            initWith(getByName("debug"))
+            isDebuggable = false
+            matchingFallbacks += listOf("debug")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

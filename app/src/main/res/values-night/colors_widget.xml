@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="pp_widget_bg">#1E1F3F</color>
+    <color name="pp_widget_text">#F3ECE0</color>
+    <color name="pp_widget_text_dim">#CFC6B8</color>
+    <color name="pp_widget_accent">#F2B36B</color>
+</resources>

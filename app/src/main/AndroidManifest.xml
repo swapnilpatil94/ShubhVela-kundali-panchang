@@ -3,6 +3,8 @@
     <!-- M07 (MASTER Part 5): coarse location, once, to find the nearest city; notifications for opt-in reminders. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- M08 (MASTER Part 5): only to re-plan reminders after a reboot. No exact-alarm permission is declared. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".PanchangApp"
@@ -22,5 +24,82 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- M08 reminders: none exported; the system's broadcasts still reach the filtered receiver. -->
+        <receiver
+            android:name=".platform.notify.ReminderReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".platform.notify.SystemEventsReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".platform.widget.WidgetRefreshReceiver"
+            android:exported="false" />
+        <!-- Exported by necessity: the launcher binds widget providers (MASTER Part 5 allow-list). -->
+        <receiver
+            android:name=".platform.widget.TodayWidget"
+            android:exported="true"
+            android:label="@string/widget_label_today">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_today_info" />
+        </receiver>
+        <receiver
+            android:name=".platform.widget.NextRahuWidget"
+            android:exported="true"
+            android:label="@string/widget_label_rahu">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_rahu_info" />
+        </receiver>
+        <receiver
+            android:name=".platform.widget.FestivalWidget"
+            android:exported="true"
+            android:label="@string/widget_label_festival">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_festival_info" />
+        </receiver>
+        <!-- Exported by necessity: the system binds the tile; only the system may (BIND_QUICK_SETTINGS_TILE). -->
+        <service
+            android:name=".platform.tile.PanchangTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_notify"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".platform.notify.ReplanJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- M08 share card: not exported; read access is granted per Intent for one cached image. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.share"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

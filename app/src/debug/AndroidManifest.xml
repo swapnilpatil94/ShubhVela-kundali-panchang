@@ -5,5 +5,9 @@
         <receiver
             android:name=".DebugGateReceiver"
             android:exported="true" />
+        <!-- Debug builds only: plan / post / widget checks for emulator testing. Logs counts and kinds only. -->
+        <receiver
+            android:name=".DebugRemindersReceiver"
+            android:exported="true" />
     </application>
 </manifest>

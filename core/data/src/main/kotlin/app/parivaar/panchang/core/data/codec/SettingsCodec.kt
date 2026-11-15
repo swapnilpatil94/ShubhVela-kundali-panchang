@@ -90,6 +90,8 @@ internal object SettingsCodec {
             "reduceMotion" to bool(s.reduceMotion),
             "reminders" to JsonArray(s.reminders.sortedBy { it.ordinal }.map { JsonPrimitive(it.name) }),
             "onboardingDone" to bool(s.onboardingDone),
+            "showCityOnWidgets" to bool(s.showCityOnWidgets),
+            "travelMode" to bool(s.travelMode),
         )
 
     /** Keys added after payload v1: a missing key reads as its default; unknown keys are still rejected. */
@@ -97,6 +99,7 @@ internal object SettingsCodec {
         setOf(
             "homePlaceId", "monthSystem", "presetSource", "ekadashi", "chartStyle", "themeMode",
             "dynamicColor", "badaText", "reduceMotion", "reminders", "onboardingDone",
+            "showCityOnWidgets", "travelMode",
         )
 
     private fun Reader.remindersOr(present: Set<String>): Set<ReminderKind> {
@@ -137,6 +140,9 @@ internal object SettingsCodec {
                     reduceMotion = if ("reduceMotion" in present) boolean("reduceMotion") else d.reduceMotion,
                     reminders = remindersOr(present),
                     onboardingDone = if ("onboardingDone" in present) boolean("onboardingDone") else d.onboardingDone,
+                    showCityOnWidgets =
+                        if ("showCityOnWidgets" in present) boolean("showCityOnWidgets") else d.showCityOnWidgets,
+                    travelMode = if ("travelMode" in present) boolean("travelMode") else d.travelMode,
                 )
             }
         }

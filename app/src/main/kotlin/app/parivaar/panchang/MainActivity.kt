@@ -2,7 +2,10 @@ package app.parivaar.panchang
 
 import android.Manifest
 import android.app.LocaleManager
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -36,6 +39,8 @@ import app.parivaar.panchang.shell.KeyUnavailableGate
 import app.parivaar.panchang.shell.LoadingGate
 import app.parivaar.panchang.shell.ShellScreen
 import app.parivaar.panchang.shell.ShellViewModel
+import app.parivaar.panchang.shell.rememberAajExtras
+import app.parivaar.panchang.feature.aaj.travel.CoarsePermission
 import app.parivaar.panchang.feature.onboarding.LanguageOptions
 import app.parivaar.panchang.feature.onboarding.OnboardingHost
 import app.parivaar.panchang.feature.onboarding.OnboardingPlatform
@@ -86,6 +91,28 @@ class MainActivity : ComponentActivity() {
     private fun granted(permission: String) =
         ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 
+    private val zoneReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) =
+                vm.onTimeZoneChanged()
+        }
+
+    override fun onStop() {
+        super.onStop()
+        vm.speaker.stop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(zoneReceiver)
+        vm.permissionBridge.delegate = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (vm.gate.ui.value == GateUi.Shell) vm.aaj.refresh()
+    }
+
     override fun attachBaseContext(newBase: Context) = super.attachBaseContext(LocaleApplier.wrap(newBase))
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,6 +122,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(clear, clear),
             navigationBarStyle = SystemBarStyle.auto(clear, clear),
+        )
+        vm.permissionBridge.delegate = object : CoarsePermission {
+            override fun granted() = granted(Manifest.permission.ACCESS_COARSE_LOCATION)
+
+            override fun request(onResult: (granted: Boolean) -> Unit) {
+                pendingLocation = onResult
+                locationLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+            }
+        }
+        // Travel mode: a time zone change while the app runs offers (never forces) an update.
+        ContextCompat.registerReceiver(
+            this, zoneReceiver, IntentFilter(Intent.ACTION_TIMEZONE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED,
         )
         setContent { App() }
     }
@@ -107,6 +146,7 @@ class MainActivity : ComponentActivity() {
         val ui = forced ?: realUi
         val busy by vm.gate.busy.collectAsStateWithLifecycle()
         val homeName by vm.homePlaceName.collectAsStateWithLifecycle()
+        val travelPlace by vm.travel.place.collectAsStateWithLifecycle()
 
         // Settings language changes (and onboarding step 1) reach the platform locale here.
         LaunchedEffect(settings.localeTag) {
@@ -130,9 +170,14 @@ class MainActivity : ComponentActivity() {
                             )
                         GateUi.Onboarding -> OnboardingFlow()
                         GateUi.Shell -> {
+                            LaunchedEffect(Unit) { app.parivaar.panchang.feature.aaj.PpPerf.mark("gate.shell") }
                             val languages =
                                 LanguageOptions.all.map { LanguageChoice(it.tag, stringResource(it.nameRes)) }
-                            ShellScreen(settings, homeName, languages, vm.conventions, vm.appearance)
+                            ShellScreen(
+                                settings, travelPlace?.name ?: homeName, languages, vm.conventions,
+                                vm.appearance, vm.aaj,
+                                rememberAajExtras(vm, settings, homeName),
+                            )
                         }
                     }
                 }

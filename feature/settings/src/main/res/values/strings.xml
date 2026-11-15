@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_title">Settings</string>
+    <string name="settings_section_today">Today and travel</string>
+    <string name="settings_travel_mode">Travel mode</string>
+    <string name="settings_travel_mode_hint">When the time zone changes, offer to update timings for where you are. Off by default. Location is asked for only if you agree.</string>
+    <string name="settings_show_city">Show city on widgets and share images</string>
+    <string name="settings_show_city_hint">Off by default. Your city is left out of widgets and shared images unless you turn this on.</string>
     <string name="settings_section_appearance">Appearance</string>
     <string name="settings_section_language">Language</string>
     <string name="settings_section_conventions">Conventions</string>
