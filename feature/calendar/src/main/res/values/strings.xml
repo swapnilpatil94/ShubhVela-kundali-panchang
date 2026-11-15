@@ -57,8 +57,8 @@
     <string name="cal_cell_open">Show day details</string>
     <string name="cal_cell_selected">Selected</string>
 
-    <string name="cal_samvat_shaka">Shaka %1$d</string>
-    <string name="cal_samvat_vikram">Vikram %1$d</string>
+    <string name="cal_samvat_shaka">Shaka %1$s</string>
+    <string name="cal_samvat_vikram">Vikram %1$s</string>
     <string name="cal_header_months">%1$s · %2$s</string>
     <string name="cal_masa_change">The month changes on %1$s.</string>
     <string name="cal_adhika_notice">%1$s is an adhika (extra) lunar month in this calendar month.</string>
@@ -92,4 +92,5 @@
     <string name="cal_explain_body">Your device works out the Sun and Moon positions for your city and finds which tithi and nakshatra hold at sunrise on each day. Festival dates follow written rules. Nothing leaves your phone.</string>
     <string name="cal_explain_tradition">Festival dates are traditional rules of thumb and families and regions differ. You can change the Ekadashi tradition and month system in Conventions.</string>
     <string name="cal_footer">Traditional interpretation, not a scientific prediction.</string>
+    <string name="ics_failed">Could not prepare the calendar file</string>
 </resources>

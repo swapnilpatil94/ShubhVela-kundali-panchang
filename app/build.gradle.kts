@@ -10,7 +10,7 @@ plugins {
 // The rule files the engine reads at run time, staged into assets/rules (single source: /rules).
 val stageRuleAssets = tasks.register<Sync>("stageRuleAssets") {
     from(rootProject.file("rules")) {
-        include("durmuhurta.json", "choghadiya.json", "festivals/*.json")
+        include("durmuhurta.json", "choghadiya.json", "should_i.json", "festivals/*.json")
         into("rules")
     }
     into(layout.buildDirectory.dir("generated/ruleAssets"))
@@ -55,7 +55,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
     testOptions { unitTests.all { it.useJUnitPlatform() } }
     lint {
         warningsAsErrors = false

@@ -150,5 +150,40 @@ class MonthModelTest {
         }
     }
 
+    @Test fun `an edited place under the same id is a new key`() {
+        val e = Fake()
+        val flow = MutableStateFlow<CalInputs?>(Fx.inputs())
+        withModel(e, flow) { m ->
+            val before = m.content(nov).key
+            settled(e, 3)
+            flow.value = Fx.inputs(place = app.parivaar.panchang.engine.Place(19.0760, 72.8777))
+            val after = m.ui.first { it is MonthUi.Content && it.key != before } as MonthUi.Content
+            assertEquals(before.placeId, after.key.placeId)
+            settled(e, 4)
+        }
+    }
+
+    @Test fun `today moves after midnight without recomputing the month`() {
+        val e = Fake()
+        var now = Instant.parse("2026-11-15T06:00:00Z")
+        val moving = object : Clock { override fun now(): Instant = now }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            val m = MonthModel(MutableStateFlow<CalInputs?>(Fx.inputs()), e, MonthCache(), moving, { DayOfWeek.SUNDAY }, scope, Dispatchers.Default)
+            runBlocking {
+                withTimeout(TIMEOUT_MS) {
+                    assertEquals(LocalDate(2026, 11, 15), m.content(nov).today)
+                    settled(e, 3)
+                    now = Instant.parse("2026-11-16T06:00:00Z")
+                    m.onDateChanged()
+                    assertEquals(LocalDate(2026, 11, 16), m.content(nov).today)
+                    assertEquals(3, e.calls.get())
+                }
+            }
+        } finally {
+            scope.cancel()
+        }
+    }
+
     private companion object { const val TIMEOUT_MS = 20_000L }
 }

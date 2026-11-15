@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 import app.parivaar.panchang.feature.aaj.dayRef
+import app.parivaar.panchang.feature.calendar.guide.FestivalNames
 import kotlinx.datetime.LocalDate
 import kotlin.time.Instant
 
@@ -93,12 +94,8 @@ internal class WidgetText(
             else -> null
         }?.let(context::getString)
 
-    /** Display name for a festival rule id. TODO(content pack): localised names; until then the id, title-cased. */
-    fun festival(id: String): String {
-        val res = context.resources.getIdentifier("widget_fest_$id", "string", context.packageName)
-        if (res != 0) return context.getString(res)
-        return id.split('_').filter { it.isNotEmpty() }.joinToString(" ") { w -> w.replaceFirstChar { it.uppercase() } }
-    }
+    /** Display name for a festival rule id, from the one shared name table (`FestivalNames`). */
+    fun festival(id: String): String = FestivalNames.name(context.resources, id)
 
     private companion object {
         const val PAKSHA_DAYS = 15

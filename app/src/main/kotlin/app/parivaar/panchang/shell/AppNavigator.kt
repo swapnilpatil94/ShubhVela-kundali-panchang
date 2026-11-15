@@ -13,6 +13,15 @@ sealed interface Dest {
     data object Conventions : Dest
 
     data object Privacy : Dest
+
+    /** Festival guide page; [id] is a festival rule id (lower-case letters, digits, underscore). */
+    data class FestivalGuide(val id: String) : Dest
+
+    data object Grahan : Dest
+
+    data object Transits : Dest
+
+    data object ShouldI : Dest
 }
 
 /** Hand-written back stack: one stack per [Tab], each rooted at `Root(tab)`. Thread-safe. */
@@ -84,12 +93,18 @@ class AppNavigator(initial: Tab = Tab.AAJ) {
         }
 
     companion object {
+        private val ID = Regex("[a-z0-9_]{1,64}")
+
         private fun key(d: Dest): String =
             when (d) {
                 is Dest.Root -> "root"
                 Dest.Settings -> "settings"
                 Dest.Conventions -> "conventions"
                 Dest.Privacy -> "privacy"
+                is Dest.FestivalGuide -> "guide=${d.id}"
+                Dest.Grahan -> "grahan"
+                Dest.Transits -> "transits"
+                Dest.ShouldI -> "shouldi"
             }
 
         private fun parse(k: String): Dest? =
@@ -97,7 +112,11 @@ class AppNavigator(initial: Tab = Tab.AAJ) {
                 "settings" -> Dest.Settings
                 "conventions" -> Dest.Conventions
                 "privacy" -> Dest.Privacy
-                else -> null
+                "grahan" -> Dest.Grahan
+                "transits" -> Dest.Transits
+                "shouldi" -> Dest.ShouldI
+                else -> k.takeIf { it.startsWith("guide=") }?.substringAfter('=')?.takeIf(ID::matches)
+                    ?.let { Dest.FestivalGuide(it) }
             }
 
         /** Malformed or unknown input degrades to the parts that parse; never throws. */

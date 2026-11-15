@@ -27,6 +27,7 @@ import app.parivaar.panchang.core.designsystem.components.PpCard
 import app.parivaar.panchang.core.designsystem.preview.PpPreviews
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
 import app.parivaar.panchang.core.model.settings.AppSettings
+import app.parivaar.panchang.core.model.settings.CalendarView
 import app.parivaar.panchang.core.model.settings.ChartStyle
 import app.parivaar.panchang.core.model.settings.PresetSource
 import app.parivaar.panchang.engine.SunriseConvention
@@ -133,7 +134,12 @@ internal fun SwitchRow(
 
 /** Settings → Conventions (J4). Stateless: [settings] in, writes through [model]. System back leaves the screen. */
 @Composable
-fun ConventionsScreen(settings: AppSettings, model: ConventionsModel, modifier: Modifier = Modifier) {
+fun ConventionsScreen(
+    settings: AppSettings,
+    model: ConventionsModel,
+    modifier: Modifier = Modifier,
+    regionalEnabled: Boolean = false,
+) {
     Column(
         modifier.verticalScroll(rememberScrollState()).padding(PpSpace.l),
         verticalArrangement = Arrangement.spacedBy(PpSpace.l),
@@ -151,6 +157,10 @@ fun ConventionsScreen(settings: AppSettings, model: ConventionsModel, modifier: 
         )
         ChoiceGroup(R.string.conventions_dasha_title, dashaChoices, settings.defaultCalc.dashaYear, model::setDashaYear)
         ChoiceGroup(R.string.conventions_ekadashi_title, ekadashiChoices, settings.ekadashi, model::setEkadashi)
+        ChoiceGroup(
+            R.string.conventions_calview_title, calendarViewChoices(regionalEnabled),
+            if (regionalEnabled) settings.calendarView else CalendarView.STANDARD, model::setCalendarView,
+        )
         ChoiceGroup(R.string.conventions_chart_title, chartChoices, settings.chartStyle, model::setChartStyle)
     }
 }

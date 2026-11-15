@@ -27,7 +27,9 @@ import kotlinx.datetime.yearMonth
 /**
  * Month state holder, one per activity (so a rotation never recomputes). A cached month is shown at once; a miss
  * shows [MonthUi.Loading] with the last grid, computes on [compute] and then prefetches the neighbours.
- * Inputs that do not change the month (theme, font scale) compare equal and do not recompute.
+ * Inputs compare by place, zone, settings and view (not the offset lambda); a month is keyed by the same values,
+ * so settings that do not change it (theme, font scale) never recompute: the cache answers.
+ * [onDateChanged] refreshes "today" from the clock without recomputing a month.
  */
 @Suppress("TooManyFunctions")
 class MonthModel(
@@ -48,12 +50,14 @@ class MonthModel(
     // null = the current month of the place's zone.
     private val shown = MutableStateFlow<YearMonth?>(null)
 
-    private var last: MonthUi.Content? = null
-    private var lastInputs: CalInputs? = null
+    @Volatile private var last: MonthUi.Content? = null
+    @Volatile private var lastInputs: CalInputs? = null
+    private val dateTicks = MutableStateFlow(0)
 
     init {
         scope.launch {
-            combine(inputs.distinctUntilChanged(), shown) { i, ym -> i to ym }.collectLatest { (i, ym) -> run(i, ym) }
+            combine(inputs.distinctUntilChanged(), shown, dateTicks) { i, ym, _ -> i to ym }
+                .collectLatest { (i, ym) -> run(i, ym) }
         }
     }
 
@@ -64,6 +68,21 @@ class MonthModel(
     fun prev() { shown.value = current().plus(-1, DateTimeUnit.MONTH) }
 
     fun today() { shown.value = null }
+
+    /**
+     * The date may have changed (midnight, resume, clock or date change). The today ring moves without recomputing the
+     * month; if the model follows the current month and the month changed, it moves to the new one.
+     */
+    @Suppress("ReturnCount")
+    fun onDateChanged() {
+        val c = last ?: return
+        val i = lastInputs ?: return
+        val today = clock.now().toLocalDateTime(i.zone).date
+        if (today == c.today) return
+        if (shown.value == null && today.yearMonth != c.key.ym) { dateTicks.value += 1; return }
+        val cm = cache.get(c.key) ?: return
+        publish(i, c.key.ym, today, cm.firstDow, cm)
+    }
 
     fun select(date: LocalDate?) { _selected.value = date }
 
@@ -89,7 +108,7 @@ class MonthModel(
     }
 
     private fun current(): YearMonth =
-        shown.value ?: (last?.key?.ym ?: clock.now().toLocalDateTime(TimeZone.UTC).date.yearMonth)
+        shown.value ?: (last?.key?.ym ?: clock.now().toLocalDateTime(lastInputs?.zone ?: TimeZone.UTC).date.yearMonth)
 
     @Suppress("TooGenericExceptionCaught", "ReturnCount", "SwallowedException")
     private suspend fun run(i: CalInputs?, requested: YearMonth?) {

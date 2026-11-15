@@ -3,6 +3,7 @@
 package app.parivaar.panchang.feature.settings
 
 import androidx.annotation.StringRes
+import app.parivaar.panchang.core.model.settings.CalendarView
 import app.parivaar.panchang.core.model.settings.ChartStyle
 import app.parivaar.panchang.engine.SunriseConvention
 import app.parivaar.panchang.engine.calendar.MonthSystem
@@ -70,5 +71,15 @@ internal val chartChoices =
             ChartStyle.NORTH -> Choice(it, R.string.conventions_chart_north, R.string.conventions_chart_north_desc)
             ChartStyle.SOUTH -> Choice(it, R.string.conventions_chart_south, R.string.conventions_chart_south_desc)
             ChartStyle.EAST -> Choice(it, R.string.conventions_chart_east, R.string.conventions_chart_east_desc)
+        }
+    }
+
+/** Calendar views; the Marathi and Gujarati ones are offered only while the regional gate is open. */
+internal fun calendarViewChoices(regionalEnabled: Boolean): List<Choice<CalendarView>> =
+    buildList {
+        add(Choice(CalendarView.STANDARD, R.string.conventions_calview_standard, R.string.conventions_calview_standard_desc))
+        if (regionalEnabled) {
+            add(Choice(CalendarView.MARATHI, R.string.conventions_calview_marathi, R.string.conventions_calview_marathi_desc))
+            add(Choice(CalendarView.GUJARATI, R.string.conventions_calview_gujarati, R.string.conventions_calview_gujarati_desc))
         }
     }

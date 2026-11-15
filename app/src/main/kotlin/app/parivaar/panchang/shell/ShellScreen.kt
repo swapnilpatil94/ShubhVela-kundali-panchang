@@ -20,11 +20,9 @@ import app.parivaar.panchang.feature.aaj.ui.AajExtras
 import app.parivaar.panchang.feature.aaj.ui.AajScreen
 import app.parivaar.panchang.feature.bhakti.BhaktiPlaceholderScreen
 import app.parivaar.panchang.feature.bonds.BondsPlaceholderScreen
-import app.parivaar.panchang.feature.calendar.CalendarPlaceholderScreen
 import app.parivaar.panchang.feature.kundli.KundliPlaceholderScreen
 import app.parivaar.panchang.feature.settings.AppearanceModel
 import app.parivaar.panchang.feature.settings.ConventionsModel
-import app.parivaar.panchang.feature.settings.ConventionsScreen
 import app.parivaar.panchang.feature.settings.LanguageChoice
 import app.parivaar.panchang.feature.settings.PrivacyScreen
 import app.parivaar.panchang.feature.settings.SettingsScreen
@@ -50,6 +48,7 @@ fun ShellScreen(
     appearance: AppearanceModel,
     aaj: AajModel,
     aajExtras: AajExtras,
+    cal: CalendarWiring,
     modifier: Modifier = Modifier,
 ) {
     val navigator =
@@ -74,21 +73,12 @@ fun ShellScreen(
     val search = { searching = true }
     PpNavigationSuite(NAV_ITEMS, tab.name, { navigator.select(Tab.valueOf(it)) }) {
         Box(modifier.fillMaxSize()) {
-            when (dest) {
+            when (val d = dest) {
                 is Dest.Root ->
                     when (tab) {
-                        Tab.AAJ ->
-                            AajScreen(
-                                aaj, homePlaceName, null,
-                                AajActions(
-                                    onAvatar = avatar, onSearch = search,
-                                    onChooseCity = { navigator.push(Dest.Settings) },
-                                    onOpenConventions = { navigator.push(Dest.Conventions) },
-                                    onRetry = aaj::refresh,
-                                ),
-                                aajExtras,
-                            )
-                        Tab.CALENDAR -> CalendarPlaceholderScreen(homePlaceName, null, avatar, search)
+                        Tab.AAJ -> AajTab(aaj, homePlaceName, navigator, aajExtras, avatar, search)
+                        Tab.CALENDAR ->
+                            CalendarTab(cal, settings, homePlaceName, navigator, conventions, search)
                         Tab.KUNDLI -> KundliPlaceholderScreen(homePlaceName, null, avatar, search)
                         Tab.BONDS -> BondsPlaceholderScreen(homePlaceName, null, avatar, search)
                         Tab.BHAKTI -> BhaktiPlaceholderScreen(homePlaceName, null, avatar, search)
@@ -99,8 +89,10 @@ fun ShellScreen(
                         onOpenConventions = { navigator.push(Dest.Conventions) },
                         onOpenPrivacy = { navigator.push(Dest.Privacy) },
                     )
-                Dest.Conventions -> ConventionsScreen(settings, conventions)
+                Dest.Conventions -> ConventionsDest(settings, conventions)
                 Dest.Privacy -> PrivacyScreen()
+                is Dest.FestivalGuide, Dest.Grahan, Dest.Transits, Dest.ShouldI ->
+                    CalendarSubScreen(d, cal) { navigator.back() }
             }
         }
     }

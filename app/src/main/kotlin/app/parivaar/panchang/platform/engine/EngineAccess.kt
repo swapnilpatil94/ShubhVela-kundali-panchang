@@ -12,7 +12,12 @@ import app.parivaar.panchang.core.model.settings.AppSettings
 import app.parivaar.panchang.engine.CalcSettings
 import app.parivaar.panchang.engine.Place
 import app.parivaar.panchang.engine.astro.AstronomyEngineEphemeris
+import app.parivaar.panchang.engine.astro.SelectingEphemeris
 import app.parivaar.panchang.engine.calendar.CalendarCalculator
+import app.parivaar.panchang.engine.jyotish.ChartCalculator
+import app.parivaar.panchang.engine.jyotish.Gochar
+import app.parivaar.panchang.feature.calendar.CalendarEngine
+import app.parivaar.panchang.feature.calendar.DirectCalendarEngine
 import app.parivaar.panchang.engine.calendar.EclipseSearch
 import app.parivaar.panchang.engine.calendar.FestivalDef
 import app.parivaar.panchang.engine.calendar.FestivalEngine
@@ -86,6 +91,7 @@ class EngineAccess @Inject constructor(
         val aaj: EngineAajEngine,
         val tables: PanchangTables,
         val sets: List<FestivalSet>,
+        val calendar: CalendarEngine,
     )
 
     private val engine: Engine by lazy {
@@ -93,7 +99,7 @@ class EngineAccess @Inject constructor(
     }
 
     private fun buildEngine(): Engine {
-        val eph = PpPerf.time("engine.ephemeris") { AstronomyEngineEphemeris() }
+        val eph = PpPerf.time("engine.ephemeris") { SelectingEphemeris(null, AstronomyEngineEphemeris()) }
         // Gowri and varjyam tables are not shipped yet: those windows stay "not available".
         val tables =
             PpPerf.time("engine.rules.tables") {
@@ -111,8 +117,12 @@ class EngineAccess @Inject constructor(
         val calc = PanchangCalculator(eph, tables)
         val fest = FestivalEngine(eph)
         val ecl = EclipseSearch(eph)
-        val aaj = EngineAajEngine(calc, CalendarCalculator(eph), fest, ecl, sets)
-        return Engine(calc, fest, ecl, defs, aaj, tables, sets)
+        val cal = CalendarCalculator(eph)
+        val aaj = EngineAajEngine(calc, cal, fest, ecl, sets)
+        val recurring = sets.filter { it.file.startsWith("recurring") }.flatMap { s -> s.defs.map { it.id } }.toSet()
+        // Same calculators as everything else; calls are serialised by the lock on `aaj` (see onEngine).
+        val direct = DirectCalendarEngine(calc, cal, fest, ecl, ChartCalculator(eph), Gochar(eph), defs, recurring)
+        return Engine(calc, fest, ecl, defs, aaj, tables, sets, EngineCalendarEngine(direct, aaj))
     }
 
     /** Builds the engine (ephemeris, rule files, festival sets) once, off the main thread. Call from app start. */
@@ -130,7 +140,7 @@ class EngineAccess @Inject constructor(
      */
     private val interactive: EngineAajEngine by lazy {
         val e = engine
-        val eph = AstronomyEngineEphemeris()
+        val eph = SelectingEphemeris(null, AstronomyEngineEphemeris())
         EngineAajEngine(
             PanchangCalculator(eph, e.tables), CalendarCalculator(eph), FestivalEngine(eph), EclipseSearch(eph), e.sets,
         )
@@ -140,6 +150,12 @@ class EngineAccess @Inject constructor(
     val aajEngine: AajEngine get() = interactive
 
     private fun asset(path: String): String = context.assets.open(path).bufferedReader().use { it.readText() }
+
+    /** The calendar tab's engine port: the one engine instance, every call under the single engine lock. */
+    val calendarEngine: CalendarEngine get() = engine.calendar
+
+    /** The shipped festival definitions (immutable), for the festival guide. */
+    val festivalDefs: List<FestivalDef> get() = engine.defs
 
     /** Festival definitions that have vrat rules (Ekadashi included). */
     val vratIds: Set<String> get() = onEngine { engine.defs.filter { it.vratRules.isNotEmpty() }.map { it.id }.toSet() }

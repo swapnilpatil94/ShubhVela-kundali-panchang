@@ -66,6 +66,14 @@
     <string name="conventions_ekadashi_vaishnava">Vaishnava</string>
     <string name="conventions_ekadashi_vaishnava_desc">The fast follows the Vaishnava rule for choosing the day.</string>
 
+    <string name="conventions_calview_title">Calendar view</string>
+    <string name="conventions_calview_standard">Standard</string>
+    <string name="conventions_calview_standard_desc">The usual month grid with tithi and festivals.</string>
+    <string name="conventions_calview_marathi">Marathi</string>
+    <string name="conventions_calview_marathi_desc">Shaka year and Marathi paksha labels (preview, awaiting review).</string>
+    <string name="conventions_calview_gujarati">Gujarati</string>
+    <string name="conventions_calview_gujarati_desc">Vikram year starting at Kartika and Gujarati paksha labels (preview, awaiting review).</string>
+
     <string name="conventions_chart_title">Chart style</string>
     <string name="conventions_chart_north">North Indian</string>
     <string name="conventions_chart_north_desc">A diamond layout where the houses stay in place.</string>

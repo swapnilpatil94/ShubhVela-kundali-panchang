@@ -2,6 +2,7 @@ package app.parivaar.panchang.feature.settings
 
 import app.parivaar.panchang.core.data.SettingsRepository
 import app.parivaar.panchang.core.model.settings.AppSettings
+import app.parivaar.panchang.core.model.settings.CalendarView
 import app.parivaar.panchang.core.model.settings.ChartStyle
 import app.parivaar.panchang.core.model.settings.PresetSource
 import app.parivaar.panchang.core.model.settings.ThemeMode
@@ -32,6 +33,8 @@ object ConventionsEdits {
 
     fun withEkadashi(s: AppSettings, v: Tradition) = s.copy(ekadashi = v)
 
+    fun withCalendarView(s: AppSettings, v: CalendarView) = s.copy(calendarView = v)
+
     fun withChartStyle(s: AppSettings, v: ChartStyle) = s.copy(chartStyle = v)
 }
 
@@ -46,6 +49,8 @@ class ConventionsModel(private val repo: SettingsRepository, private val scope: 
     fun setMonthSystem(v: MonthSystem) = write { ConventionsEdits.withMonthSystem(it, v) }
 
     fun setEkadashi(v: Tradition) = write { ConventionsEdits.withEkadashi(it, v) }
+
+    fun setCalendarView(v: CalendarView) = write { ConventionsEdits.withCalendarView(it, v) }
 
     fun setChartStyle(v: ChartStyle) = write { ConventionsEdits.withChartStyle(it, v) }
 

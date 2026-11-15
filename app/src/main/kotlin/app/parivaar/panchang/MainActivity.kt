@@ -37,6 +37,7 @@ import app.parivaar.panchang.shell.GateUi
 import app.parivaar.panchang.shell.KeyLostGate
 import app.parivaar.panchang.shell.KeyUnavailableGate
 import app.parivaar.panchang.shell.LoadingGate
+import app.parivaar.panchang.shell.CalendarWiring
 import app.parivaar.panchang.shell.ShellScreen
 import app.parivaar.panchang.shell.ShellViewModel
 import app.parivaar.panchang.shell.rememberAajExtras
@@ -97,6 +98,11 @@ class MainActivity : ComponentActivity() {
                 vm.onTimeZoneChanged()
         }
 
+    private val dateReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) = vm.onDateMayHaveChanged()
+        }
+
     override fun onStop() {
         super.onStop()
         vm.speaker.stop()
@@ -105,12 +111,14 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(zoneReceiver)
+        unregisterReceiver(dateReceiver)
         vm.permissionBridge.delegate = null
     }
 
     override fun onResume() {
         super.onResume()
         if (vm.gate.ui.value == GateUi.Shell) vm.aaj.refresh()
+        vm.onDateMayHaveChanged()
     }
 
     override fun attachBaseContext(newBase: Context) = super.attachBaseContext(LocaleApplier.wrap(newBase))
@@ -134,6 +142,9 @@ class MainActivity : ComponentActivity() {
         // Travel mode: a time zone change while the app runs offers (never forces) an update.
         ContextCompat.registerReceiver(
             this, zoneReceiver, IntentFilter(Intent.ACTION_TIMEZONE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
+        ContextCompat.registerReceiver(
+            this, dateReceiver, IntentFilter(Intent.ACTION_DATE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED,
         )
         setContent { App() }
     }
@@ -177,6 +188,9 @@ class MainActivity : ComponentActivity() {
                                 settings, travelPlace?.name ?: homeName, languages, vm.conventions,
                                 vm.appearance, vm.aaj,
                                 rememberAajExtras(vm, settings, homeName),
+                                CalendarWiring(vm.calendar, vm.calendarController) {
+                                    vm.shareIcs(this@MainActivity, it)
+                                },
                             )
                         }
                     }

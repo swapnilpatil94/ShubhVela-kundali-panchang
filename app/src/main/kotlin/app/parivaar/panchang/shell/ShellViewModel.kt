@@ -32,6 +32,9 @@ import app.parivaar.panchang.core.model.settings.AppSettings
 import app.parivaar.panchang.feature.aaj.AajCache
 import app.parivaar.panchang.feature.aaj.AajInputs
 import app.parivaar.panchang.feature.aaj.AajModel
+import app.parivaar.panchang.feature.calendar.MonthCache
+import app.parivaar.panchang.feature.calendar.MonthModel
+import app.parivaar.panchang.platform.engine.EngineAccess
 import app.parivaar.panchang.feature.onboarding.OnboardingMachine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -67,6 +70,7 @@ class ShellViewModel
         private val offsets: OffsetResolver,
         @ApplicationContext private val context: Context,
         private val places: PlaceRepository,
+        private val engineAccess: EngineAccess,
     ) : ViewModel() {
         val gate = AppGateModel(vault, settingsRepo, viewModelScope, Dispatchers.IO)
 
@@ -105,6 +109,32 @@ class ShellViewModel
             )
         }
 
+        /** Calendar tab: month model, loaders and `.ics` share over the one shared engine (under its lock). */
+        val calendarController: CalendarController by lazy {
+            CalendarController(
+                vault.state
+                    .flatMapLatest { if (it == VaultState.Ready) places.observeAll().catch { } else emptyFlow() }
+                    .map { it.items },
+                readySettings, travel.place, offsets, engineAccess.calendarEngine, { engineAccess.festivalDefs },
+                { path -> context.assets.open(path).bufferedReader().use { it.readText() } },
+                viewModelScope, Dispatchers.Default,
+            )
+        }
+
+        private var calendarBuilt = false
+
+        /** The date may have changed: moves the calendar's today ring (only once the calendar exists). */
+        fun onDateMayHaveChanged() { if (calendarBuilt) calendar.onDateChanged() }
+
+        /** Built once in this activity-scoped holder, so rotation and recreate never recompute a month. */
+        val calendar: MonthModel by lazy {
+            calendarBuilt = true
+            MonthModel(
+                calendarController.inputs, calendarController.engine, MonthCache(), Clock.System,
+                CalendarController::firstDayOfWeek, viewModelScope, Dispatchers.Default.limitedParallelism(1),
+            )
+        }
+
         /** The activity's permission request, reached through a bridge that survives `recreate()`. */
         val permissionBridge = PermissionBridge()
 
@@ -133,6 +163,9 @@ class ShellViewModel
                 }
             }
         }
+
+        /** One-off `.ics` of the year's public festival dates, then the system share sheet. */
+        fun shareIcs(activity: Context, year: Int) = calendarController.shareIcs(activity, year, viewModelScope)
 
         /** A time zone change: compares the device offset with the home place's offset at this instant. */
         fun onTimeZoneChanged() {

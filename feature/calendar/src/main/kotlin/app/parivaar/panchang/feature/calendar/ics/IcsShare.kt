@@ -29,17 +29,18 @@ class IcsShare(
 ) {
     private val dir = File(cacheDir, DIR)
 
-    fun purge() {
-        dir.listFiles()?.forEach { it.delete() }
+    /** Deletes earlier `.ics` files only; other files (M08 share images) are never touched. */
+    fun purge(keep: File? = null) {
+        dir.listFiles { f -> f.isFile && f.name.endsWith(".ics") && f != keep }?.forEach { it.delete() }
     }
 
     /** Writes the calendar and returns its content URI, or null if it could not be written. */
     fun prepare(events: List<IcsEvent>): Uri? = runCatching {
-        purge()
         dir.mkdirs()
         val text = IcsWriter.write(events, clock.now()) { UUID.randomUUID().toString() }
         val file = File(dir, randomName() + ".ics")
         file.writeText(text, Charsets.UTF_8)
+        purge(keep = file)
         uriFor(file)
     }.getOrNull()
 

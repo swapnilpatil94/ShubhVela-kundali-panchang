@@ -33,8 +33,9 @@ class CalInputs(
     val ekadashi: Tradition,
     val view: CalendarView,
 ) {
-    /** Covers everything that changes a computed month except the place id and the month itself. */
-    val settingsHash: Int get() = listOf(calc, zone.id).hashCode()
+    /** Calc, zone and place: an edited place under the same id is a new key. */
+
+    val settingsHash: Int get() = listOf(calc, zone.id, place).hashCode()
 
     override fun equals(other: Any?): Boolean =
         other is CalInputs && placeId == other.placeId && place == other.place && zone == other.zone &&
