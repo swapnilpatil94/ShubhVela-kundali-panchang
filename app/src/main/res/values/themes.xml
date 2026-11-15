@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launch theme (platform splash attributes below API 31). MainActivity switches to Theme.PanchangApp. -->
+    <style name="Theme.PanchangApp.Starting" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/pp_splash_window</item>
+    </style>
+
+    <style name="Theme.PanchangApp" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/pp_splash_background</item>
+    </style>
+</resources>

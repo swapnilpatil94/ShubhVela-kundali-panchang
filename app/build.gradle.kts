@@ -34,6 +34,7 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
     buildFeatures { compose = true }
+    testOptions { unitTests.all { it.useJUnitPlatform() } }
     lint {
         warningsAsErrors = false
         abortOnError = true
@@ -48,13 +49,22 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
+    testImplementation(libs.kotlin.test.junit5)
 
     implementation(project(":core:designsystem"))
     implementation(project(":core:data"))
     implementation(project(":core:geo"))
     implementation(project(":core:model"))
     implementation(project(":engine"))
+    implementation(project(":feature:aaj"))
+    implementation(project(":feature:calendar"))
+    implementation(project(":feature:kundli"))
+    implementation(project(":feature:bonds"))
+    implementation(project(":feature:bhakti"))
+    implementation(project(":feature:onboarding"))
+    implementation(project(":feature:settings"))
 }

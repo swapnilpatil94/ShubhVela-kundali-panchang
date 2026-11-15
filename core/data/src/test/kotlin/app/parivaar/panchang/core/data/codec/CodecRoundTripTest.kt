@@ -2,6 +2,7 @@ package app.parivaar.panchang.core.data.codec
 
 import app.parivaar.panchang.core.data.codec.FamilyFixture as F
 import app.parivaar.panchang.core.model.profile.Relation
+import app.parivaar.panchang.core.model.settings.AppSettings
 import app.parivaar.panchang.engine.CalcSettings
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -104,7 +105,20 @@ class CodecRoundTripTest {
         val bytes = fixture.readBytes()
         val doc = FamilyDocument.fromBytes(bytes)
         assertEquals(F.doc, doc)
-        assertEquals(PpJson.parseToJsonElement(bytes.decodeToString()), doc.toJson())
+        // M07: re-encoding == frozen JSON plus exactly the 11 new settings keys, at their default values.
+        val frozen = PpJson.parseToJsonElement(bytes.decodeToString()) as JsonObject
+        val reencoded = doc.toJson()
+        val newKeys =
+            setOf(
+                "homePlaceId", "monthSystem", "presetSource", "ekadashi", "chartStyle", "themeMode",
+                "dynamicColor", "badaText", "reduceMotion", "reminders", "onboardingDone",
+            )
+        val settings = reencoded["settings"] as JsonObject
+        assertEquals(newKeys, settings.keys - (frozen["settings"] as JsonObject).keys)
+        val defaults = SettingsCodec.toJson(AppSettings())
+        for (k in newKeys) assertEquals(defaults[k], settings[k], k)
+        val stripped = JsonObject(reencoded + ("settings" to JsonObject(settings.filterKeys { it !in newKeys })))
+        assertEquals(frozen, stripped)
         assertEquals(2, doc.profiles.size)
         assertEquals(null, doc.profiles[1].birth.time)
         assertEquals(null, doc.bonds[0].traits.lagna)

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Native language names: never translated. -->
+    <string name="lang_en" translatable="false">English</string>
+    <string name="lang_hi" translatable="false">हिन्दी</string>
+    <string name="lang_bn" translatable="false">বাংলা</string>
+    <string name="lang_mr" translatable="false">मराठी</string>
+    <string name="lang_te" translatable="false">తెలుగు</string>
+    <string name="lang_ta" translatable="false">தமிழ்</string>
+    <string name="lang_gu" translatable="false">ગુજરાતી</string>
+    <string name="lang_kn" translatable="false">ಕನ್ನಡ</string>
+    <string name="lang_ml" translatable="false">മലയാളം</string>
+    <string name="lang_or" translatable="false">ଓଡ଼ିଆ</string>
+    <string name="lang_pa" translatable="false">ਪੰਜਾਬੀ</string>
+    <string name="lang_as" translatable="false">অসমীয়া</string>
+
+    <string name="onb_step_progress">Step %1$d of %2$d</string>
+    <string name="onb_continue">Continue</string>
+    <string name="onb_back">Back</string>
+    <string name="onb_skip">Skip</string>
+    <string name="onb_finish">Finish</string>
+    <string name="onb_save_failed">We could not save that just now. Please try again.</string>
+
+    <string name="onb_language_title">Choose your language</string>
+    <string name="onb_language_body">You can change this later in Settings.</string>
+    <string name="onb_language_selected">Selected</string>
+    <string name="onb_privacy_promise">No account · Works offline · Your data stays on your phone</string>
+    <string name="onb_privacy_link">Read our privacy promise</string>
+
+    <string name="onb_city_title">Where are you?</string>
+    <string name="onb_city_body">Your city sets sunrise, sunset and daily timings. It stays on your phone.</string>
+    <string name="onb_city_search_label">Search for your city</string>
+    <string name="onb_city_hint">Type at least 2 letters</string>
+    <string name="onb_place_line">%1$s, %2$s</string>
+    <string name="onb_place_line_admin">%1$s, %2$s, %3$s</string>
+    <string name="onb_city_chosen">Chosen city: %1$s</string>
+    <string name="onb_city_use_location">Use approximate location</string>
+    <string name="onb_location_rationale_title">Find your city from your approximate location?</string>
+    <string name="onb_location_rationale_body">Android will ask for approximate location once. It is used only to pick the nearest city on this phone and is not saved or sent anywhere. You can search by name instead.</string>
+    <string name="onb_location_rationale_ok">Continue</string>
+    <string name="onb_location_rationale_cancel">Search by name</string>
+    <string name="onb_location_denied">No problem. Search for your city by name instead.</string>
+    <string name="onb_location_unavailable">Location is not available right now. Search for your city by name.</string>
+    <string name="onb_location_no_match">No nearby city was found. Search for your city by name.</string>
+
+    <string name="onb_tradition_title">How do you count the lunar month?</string>
+    <string name="onb_tradition_body">This decides which month a festival falls in. You can change it anytime.</string>
+    <string name="onb_tradition_north">North India (Purnimanta)</string>
+    <string name="onb_tradition_north_desc">The month ends on the full moon.</string>
+    <string name="onb_tradition_south">South or West India (Amanta)</string>
+    <string name="onb_tradition_south_desc">The month ends on the new moon.</string>
+    <string name="onb_tradition_notsure">I am not sure</string>
+    <string name="onb_tradition_notsure_desc">We will start with a default that you can change in Settings.</string>
+
+    <string name="onb_birth_title">Birth details (optional)</string>
+    <string name="onb_birth_body">Used to build your own kundli. It never leaves your phone.</string>
+    <string name="onb_birth_date">Date of birth</string>
+    <string name="onb_birth_date_pick">Choose date</string>
+    <string name="onb_birth_time">Time of birth</string>
+    <string name="onb_birth_time_pick">Choose time</string>
+    <string name="onb_birth_time_value">%1$02d:%2$02d</string>
+    <string name="onb_birth_time_unknown">I do not know the time</string>
+    <string name="onb_birth_place">Place of birth</string>
+    <string name="onb_birth_same_place">Same as my city</string>
+    <string name="onb_birth_incomplete">Please add the date, the time (or tick that you do not know it) and the place.</string>
+    <string name="onb_birth_date_invalid">That date did not exist in the calendar. Please check it.</string>
+    <string name="onb_dialog_ok">OK</string>
+    <string name="onb_dialog_cancel">Cancel</string>
+    <string name="onb_ambiguous_title">This clock time happened twice</string>
+    <string name="onb_ambiguous_body">The clocks were turned back at that time. Which one do you mean?</string>
+    <string name="onb_ambiguous_earlier">Earlier</string>
+    <string name="onb_ambiguous_later">Later</string>
+    <string name="onb_uncertain_title">Please check the time zone</string>
+    <string name="onb_uncertain_body">For old dates the local clock offset may differ from today\'s. Enter the offset if you know it, or keep the suggested one.</string>
+    <string name="onb_uncertain_enter">Use this offset</string>
+    <string name="onb_uncertain_keep">Keep suggested offset</string>
+
+    <string name="onb_reminders_title">Gentle reminders (optional)</string>
+    <string name="onb_reminders_body">All are off until you turn them on. You can change them in Settings.</string>
+    <string name="onb_reminder_vrat_eve">Evening before a vrat</string>
+    <string name="onb_reminder_family_dates">Family dates</string>
+    <string name="onb_reminder_grahan">Eclipse days</string>
+    <string name="onb_reminder_sunrise_brahma">Sunrise and Brahma muhurta</string>
+    <string name="onb_reminders_denied">You can turn this on in Settings.</string>
+</resources>

@@ -1,5 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Placeholder: theme is replaced by the DESIGN.md implementation in a later milestone. -->
-    <string name="theme_placeholder_name">ShubhVela placeholder theme</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_profile_menu">Profile and settings</string>
+    <string name="cd_brand_mark">ShubhVela</string>
+    <string name="cd_location">Location</string>
+    <string name="tab_aaj">Today</string>
+    <string name="tab_calendar">Calendar</string>
+    <string name="tab_kundli">Kundli</string>
+    <string name="tab_bonds">Bonds</string>
+    <string name="tab_bhakti">Bhakti</string>
+    <string name="state_selected">Selected</string>
+    <string name="quality_auspicious">Auspicious</string>
+    <string name="quality_inauspicious">Inauspicious</string>
+    <string name="quality_neutral">Neutral</string>
+    <string name="chip_description">%1$s, %2$s</string>
+    <string name="loading_progress">Loading</string>
+    <string name="explain_how_calculated">How this is calculated</string>
+    <string name="explain_tradition_note">Tradition note</string>
+    <string name="explain_proof_title">Calculation details</string>
+    <string name="explain_proof_backend">Calculation engine</string>
+    <string name="explain_proof_ayanamsa">Ayanamsa</string>
+    <string name="explain_proof_sunrise">Sunrise used</string>
+    <string name="explain_proof_altitude">Altitude</string>
+    <string name="explain_altitude_value">%1$.0f m</string>
+    <string name="explain_change_conventions">Change conventions</string>
+    <string name="explain_close">Close</string>
+    <string name="explain_footer">Traditional interpretation, not a scientific prediction.</string>
 </resources>

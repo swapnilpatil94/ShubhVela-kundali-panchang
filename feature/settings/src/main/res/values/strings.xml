@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_language">Language</string>
+    <string name="settings_section_conventions">Conventions</string>
+    <string name="settings_section_privacy">Privacy</string>
+    <string name="settings_conventions_summary">Ayanamsa, sunrise, month system and more</string>
+    <string name="settings_privacy_summary">What stays on your phone</string>
+
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_system">Follow system</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Use wallpaper colours</string>
+    <string name="settings_dynamic_color_hint">Off by default. The brand colours are used otherwise.</string>
+    <string name="settings_bada_text">Bada Text</string>
+    <string name="settings_bada_text_hint">Makes all text 20% larger, on top of the system font size.</string>
+    <string name="settings_reduce_motion">Reduce motion</string>
+    <string name="settings_reduce_motion_hint">Replaces animations with instant changes.</string>
+    <string name="settings_language_hint">Texts not yet translated appear in English.</string>
+    <string name="settings_state_on">On</string>
+    <string name="settings_state_off">Off</string>
+    <string name="settings_state_selected">Selected</string>
+
+    <string name="conventions_title">Conventions</string>
+    <string name="conventions_intro">These choices apply to new profiles and to the Today and Calendar views. Saved profiles keep their own settings.</string>
+    <string name="conventions_default_hint">Default, change anytime</string>
+
+    <string name="conventions_ayanamsa_title">Ayanamsa</string>
+    <string name="conventions_ayanamsa_lahiri">Lahiri</string>
+    <string name="conventions_ayanamsa_lahiri_desc">The most widely used standard in India. A good starting point.</string>
+    <string name="conventions_ayanamsa_true_chitra">True Chitra</string>
+    <string name="conventions_ayanamsa_true_chitra_desc">Keeps the star Chitra at the fixed point 180 degrees from the start of Aries.</string>
+
+    <string name="conventions_sunrise_title">Sunrise definition</string>
+    <string name="conventions_sunrise_upper_limb">Upper edge of the Sun</string>
+    <string name="conventions_sunrise_upper_limb_desc">Sunrise when the top of the Sun appears, allowing for refraction. The usual almanac definition.</string>
+    <string name="conventions_sunrise_center_refracted">Centre of the Sun</string>
+    <string name="conventions_sunrise_center_refracted_desc">Sunrise when the middle of the Sun reaches the horizon, allowing for refraction.</string>
+    <string name="conventions_sunrise_center_geometric">Centre, no refraction</string>
+    <string name="conventions_sunrise_center_geometric_desc">Sunrise when the middle of the Sun is exactly on the geometric horizon.</string>
+
+    <string name="conventions_month_title">Month system</string>
+    <string name="conventions_month_amanta">Amanta</string>
+    <string name="conventions_month_amanta_desc">The month ends at the new moon. Common in South and West India.</string>
+    <string name="conventions_month_purnimanta">Purnimanta</string>
+    <string name="conventions_month_purnimanta_desc">The month ends at the full moon. Common in North India.</string>
+
+    <string name="conventions_dasha_title">Dasha year length</string>
+    <string name="conventions_dasha_julian">365.25 days</string>
+    <string name="conventions_dasha_julian_desc">The Julian year, used by many software programs.</string>
+    <string name="conventions_dasha_gregorian">365.2425 days</string>
+    <string name="conventions_dasha_gregorian_desc">The average calendar year.</string>
+    <string name="conventions_dasha_savana">360 days</string>
+    <string name="conventions_dasha_savana_desc">The Savana year of twelve 30-day months, used in some traditional texts.</string>
+
+    <string name="conventions_ekadashi_title">Ekadashi tradition</string>
+    <string name="conventions_ekadashi_smarta">Smarta</string>
+    <string name="conventions_ekadashi_smarta_desc">The fast follows the Smarta rule for choosing the day.</string>
+    <string name="conventions_ekadashi_vaishnava">Vaishnava</string>
+    <string name="conventions_ekadashi_vaishnava_desc">The fast follows the Vaishnava rule for choosing the day.</string>
+
+    <string name="conventions_chart_title">Chart style</string>
+    <string name="conventions_chart_north">North Indian</string>
+    <string name="conventions_chart_north_desc">A diamond layout where the houses stay in place.</string>
+    <string name="conventions_chart_south">South Indian</string>
+    <string name="conventions_chart_south_desc">A square layout where the signs stay in place.</string>
+    <string name="conventions_chart_east">East Indian</string>
+    <string name="conventions_chart_east_desc">A layout used in Bengal, Odisha and Assam.</string>
+
+    <string name="privacy_title">Your privacy</string>
+    <string name="privacy_promise">No account · Works offline · Your data stays on your phone</string>
+    <string name="privacy_point_device">Birth details, family profiles and saved places are stored only on this device, in encrypted form.</string>
+    <string name="privacy_point_offline">Calculations run on your phone. The app does not need an internet connection.</string>
+    <string name="privacy_point_share">Nothing leaves your phone unless you choose to share a card or a Bond Code. A Bond Code carries only derived traits, never birth details.</string>
+    <string name="privacy_point_location">Location is used only if you ask for it, once, to find your nearest city. The coordinates are not saved.</string>
+    <string name="privacy_point_logs">Names, birth details and places are never written to logs or analytics.</string>
+    <string name="privacy_close">Close</string>
+</resources>

@@ -4,7 +4,14 @@ import app.parivaar.panchang.core.model.profile.RecordId
 import app.parivaar.panchang.core.model.settings.AppSettings
 import app.parivaar.panchang.engine.CalcSettings
 import app.parivaar.panchang.engine.HighLatitudeRule
+import app.parivaar.panchang.core.model.settings.ChartStyle
+import app.parivaar.panchang.core.model.settings.PresetSource
+import app.parivaar.panchang.core.model.settings.ReminderKind
+import app.parivaar.panchang.core.model.settings.ThemeMode
 import app.parivaar.panchang.engine.SunriseConvention
+import app.parivaar.panchang.engine.calendar.MonthSystem
+import app.parivaar.panchang.engine.calendar.Tradition
+import app.parivaar.panchang.engine.jyotish.Ayanamsa
 import app.parivaar.panchang.engine.jyotish.AyanamsaId
 import app.parivaar.panchang.engine.jyotish.DashaYear
 import app.parivaar.panchang.engine.jyotish.DrekkanaVariant
@@ -12,8 +19,10 @@ import app.parivaar.panchang.engine.jyotish.HoraVariant
 import app.parivaar.panchang.engine.jyotish.HouseSystem
 import app.parivaar.panchang.engine.jyotish.NodeType
 import app.parivaar.panchang.engine.panchang.TimingStyle
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 /** Codec for [CalcSettings] (all 12 fields; a missing field reads as its default) and [AppSettings]. */
 internal object SettingsCodec {
@@ -70,18 +79,64 @@ internal object SettingsCodec {
             "selfProfileId" to str(s.selfProfileId?.hex),
             "locale" to str(s.localeTag),
             "privacyScreen" to bool(s.privacyScreen),
+            "homePlaceId" to str(s.homePlaceId?.hex),
+            "monthSystem" to enumName(s.monthSystem),
+            "presetSource" to enumName(s.presetSource),
+            "ekadashi" to enumName(s.ekadashi),
+            "chartStyle" to enumName(s.chartStyle),
+            "themeMode" to enumName(s.themeMode),
+            "dynamicColor" to bool(s.dynamicColor),
+            "badaText" to bool(s.badaText),
+            "reduceMotion" to bool(s.reduceMotion),
+            "reminders" to JsonArray(s.reminders.sortedBy { it.ordinal }.map { JsonPrimitive(it.name) }),
+            "onboardingDone" to bool(s.onboardingDone),
         )
+
+    /** Keys added after payload v1: a missing key reads as its default; unknown keys are still rejected. */
+    private val newKeys =
+        setOf(
+            "homePlaceId", "monthSystem", "presetSource", "ekadashi", "chartStyle", "themeMode",
+            "dynamicColor", "badaText", "reduceMotion", "reminders", "onboardingDone",
+        )
+
+    private fun Reader.remindersOr(present: Set<String>): Set<ReminderKind> {
+        if ("reminders" !in present) return emptySet()
+        val names = array("reminders").map { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content ?: fail() }
+        val kinds = names.map { n -> ReminderKind.entries.firstOrNull { it.name == n } ?: fail() }
+        check(kinds.toSet().size == kinds.size)
+        return kinds.toSet()
+    }
+
+    /**
+     * The app-wide default must stay calculable: an ayanamsa the engine rejects (KP, Raman, Yukteshwar) reads as
+     * Lahiri. Profile calc is left as stored (frozen fixtures decode unchanged).
+     */
+    private fun enabledAyanamsaOnly(c: CalcSettings): CalcSettings =
+        if (Ayanamsa.isEnabled(c.ayanamsa)) c else c.copy(ayanamsa = AyanamsaId.LAHIRI)
 
     fun fromJson(o: JsonElement): AppSettings =
         guarded {
-            read(o) {
+            val present = (o as? JsonObject)?.keys ?: fail()
+            val d = AppSettings()
+            read(o, optional = newKeys) {
                 val locale = stringOrNull("locale")
                 check(locale == null || locale.length in 1..DataLimits.LOCALE_MAX)
                 AppSettings(
-                    defaultCalc = calcFromJson(objectAt("defaultCalc")),
+                    defaultCalc = enabledAyanamsaOnly(calcFromJson(objectAt("defaultCalc"))),
                     selfProfileId = stringOrNull("selfProfileId")?.let(::RecordId),
                     localeTag = locale,
                     privacyScreen = boolean("privacyScreen"),
+                    homePlaceId = if ("homePlaceId" in present) stringOrNull("homePlaceId")?.let(::RecordId) else null,
+                    monthSystem = enumOr(present, "monthSystem", MonthSystem.entries, d.monthSystem),
+                    presetSource = enumOr(present, "presetSource", PresetSource.entries, d.presetSource),
+                    ekadashi = enumOr(present, "ekadashi", Tradition.entries, d.ekadashi),
+                    chartStyle = enumOr(present, "chartStyle", ChartStyle.entries, d.chartStyle),
+                    themeMode = enumOr(present, "themeMode", ThemeMode.entries, d.themeMode),
+                    dynamicColor = if ("dynamicColor" in present) boolean("dynamicColor") else d.dynamicColor,
+                    badaText = if ("badaText" in present) boolean("badaText") else d.badaText,
+                    reduceMotion = if ("reduceMotion" in present) boolean("reduceMotion") else d.reduceMotion,
+                    reminders = remindersOr(present),
+                    onboardingDone = if ("onboardingDone" in present) boolean("onboardingDone") else d.onboardingDone,
                 )
             }
         }
