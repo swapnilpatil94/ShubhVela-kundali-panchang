@@ -3,6 +3,7 @@ package app.parivaar.panchang.shell
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -23,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.parivaar.panchang.core.designsystem.components.NavItem
+import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.components.StatusBarIcons
 import app.parivaar.panchang.core.designsystem.components.PpNavigationSuite
 import app.parivaar.panchang.core.model.settings.AppSettings
 import app.parivaar.panchang.feature.aaj.AajModel
@@ -83,13 +86,14 @@ fun ShellScreen(
     val avatar = { navigator.push(Dest.Settings) }
     val search = { searching = true }
     val dock = rememberDockState(aaj)
+    ShellStatusBar(tab, dest)
     val dockScroll = rememberDockScroll(tab to dest)
     PpNavigationSuite(
         NAV_ITEMS, tab.name, { navigator.select(Tab.valueOf(it)) },
         gem = dock.gem, orb = dock.orb, dockVisible = dockVisible(dest.immersive, dockScroll.visible),
         underDock = runsUnderDock(tab, dest),
     ) {
-        Box(modifier.fillMaxSize().nestedScroll(dockScroll.connection)) {
+        Box(modifier.fillMaxSize().nestedScroll(dockScroll.connection).belowStatusBar(tab, dest)) {
             when (val d = dest) {
                 is Dest.Root ->
                     when (tab) {
@@ -154,3 +158,11 @@ private fun rememberDockScroll(resetKey: Any): DockScroll {
 
 /** Aaj scrolls beneath the dock and pads itself by `LocalDockInset`; every other screen keeps the reserved strip. */
 private fun runsUnderDock(tab: Tab, dest: Dest) = tab == Tab.AAJ && dest is Dest.Root
+
+/** Aaj draws its sky behind the status bar (always dark, so light icons); every other destination sits below it. */
+private fun Modifier.belowStatusBar(tab: Tab, dest: Dest): Modifier =
+    if (runsUnderDock(tab, dest)) this else statusBarsPadding()
+
+@Composable
+private fun ShellStatusBar(tab: Tab, dest: Dest) =
+    StatusBarIcons(darkIcons = !PpTheme.ratna.isDark && !runsUnderDock(tab, dest))

@@ -280,3 +280,32 @@ Format: `YYYY-MM-DD · <milestone> · <decision> · <why>`
 - Dock: `PpNavigationSuite(underDock = true)` on the Aaj root removes the reserved strip and provides `LocalDockInset`; other tabs keep the strip.
 - Hora planet light is computed in `AajModel` (`sky`), off the main thread, cached per minute; `AajEngine.skyLight` default null, engine impl needs the ephemeris.
 - Travel offer/actions sit after the panchang list; the "viewing a travel place" banner stays directly under the header (it changes what every time means).
+
+## M07R fidelity pass: sky
+- `placeholderSkyPixels` is now a Kotlin port of the design HTML `nebula()` (hash, value noise, fbm, domain warp, dust lanes, core glow, star field) in sky/Nebula.kt. Gas is computed at 0.5 scale and bilinearly upsampled; stars (3 % big with cross and glow) are drawn at full resolution. The text-safe cap is still applied after it, unchanged (0.075).
+- Gem to palette: Manikya=sun, Moti=moon, Moonga=mars, Panna=mercury, Pukhraj=jupiter, Heera=venus, Neelam=saturn. Gomed (hessonite) and Lehsunia (cat's eye) have no HTML palette: Gomed uses a warm amber-brown (Mars/Jupiter family), Lehsunia an olive-gold green (Mercury/Jupiter family). Nebula seed uses the HTML formula on the palette name length.
+- Placeholder skies render at full display size and finished bitmaps are cached (LRU of 4) per (gem, size, density).
+- SkyHeader is full-bleed: it adds the unconsumed status-bar inset to its height and pushes text and planet below it. Callers must not apply status-bar padding above it (MainActivity's `safeDrawingPadding` consumes the inset, so the sky starts below the bar until that is changed to top-less padding on Aaj/onboarding).
+- GemChip matches the HTML .gemchip (conic gem sphere, specular dot, glow, fill rgba(10,13,24,.72), 18 % white border, bold 11 sp). GemChipColors.FILL is now 0xFF0A0D18 at 0.72; the AA test over a white sky still passes.
+
+
+## M07R fidelity pass: surfaces
+- Glass legibility beats the CSS tint: every `GlassSurface` (dock, top bar) raises its tint alpha to at least 0.92 (`SurfaceMath.MIN_SCRIM`), so text scrolling beneath never reads through; the blur, gold-hairline fallback ladder and Reduce Transparency are unchanged. Pure tests cover the scrim and dock label contrast (>= 4.5:1) over the busiest content in all four moods.
+- Dock inactive icon and label use chandan2 (not the HTML chandan3): chandan3 cannot reach 4.5:1 on any glass ground.
+- Fonts in the dock stay 11 sp (D1 floor), not the HTML 8.5 sp.
+- Ported from the HTML: lacquer inset top highlight and hero shadow, glass shadow and 120x60 dp specular, gold button (3-stop gradient, inset lines, 10 dp gold glow, soft-light sheen following tilt), ghost button (haldi text, haldi border 45 %), ink3 pills, gold hairline, orb (radial disc, 1.5 dp ring, 6 dp halo, shadow, glow pulsing 18-34 dp over 3.2 s only while selected and not Reduce Motion, avoid = kumkum), orbSVG ring, end dot, flame and bowl, flame flicker, active-tab glow and underline.
+- Ring radius stays DESIGN_V2 29 dp / 3 dp (the HTML scales a 70-unit viewBox to 64 px, giving about 26.5 dp). Touch-point specular is not implemented (tilt only). The standalone `diya()` of the HTML is not ported (no consumer yet).
+- Top bar: 8 dp bottom spacing added inside `PpTopBar`, so the following header line no longer sits tight under it.
+
+## M07R fidelity pass: planets
+- **Textures:** `planets/PlanetTextures.kt` is a straight port of the design HTML's `makeTex` (hash/vn/fbm/ramp; Moon craters and maria, Mercury, Jupiter belts and Great Red Spot, Saturn bands and polar tint, Mars dark regions and polar caps, Venus clouds, solar granulation), 512x256 equirectangular, deterministic. `PlanetTexturesTest` matches the channel sums and sample texels for all 7 maps exactly against V8 output (`core/designsystem/src/test/resources/planets/texref.js`). Generation takes 10–110 ms per map on a desktop JVM (Moon/Mercury are the slowest because of the craters). Runs once per body on `Dispatchers.Default`, then cached. The AGSL path samples the map as a `BitmapShader` (linear filtering, repeat in longitude); the CPU fallback samples it nearest-texel, as the HTML does.
+- **Renderer:** sphere mapping with the HTML's axis tilt/roll (beta/gam), limb rim light (Venus 1.1; Mars, Jupiter, Saturn 0.55), lunar ambient (5, 7, 11), lunar exposure 0.62, the design's ring colours and opacities, both shadows (ring on planet ×(1 − 0.75α); planet on ring ×0.12), and edge alpha min(1, (1 − r)·R·1.2). The light is never the HTML's fixed elong/tilt or lx/ly/lz: it is the engine-driven `PlanetLight`. The HTML's moon light (sin e cos t, sin e sin t, −cos e) is the same vector with i = 180° − e.
+- **Where the M07R spec wins over the HTML (accuracy):**
+  - The lunar terminator smoothstep is symmetric, (−soft, soft) with soft 0.02, instead of the HTML's (−0.02, 0.06), so the lit share stays (1 + cos i)/2.
+  - The Sun keeps the spec's emissive law 1 − 0.6(1 − μ).
+  - Saturn's axis and ring tilt are the engine's B, with the line of nodes horizontal (D9, no roll).
+  - Unlit ring face ×0.3 is kept (the HTML has none).
+  - The Moon does not spin; the HTML's ±3-texel wobble is not used.
+- **Spin:** texels per second of the 512 map (Mercury 2, Venus 2, Mars 3, Jupiter 5, Saturn 2, Sun 3), within the spec's 2–9.
+- **Glow:** only the Sun gets the design's glow, drop-shadow(0 0 22px rgba(255,120,40,.8)), drawn as a radial falloff from the disc edge to 22 dp. The dark drop shadows under header planets are left to the screens that place them.
+- **Saturn size:** Saturn keeps the square frame (disc radius = size/4.6), so a screen must give it a larger size than other planets. The HTML uses a 2.35:0.62 frame that clips the disc.

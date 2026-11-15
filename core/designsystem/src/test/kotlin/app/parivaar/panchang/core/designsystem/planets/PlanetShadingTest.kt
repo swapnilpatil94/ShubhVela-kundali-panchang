@@ -136,5 +136,17 @@ class PlanetShadingTest {
         assertTrue(edge < 0.5f)
     }
 
+    @Test
+    fun framesUseTheDesignTextures() {
+        val mars = PlanetShading.render(PlanetBody.MARS, PlanetLight.FULL, 64)[32 * 64 + 32]
+        val r = (mars shr 16) and 0xFF
+        val g = (mars shr 8) and 0xFF
+        val b = mars and 0xFF
+        assertTrue(r > g && g > b && r > 120, "rust-red Mars: $r $g $b")
+        val sat = PlanetShading.render(PlanetBody.SATURN, PlanetLight(0f, 0f, 1f, 20f), 92)
+        val ansa = sat[46 * 92 + 46 + (1.7f * planetRadiusPx(PlanetBody.SATURN, 92f)).toInt()]
+        assertTrue(ansa ushr 24 > 120, "B ring opaque outside the disc")
+    }
+
     private fun lum(argb: Int): Int = ((argb shr 16) and 0xFF) + ((argb shr 8) and 0xFF) + (argb and 0xFF)
 }

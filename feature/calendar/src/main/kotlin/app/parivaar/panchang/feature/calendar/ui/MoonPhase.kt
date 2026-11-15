@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
@@ -40,9 +41,10 @@ object MoonPhase {
 @Composable
 fun MoonPhaseIcon(elongationDeg: Double, size: Dp = 13.dp, modifier: Modifier = Modifier) {
     val r = PpTheme.ratna
-    val lit = if (r.isDark) r.text else r.lacquerTop
-    val dark = if (r.isDark) r.ink3 else r.text.copy(alpha = 0.55f)
-    val outline = r.text3.copy(alpha = 0.6f)
+    val look = MoonColors.of(r.isDark)
+    val lit = Color(look.lit)
+    val dark = Color(look.dark)
+    val outline = Color(look.outline)
     val shape = MoonPhase.shape(elongationDeg)
     Canvas(modifier.size(size)) {
         val rad = this.size.minDimension / 2f
@@ -58,4 +60,16 @@ fun MoonPhaseIcon(elongationDeg: Double, size: Dp = 13.dp, modifier: Modifier = 
         }
         drawCircle(outline, rad, c, style = Stroke(0.75.dp.toPx()))
     }
+}
+
+/**
+ * Moon colours (design: lit #EDE2C4, unlit #1A1C3E). Chandan darkens the lit fill to warm gold so it keeps 3:1 against
+ * the cream card, and uses a warm brown outline; unlit stays dark ink in both moods (full = bright, new = dark).
+ */
+data class MoonLook(val lit: Long, val dark: Long, val outline: Long)
+
+object MoonColors {
+    private val NIGHT = MoonLook(0xFFEDE2C4, 0xFF1A1C3E, 0x33EDE6D6)
+    private val CHANDAN = MoonLook(0xFFB8862A, 0xFF1A1C3E, 0xFF6B4A1E)
+    fun of(isDark: Boolean): MoonLook = if (isDark) NIGHT else CHANDAN
 }

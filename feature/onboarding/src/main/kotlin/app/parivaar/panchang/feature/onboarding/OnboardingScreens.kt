@@ -11,6 +11,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.platform.LocalDensity
+import app.parivaar.panchang.core.designsystem.sky.SkyHeaderSpec
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -32,6 +37,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -106,6 +113,8 @@ interface OnboardingPlatform {
     fun applyLocale(tag: String)
 }
 
+private val ONBOARDING_HEADER_HEIGHT = 240.dp
+
 /** The whole flow. Call `machine.back()` from the activity's back handler; it returns false on step 1. */
 @Composable
 fun OnboardingHost(
@@ -129,29 +138,42 @@ fun OnboardingHost(
         }
     }
 
+    // Step 1 has the dark sky behind the status bar, later steps follow the mood.
+    app.parivaar.panchang.core.designsystem.components.StatusBarIcons(
+        darkIcons = !PpTheme.ratna.isDark && state.step != OnboardingStep.LANGUAGE,
+    )
     val progress = stringResource(R.string.onb_step_progress, state.step.ordinal + 1, OnboardingStep.entries.size)
     Column(
-        modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).imePadding()
-            .verticalScroll(rememberScrollState()),
+        modifier.fillMaxSize()
+            // Step 1 lets its sky run behind the status bar; later steps pad below it.
+            .windowInsetsPadding(
+                if (state.step == OnboardingStep.LANGUAGE) {
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                } else {
+                    WindowInsets.safeDrawing
+                },
+            ).imePadding(),
+    ) {
+    Column(
+        Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(PpSpace.l),
     ) {
         val pad = Modifier.padding(horizontal = PpSpace.screen)
         if (state.step == OnboardingStep.LANGUAGE) {
             // Sky header on step 1 only (spec M07R section 3).
             val gem = remember { gemFor(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).dayOfWeek) }
-            SkyHeader(
-                SkyHeaderUi(
-                    gem, progress.uppercase(), stringResource(R.string.onb_language_title),
-                    AnnotatedString(stringResource(R.string.onb_language_body)),
-                ),
+            val ui = SkyHeaderUi(
+                gem, progress.uppercase(), stringResource(R.string.onb_language_title),
+                AnnotatedString(stringResource(R.string.onb_language_body)),
             )
+            SkyHeader(ui, minHeight = ONBOARDING_HEADER_HEIGHT)
         } else {
             Text(
                 progress.uppercase(), style = PpType.eyebrow, color = PpTheme.ratna.text2,
                 modifier = pad.padding(top = PpSpace.xxl),
             )
         }
-        Column(pad.padding(bottom = PpSpace.xxl), verticalArrangement = Arrangement.spacedBy(PpSpace.l)) {
+        Column(pad.padding(bottom = PpSpace.l), verticalArrangement = Arrangement.spacedBy(PpSpace.l)) {
         when (state.step) {
             OnboardingStep.LANGUAGE -> LanguageStep(state, machine, onOpenPrivacy)
             OnboardingStep.CITY -> CityStep(state, machine) { rationale = true }
@@ -162,6 +184,13 @@ fun OnboardingHost(
         if (state.error == OnboardingError.SAVE_FAILED) {
             Text(stringResource(R.string.onb_save_failed), color = PpTheme.ratna.kumkum)
         }
+        }
+    }
+    // Pinned action bar: always visible, content scrolls above it.
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = PpSpace.screen, vertical = PpSpace.s),
+        verticalArrangement = Arrangement.spacedBy(PpSpace.xs),
+    ) {
         PpButton(
             text = stringResource(if (state.step == OnboardingStep.REMINDERS) R.string.onb_finish else R.string.onb_continue),
             onClick = {
@@ -182,11 +211,13 @@ fun OnboardingHost(
             enabled = state.canContinue,
             modifier = Modifier.fillMaxWidth(),
         )
-        if (state.canSkip) PpButton(stringResource(R.string.onb_skip), machine::skip, PpButtonStyle.Tonal, modifier = Modifier.fillMaxWidth())
-        if (state.step != OnboardingStep.LANGUAGE) {
-            PpButton(stringResource(R.string.onb_back), { machine.back() }, PpButtonStyle.Outline, modifier = Modifier.fillMaxWidth())
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PpSpace.s)) {
+            if (state.step != OnboardingStep.LANGUAGE) {
+                PpButton(stringResource(R.string.onb_back), { machine.back() }, PpButtonStyle.Outline, modifier = Modifier.weight(1f))
+            }
+            if (state.canSkip) PpButton(stringResource(R.string.onb_skip), machine::skip, PpButtonStyle.Tonal, modifier = Modifier.weight(1f))
         }
-        }
+    }
     }
 
     if (rationale) {
@@ -227,7 +258,7 @@ private fun ChoiceCard(title: String, desc: String?, selected: Boolean, onClick:
             .background(Brush.verticalGradient(listOf(r.lacquerTop, r.lacquerBottom)))
             .border(border, PpShapes.lacquer)
             .selectable(selected = selected, onClick = onClick, role = Role.RadioButton)
-            .padding(PpSpace.l),
+            .padding(horizontal = PpSpace.l, vertical = PpSpace.m),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PpSpace.s),
     ) {
@@ -251,7 +282,9 @@ private fun LanguageStep(state: OnboardingState, machine: OnboardingMachine, onO
         }
     }
     Text(stringResource(R.string.onb_privacy_promise), style = MaterialTheme.typography.bodyMedium, color = PpTheme.ratna.text2, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-    PpButton(stringResource(R.string.onb_privacy_link), onOpenPrivacy, PpButtonStyle.Outline, modifier = Modifier.fillMaxWidth())
+    TextButton(onClick = onOpenPrivacy, modifier = Modifier.fillMaxWidth().heightIn(min = PpSpace.minTouchTarget)) {
+        Text(stringResource(R.string.onb_privacy_link), color = PpTheme.ratna.gold, style = MaterialTheme.typography.labelLarge)
+    }
 }
 
 @Composable

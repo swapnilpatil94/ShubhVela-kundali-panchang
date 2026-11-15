@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
@@ -122,6 +124,7 @@ fun GlassSurface(
     var origin by remember { mutableStateOf(Offset.Zero) }
     Box(
         modifier
+            .shadow(18.dp, shape, clip = false, ambientColor = Color.Black.copy(alpha = 0.5f), spotColor = Color.Black.copy(alpha = 0.5f))
             .onGloballyPositioned { origin = it.boundsInWindow().topLeft }
             .drawWithContent { drawGlass(backdrop, glassLayer, shape, origin, r, kind) }
             .border(1.dp, r.glassBorder, shape),
@@ -148,18 +151,22 @@ private fun androidx.compose.ui.graphics.drawscope.ContentDrawScope.drawGlass(
         clipPath(path) { drawLayer(glassLayer) }
     }
     clipPath(path) {
-        drawRect(Brush.verticalGradient(listOf(r.glassTintTop, r.glassTintBottom)))
+        // Minimum scrim: content beneath never reads through chrome (labels stay >= 4.5:1).
+        drawRect(Brush.verticalGradient(listOf(Color(SurfaceMath.scrim(r.glassTintTop.toArgbL())), Color(SurfaceMath.scrim(r.glassTintBottom.toArgbL())))))
         // Inner top highlight, 22 % white (ink on light moods would vanish; white on ivory tint still reads as a sheen).
         drawLine(
             Color.White.copy(alpha = SurfaceMath.HIGHLIGHT_ALPHA), Offset(0f, 0.5f), Offset(size.width, 0.5f), strokeWidth = 1.dp.toPx(),
         )
-        val cx = if (kind == GlassKind.BLUR_TILT) SurfaceMath.specularX(backdrop.tilt.value) else 0.3f
-        drawRect(
-            Brush.radialGradient(
-                listOf(Color.White.copy(alpha = 0.10f), Color.Transparent),
-                center = Offset(size.width * cx, 0f), radius = size.width * 0.5f,
-            ),
-        )
+        // Specular: 120 x 60 dp ellipse, white 20 %, following the tilt (static at 30 % when no tilt).
+        val cx = size.width * (if (kind == GlassKind.BLUR_TILT) SurfaceMath.specularX(backdrop.tilt.value) else 0.3f)
+        val cy = size.height * 0.3f
+        val rx = 120.dp.toPx()
+        scale(1f, 0.5f, pivot = Offset(cx, cy)) {
+            drawCircle(
+                Brush.radialGradient(0f to Color.White.copy(alpha = 0.20f), 0.7f to Color.Transparent, center = Offset(cx, cy), radius = rx),
+                rx, Offset(cx, cy),
+            )
+        }
     }
     drawContent()
 }
@@ -221,3 +228,10 @@ private fun TiltEffect(backdrop: GlassBackdrop, active: Boolean) {
         onDispose { owner.lifecycle.removeObserver(observer); unregister() }
     }
 }
+
+private fun Color.toArgbL(): Long =
+    (((alpha * 255f + 0.5f).toLong() and 0xFF) shl 24) or (((red * 255f + 0.5f).toLong() and 0xFF) shl 16) or
+        (((green * 255f + 0.5f).toLong() and 0xFF) shl 8) or ((blue * 255f + 0.5f).toLong() and 0xFF)
+
+/** Tilt in degrees (null when no backdrop or no sensor); read in the draw phase. Provided by the navigation suite. */
+val LocalTilt = compositionLocalOf<State<Float>?> { null }

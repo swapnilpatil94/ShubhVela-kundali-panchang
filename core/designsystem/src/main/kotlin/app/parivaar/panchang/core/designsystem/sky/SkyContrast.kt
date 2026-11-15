@@ -90,31 +90,8 @@ fun applyTextSafeZone(argb: IntArray, width: Int, height: Int, featherPx: Float,
     }
 }
 
-/** Procedural stand-in for a graded sky: vertical gem at 30 % to ink0, plus a haldi core at 12 % around (70 %, 30 %). Opaque ARGB. */
-fun placeholderSkyPixels(gem: Gem, width: Int, height: Int): IntArray {
-    val ink = PpPalette.INK0
-    fun ch(c: Long, s: Int) = ((c shr s) and 0xFF).toFloat()
-    val out = IntArray(width * height)
-    for (y in 0 until height) {
-        val fy = (y + 0.5f) / height
-        val gemA = 0.30f * (1f - fy)
-        for (x in 0 until width) {
-            val fx = (x + 0.5f) / width
-            val dx = (fx - 0.70f) * width
-            val dy = (fy - 0.30f) * height
-            val rad = 0.55f * width
-            val core = 0.12f * max(0f, 1f - kotlin.math.sqrt(dx * dx + dy * dy) / rad)
-            fun mix(s: Int): Int {
-                var v = ch(ink, s)
-                v += (ch(gem.argb, s) - v) * gemA
-                v += (ch(PpPalette.HALDI, s) - v) * core
-                return v.toInt().coerceIn(0, 255)
-            }
-            out[y * width + x] = (0xFF shl 24) or (mix(16) shl 16) or (mix(8) shl 8) or mix(0)
-        }
-    }
-    return out
-}
+/** Procedural sky for a gem (nebula + stars, port of the design HTML); see [nebulaPixels]. Opaque ARGB, deterministic. */
+fun placeholderSkyPixels(gem: Gem, width: Int, height: Int): IntArray = nebulaPixels(gem, width, height)
 
 /** Worst-case header contrast model: brightest allowed pixel under shade and fade, sRGB compositing as Compose draws it. */
 object SkyContrastModel {

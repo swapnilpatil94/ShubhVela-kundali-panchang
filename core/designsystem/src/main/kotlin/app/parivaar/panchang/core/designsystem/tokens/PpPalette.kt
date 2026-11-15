@@ -35,6 +35,21 @@ object PpPalette {
     const val GLASS_TINT_TOP_CHANDAN = 0xD9FFFBF2L
     const val GLASS_BORDER_CHANDAN = 0xFFE3CFA2L
 
+    // Aaj orb (orbSVG / .orb in design/shubhvela-screens.html)
+    const val FLAME_OUTER = 0xFFFFE0A0L
+    const val FLAME_INNER = 0xFFFF8A2AL
+    const val END_DOT_GOOD = 0xFFFFE3A3L
+    const val END_DOT_AVOID = 0xFFFFB3B8L
+    const val ORB_CHANDAN_TOP = 0xFFFFFDF6L
+    const val ORB_CHANDAN_BOTTOM = 0xFFF3E6CCL
+    const val ORB_HALO_CHANDAN = 0xE6FBF4E6L
+    const val DIYA_BRASS_DARK = 0xFF7A4A12L
+    const val SHEEN_WHITE = 0xFFFFFFFFL
+    const val BTN_INSET_TOP = 0xCCFFF4D2L
+    const val BTN_INSET_BOTTOM = 0x8078500AL
+    /** rgba(255,240,200,.10): inset highlight of the hero lacquer. */
+    const val HERO_HIGHLIGHT = 0x1AFFF0C8L
+    const val BTN_ON_GOLD = 0xFF2A1C05L
     /** Aaj orb ring on Chandan (ivory orb). */
     const val ORB_RING_CHANDAN = 0xFFC99A3AL
 

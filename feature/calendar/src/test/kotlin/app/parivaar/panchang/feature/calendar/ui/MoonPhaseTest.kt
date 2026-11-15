@@ -29,3 +29,22 @@ class MoonPhaseTest {
         assertTrue(UtsavDays.isUtsav(listOf("ekadashi_smarta", "karwa_chauth")))
     }
 }
+
+class MoonColorsTest {
+    private fun card(mood: app.parivaar.panchang.core.designsystem.tokens.RatnaMood): Long =
+        app.parivaar.panchang.core.designsystem.tokens.PpPalette.of(mood).lacquerTop
+
+    @Test fun litFillReadsAgainstCardInBothMoods() {
+        for ((dark, mood) in listOf(
+            true to app.parivaar.panchang.core.designsystem.tokens.RatnaMood.NIGHT,
+            false to app.parivaar.panchang.core.designsystem.tokens.RatnaMood.CHANDAN,
+        )) {
+            val look = MoonColors.of(dark)
+            val c = app.parivaar.panchang.core.designsystem.tokens.contrastRatio(look.lit, card(mood))
+            assertTrue(c >= 3.0, "lit vs card $mood = $c")
+            // Unlit is dark ink in both moods and clearly differs from the lit part.
+            assertEquals(0xFF1A1C3E, look.dark)
+            assertTrue(app.parivaar.panchang.core.designsystem.tokens.contrastRatio(look.lit, look.dark) >= 3.0)
+        }
+    }
+}

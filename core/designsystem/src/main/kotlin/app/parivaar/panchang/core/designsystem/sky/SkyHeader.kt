@@ -4,6 +4,9 @@ package app.parivaar.panchang.core.designsystem.sky
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -61,11 +64,15 @@ fun SkyHeader(
     modifier: Modifier = Modifier,
     source: SkySource = SkySource.Placeholder(ui.gem),
     planet: (@Composable () -> Unit)? = null,
+    minHeight: androidx.compose.ui.unit.Dp = SkyHeaderSpec.height,
     extra: @Composable ColumnScope.() -> Unit = {},
 ) {
     val onSky = PpTheme.ratna.onSky
     val shadow = Shadow(Color(0xE6000000), Offset(0f, 1f), 2f)
-    Box(modifier.fillMaxWidth().heightIn(min = SkyHeaderSpec.height)) {
+    // Full-bleed: the sky also covers the status bar. [topInset] is the status-bar height not yet consumed by an ancestor
+    // (0 when the caller already applied safeDrawing padding, so the header then starts below the bar as before).
+    val topInset = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
+    Box(modifier.fillMaxWidth().heightIn(min = minHeight + topInset)) {
         SkyImage(source, Modifier.matchParentSize())
         Box(Modifier.matchParentSize().background(Brush.horizontalGradient(*
             SkyShade.shadeStops.map { (f, a) -> f to Color(SkyShade.SHADE_RGB).copy(alpha = a) }.toTypedArray().let { it }
@@ -75,14 +82,14 @@ fun SkyHeader(
         )))
         if (planet != null) {
             Box(
-                Modifier.align(Alignment.TopEnd).padding(top = SkyHeaderSpec.planetTop)
+                Modifier.align(Alignment.TopEnd).padding(top = SkyHeaderSpec.planetTop + topInset)
                     .offset(x = SkyHeaderSpec.planetOffsetX).size(SkyHeaderSpec.planetSize),
             ) { planet() }
         }
         Column(
             Modifier.align(Alignment.BottomStart)
                 .fillMaxWidth(if (planet != null) SkyHeaderSpec.TEXT_FRACTION_WITH_PLANET else SkyHeaderSpec.TEXT_FRACTION)
-                .padding(start = PpSpace.screen, end = PpSpace.s, bottom = PpSpace.xxl, top = PpSpace.xxxl),
+                .padding(start = PpSpace.screen, end = PpSpace.s, bottom = PpSpace.xxl, top = PpSpace.xxxl + topInset),
         ) {
             Text(ui.eyebrow.uppercase(), style = PpType.eyebrow.copy(fontWeight = FontWeight.ExtraBold, shadow = shadow), color = onSky)
             Text(

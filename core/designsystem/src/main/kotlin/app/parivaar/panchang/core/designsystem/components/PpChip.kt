@@ -1,4 +1,4 @@
-@file:Suppress("MatchingDeclarationName")
+@file:Suppress("MatchingDeclarationName", "MaxLineLength")
 
 package app.parivaar.panchang.core.designsystem.components
 
@@ -32,6 +32,7 @@ enum class TimeQuality { AUSPICIOUS, INAUSPICIOUS, NEUTRAL }
 private data class ChipLook(
     val bg: Color,
     val fg: Color,
+    val border: Color,
     @DrawableRes val icon: Int,
     @StringRes val name: Int,
 )
@@ -39,16 +40,17 @@ private data class ChipLook(
 /** Gold / kumkum / okay pill. Always icon + label + colour; never colour alone. */
 @Composable
 fun PpChip(label: String, quality: TimeQuality, modifier: Modifier = Modifier) {
-    val pp = PpTheme.colors
+    val r = PpTheme.ratna
+    // .pill: ink3 ground; good = haldi text + haldi border 35 %, bad = kumkum, neutral = okay text + hairline.
     val look = when (quality) {
         TimeQuality.AUSPICIOUS -> ChipLook(
-            pp.auspiciousBg, pp.auspiciousFg, R.drawable.ic_quality_auspicious, R.string.quality_auspicious,
+            r.ink3, r.gold, r.gold.copy(alpha = 0.35f), R.drawable.ic_quality_auspicious, R.string.quality_auspicious,
         )
         TimeQuality.INAUSPICIOUS -> ChipLook(
-            pp.inauspiciousBg, pp.inauspiciousFg, R.drawable.ic_quality_inauspicious, R.string.quality_inauspicious,
+            r.ink3, r.kumkum, r.kumkum.copy(alpha = 0.35f), R.drawable.ic_quality_inauspicious, R.string.quality_inauspicious,
         )
         TimeQuality.NEUTRAL -> ChipLook(
-            pp.neutralBg, pp.neutralFg, R.drawable.ic_quality_neutral, R.string.quality_neutral,
+            r.ink3, r.okay, r.line, R.drawable.ic_quality_neutral, R.string.quality_neutral,
         )
     }
     val description = stringResource(R.string.chip_description, label, stringResource(look.name))
@@ -56,8 +58,8 @@ fun PpChip(label: String, quality: TimeQuality, modifier: Modifier = Modifier) {
         modifier = modifier
             .semantics(mergeDescendants = true) { contentDescription = description }
             .background(look.bg, PpShapes.pill)
-            .border(1.dp, look.fg.copy(alpha = 0.30f), PpShapes.pill)
-            .padding(horizontal = PpSpace.m, vertical = PpSpace.s),
+            .border(1.dp, look.border, PpShapes.pill)
+            .padding(horizontal = PpSpace.s10, vertical = PpSpace.xs + 1.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PpSpace.xs),
     ) {

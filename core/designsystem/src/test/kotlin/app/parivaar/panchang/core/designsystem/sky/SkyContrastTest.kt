@@ -1,4 +1,4 @@
-@file:Suppress("MagicNumber", "MaxLineLength")
+@file:Suppress("MagicNumber", "MaxLineLength", "NestedBlockDepth")
 
 package app.parivaar.panchang.core.designsystem.sky
 
@@ -8,6 +8,7 @@ import app.parivaar.panchang.core.designsystem.tokens.RatnaMood
 import app.parivaar.panchang.core.designsystem.tokens.contrastRatio
 import app.parivaar.panchang.core.designsystem.tokens.ratnaColorsOf
 import androidx.compose.ui.graphics.toArgb
+import kotlin.math.max
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -94,5 +95,40 @@ class SkyContrastTest {
             val over = 0xFF000000L or (ch(16) shl 16) or (ch(8) shl 8) or ch(0)
             assertTrue(contrastRatio(GemChipColors.TEXT, over) >= 4.5, "$gem over white: ${contrastRatio(GemChipColors.TEXT, over)}")
         }
+    }
+
+    @Test fun nebulaIsDeterministicAndOpaque() {
+        for (gem in Gem.entries) {
+            val a = nebulaPixels(gem, 160, 140); val b = nebulaPixels(gem, 160, 140)
+            assertTrue(a.contentEquals(b), "$gem")
+            assertTrue(a.all { (it ushr 24) == 0xFF }, "$gem alpha")
+        }
+        assertTrue(!nebulaPixels(Gem.NEELAM, 160, 140).contentEquals(nebulaPixels(Gem.MANIKYA, 160, 140)))
+    }
+
+    @Test fun cappedNebulaZoneIsUnderCapStaysVisibleAndOutsideIsBrighter() {
+        val w = 360; val h = 330; val feather = 14f
+        for (gem in Gem.entries) {
+            val px = nebulaPixels(gem, w, h); applyTextSafeZone(px, w, h, feather)
+            var zoneMax = 0f; var outsideMax = 0f; var brightStars = 0
+            for (y in 0 until h) for (x in 0 until w) {
+                val p = px[y * w + x]
+                val l = luminanceOf(((p shr 16) and 0xFF) / 255f, ((p shr 8) and 0xFF) / 255f, (p and 0xFF) / 255f)
+                if (safeZoneWeight(x, y, w, h, feather) >= 1f) {
+                    zoneMax = max(zoneMax, l)
+                    assertTrue(l <= SkySafeZone.MAX_LUMINANCE + 1e-4f, "$gem L=$l at $x,$y")
+                    if (l > 0.03f) brightStars++
+                } else outsideMax = max(outsideMax, l)
+            }
+            assertTrue(brightStars > 20, "$gem stars visible in zone: $brightStars")
+            assertTrue(outsideMax > SkySafeZone.MAX_LUMINANCE, "$gem outside is brighter: $outsideMax")
+        }
+    }
+
+    @Test fun nebulaGenerationTimeAndWorstCase() {
+        nebulaPixels(Gem.NEELAM, 200, 180)
+        val t0 = System.nanoTime(); val px = nebulaPixels(Gem.NEELAM, 1080, 990); val t1 = System.nanoTime()
+        applyTextSafeZone(px, 1080, 990, 40f); val t2 = System.nanoTime()
+        println("nebula 1080x990 gen=${(t1 - t0) / 1_000_000} ms cap=${(t2 - t1) / 1_000_000} ms")
     }
 }

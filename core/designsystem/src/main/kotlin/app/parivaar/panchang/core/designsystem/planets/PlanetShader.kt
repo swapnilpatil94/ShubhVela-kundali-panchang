@@ -11,173 +11,151 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 
 /**
- * AGSL sphere renderer (API 33+), docs/specs/M07R.md section 6 "Planets". [PlanetShading] is its CPU twin:
- * change both together.
+ * AGSL sphere renderer (API 33+), the GPU twin of [PlanetShading] (design/shubhvela-screens.html `setupPlanet` /
+ * `renderBody` with the engine's lighting). Change both together.
  *
- * Per pixel xy (px): p = (xy - center) / R, r2 = p.p (y down).
- * - Disc (r2 < 1): view normal n = (p.x, -p.y, sqrt(1 - r2)) (+z to the viewer). Body frame m = n rotated about x
- *   by the ring tilt B (Saturn's spin axis = ring normal; B = 0 otherwise), then spun by `rot` about the body axis:
- *   q = (m.x cos rot + m.z sin rot, m.y, m.z cos rot - m.x sin rot). Texture uv = (fract(lon / 2pi + 0.5),
- *   0.5 - lat / pi) with lon = atan(q.x, q.z), lat = asin(q.y); without a texture (texSize.x == 0) a procedural
- *   fbm surface (three colours, latitude bands for the giants).
- * - Lighting: mu = n.z, mu0 = n . sun. model 0 Lambert I = clamp((mu0 + soft) / (1 + soft), 0, 1); model 1
- *   Lommel-Seeliger I = min(1, 2 mu0 / (mu0 + mu)) (mu0 > 0) x smoothstep(-soft, soft, mu0); model 2 emissive
- *   I = 1 - 0.6 (1 - mu). Lit models: limb darkening I (1 - limb (1 - mu)). Moon: earthshine
- *   0.03 (1 - smoothstep(-0.02, 0.02, mu0)) tinted #9AA0B8 (divided by 0.6 to show through the dark surface).
- * - Edge: alpha = 1 - smoothstep(1 - 1.5 / R, 1, r) (1.5 px antialiasing).
- * - Rings (ringOn = 1): normal nR = (0, cos B, sin B). The view ray at (p.x, -p.y) meets the plane at
- *   z = p.y cos B / sin B (in up-y terms z = -y cos B / sin B); radius rho = |h|; bands C 1.239-1.527 0.15,
- *   B -1.951 0.85, Cassini -2.027 0.10, A -2.269 0.60. Hidden where the disc is in front (z < disc z). Seen
- *   face lit when sign(sun . nR) == sign(sin B), else x0.3; planet shadow on the ring when the ray from h toward
- *   the Sun hits the unit sphere (b = h . sun < 0 and b^2 - (|h|^2 - 1) > 0) x0.12; ring shadow on the disc via
- *   t = -(n . nR) / (sun . nR) > 0, I x (1 - alpha(|n + t sun|)). |sin B| < 0.005: an edge-on line.
- * Output is premultiplied.
+ * Per pixel xy (px): p = (xy - center) / R; view (y up) x = p.x, y = -p.y, r2 = x^2 + y^2.
+ * - Disc (r2 < 1): z = sqrt(1 - r2). Body coordinates: roll g about z, then tilt b about x:
+ *   bx = cos g x + sin g y, by0 = -sin g x + cos g y, by = cos b by0 + sin b z, bz = -sin b by0 + cos b z
+ *   (spin axis N = (-sin g cos b, cos g cos b, sin b); Saturn: b = ring tilt B, g = 0, so N = ring normal).
+ *   lon = atan(bx, bz), lat = asin(by); texel u = fract(lon / 2pi + 1) x 512 + off (spin), v = (0.5 - lat / pi) 256
+ *   into `tex` (the [PlanetTextures] map as a BitmapShader, linear filtering, repeat in u).
+ * - d = n . sun, mu = z. model 0 (Lambert, design): clamp((d + soft) / (1 + soft))^0.85 (1 - limb (1 - mu^0.35));
+ *   model 1 (lunar, design): 2 d / (d + mu + 1e-4) (d > 0) x smoothstep(-soft, soft, d) x (1 - limb (1 - mu)) x
+ *   exposure; model 2 (emissive, spec): 1 - 0.6 (1 - mu).
+ * - Ring shadow on the disc (d > 0): t = -(n . N) / (sun . N) > 0, x (1 - 0.75 alpha(|n + t sun|)).
+ * - Colour (0..255): texel x I + earthshine (5, 7, 11)
+ *   + rim (255 .9, 235 .85, 200 .7) x (1 - mu)^3 max(0, d + .25) rim.
+ * - Rings (design `ringCol`): C 1.24-1.53 (140,125,100) .16, B -1.95 (228,212,172) .8, Cassini -2.02 (120,110,95) .06,
+ *   A -2.27 (205,188,148) .55, Encke 2.205-2.215 .05, ripple 0.82 + 0.18 sin(230 r) sin(61 r). Plane hit
+ *   z_r = -y cos B / sin B, r = |(x, y, z_r)|. Over the disc only where z_r > z (near half), outside the disc always;
+ *   colour x 0.86, x 0.3 on the unlit face (sign(sun . N) != sign(sin B)), x 0.12 in the planet's shadow (ray from the
+ *   ring point toward the Sun hits the sphere: b = h . sun < 0, b^2 - (|h|^2 - 1) > 0). |sin B| < 0.005: a line.
+ * - Edge alpha = min(1, (1 - r) R 1.2). Output premultiplied.
  */
 const val PLANET_AGSL: String = """
 uniform shader tex;
-uniform float2 texSize;
 uniform float2 center;
 uniform float R;
 uniform float3 sun;
-uniform float rot;
+uniform float off;
 uniform float model;
 uniform float soft;
 uniform float limb;
+uniform float exposure;
 uniform float earthshine;
+uniform float rim;
 uniform float ringOn;
 uniform float sinB;
 uniform float cosB;
-uniform float3 colA;
-uniform float3 colB;
-uniform float3 colC;
-uniform float bands;
-uniform float spots;
+uniform float sinG;
+uniform float cosG;
 
 const float PI = 3.14159265;
 
-float hash(float3 p) {
-    p = fract(p * 0.3183099 + 0.1) * 17.0;
-    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
-}
-
-float vnoise(float3 x) {
-    float3 i = floor(x);
-    float3 f = fract(x);
-    f = f * f * (3.0 - 2.0 * f);
-    float z0 = mix(mix(hash(i), hash(i + float3(1.0, 0.0, 0.0)), f.x),
-                   mix(hash(i + float3(0.0, 1.0, 0.0)), hash(i + float3(1.0, 1.0, 0.0)), f.x), f.y);
-    float z1 = mix(mix(hash(i + float3(0.0, 0.0, 1.0)), hash(i + float3(1.0, 0.0, 1.0)), f.x),
-                   mix(hash(i + float3(0.0, 1.0, 1.0)), hash(i + float3(1.0, 1.0, 1.0)), f.x), f.y);
-    return mix(z0, z1, f.z);
-}
-
-float fbm(float3 x) {
-    float a = 0.5;
-    float s = 0.0;
-    for (int k = 0; k < 4; k++) {
-        s += a * vnoise(x);
-        x = x * 2.03 + 1.7;
-        a *= 0.5;
+float4 ringCol(float r) {
+    float4 c = float4(0.0);
+    if (r > 1.24 && r < 1.53) {
+        c = float4(140.0, 125.0, 100.0, 0.16);
+    } else if (r >= 1.53 && r < 1.95) {
+        c = float4(228.0, 212.0, 172.0, 0.8);
+    } else if (r >= 1.95 && r < 2.02) {
+        c = float4(120.0, 110.0, 95.0, 0.06);
+    } else if (r >= 2.02 && r < 2.27) {
+        c = float4(205.0, 188.0, 148.0, 0.55);
     }
-    return s;
-}
-
-float band(float r, float r0, float r1) {
-    return step(r0, r) * (1.0 - step(r1, r));
-}
-
-float ringAlpha(float rho) {
-    float a = 0.15 * band(rho, 1.239, 1.527) + 0.85 * band(rho, 1.527, 1.951)
-            + 0.10 * band(rho, 1.951, 2.027) + 0.60 * band(rho, 2.027, 2.269);
-    return a * (0.88 + 0.12 * sin(rho * 140.0));
-}
-
-float3 surface(float3 q) {
-    if (texSize.x > 0.0) {
-        float lon = atan(q.x, q.z);
-        float lat = asin(clamp(q.y, -1.0, 1.0));
-        float2 uv = float2(fract(lon / (2.0 * PI) + 0.5), 0.5 - lat / PI);
-        return tex.eval(uv * texSize).rgb;
+    if (r > 2.205 && r < 2.215) {
+        c.a = 0.05;
     }
-    float nz = fbm(q * 3.0 + 7.31);
-    float t = clamp(nz * spots + 0.5 * (1.0 - spots), 0.0, 1.0);
-    if (bands > 0.0) {
-        float lat = asin(clamp(q.y, -1.0, 1.0));
-        float b = sin(lat * bands + nz * 2.5 * spots);
-        t = clamp(0.5 + 0.4 * b + (nz - 0.47) * 0.6, 0.0, 1.0);
-    }
-    float3 c = mix(colA, colB, smoothstep(0.0, 0.6, t));
-    return mix(c, colC, smoothstep(0.6, 1.0, t));
+    c.a *= 0.82 + 0.18 * sin(r * 230.0) * sin(r * 61.0);
+    return c;
 }
 
-float intensity(float mu, float mu0) {
+float intensity(float mu, float d) {
     if (model > 1.5) {
         return 1.0 - 0.6 * (1.0 - mu);
     }
-    float i = 0.0;
     if (model > 0.5) {
         float ls = 0.0;
-        if (mu0 > 0.0) {
-            ls = min(1.0, 2.0 * mu0 / (mu0 + mu));
+        if (d > 0.0) {
+            ls = 2.0 * d / (d + mu + 0.0001);
         }
-        i = ls * smoothstep(-soft, soft, mu0);
-    } else {
-        i = clamp((mu0 + soft) / (1.0 + soft), 0.0, 1.0);
+        return ls * smoothstep(-soft, soft, d) * (1.0 - limb * (1.0 - mu)) * exposure;
     }
-    return i * (1.0 - limb * (1.0 - mu));
+    float w = clamp((d + soft) / (1.0 + soft), 0.0, 1.0);
+    return pow(w, 0.85) * (1.0 - limb * (1.0 - pow(max(mu, 0.0), 0.35)));
+}
+
+float ringFace() {
+    float sn = sun.y * cosB + sun.z * sinB;
+    return (sn * sinB > 0.0) ? 1.0 : 0.3;
 }
 
 half4 main(float2 xy) {
     float2 p = (xy - center) / R;
-    float r2 = dot(p, p);
+    float x = p.x;
+    float y = -p.y;
+    float r2 = x * x + y * y;
+    float3 nR = float3(0.0, cosB, sinB);
+    bool edgeOn = abs(sinB) < 0.005;
     float3 pm = float3(0.0);
     float pa = 0.0;
-    float3 nR = float3(0.0, cosB, sinB);
-    float sn = dot(sun, nR);
     if (r2 < 1.0) {
-        float3 n = float3(p.x, -p.y, sqrt(1.0 - r2));
-        float my = n.y * cosB + n.z * sinB;
-        float mz = -n.y * sinB + n.z * cosB;
-        float3 q = float3(n.x * cos(rot) + mz * sin(rot), my, mz * cos(rot) - n.x * sin(rot));
-        float3 c = surface(q);
-        float mu = n.z;
-        float mu0 = dot(n, sun);
-        float i = intensity(mu, mu0);
-        if (ringOn > 0.5 && abs(sinB) >= 0.005 && abs(sn) >= 0.0001) {
+        float z = sqrt(1.0 - r2);
+        float bx = cosG * x + sinG * y;
+        float by0 = -sinG * x + cosG * y;
+        float by = cosB * by0 + sinB * z;
+        float bz = -sinB * by0 + cosB * z;
+        float lon = atan(bx, bz);
+        float lat = asin(clamp(by, -1.0, 1.0));
+        float u = fract(lon / (2.0 * PI) + 1.0) * 512.0 + off;
+        float v = (0.5 - lat / PI) * 256.0;
+        float3 texel = float3(tex.eval(float2(u, v)).rgb) * 255.0;
+        float3 n = float3(x, y, z);
+        float d = dot(n, sun);
+        float sh = intensity(z, d);
+        float sn = dot(sun, nR);
+        if (ringOn > 0.5 && d > 0.0 && !edgeOn && abs(sn) >= 0.0001) {
             float t = -dot(n, nR) / sn;
             if (t > 0.0) {
-                i *= 1.0 - ringAlpha(length(n + t * sun));
+                sh *= 1.0 - 0.75 * ringCol(length(n + t * sun)).a;
             }
         }
-        float es = earthshine * 0.03 * (1.0 - smoothstep(-0.02, 0.02, mu0)) / 0.6;
-        float3 tint = float3(0.6039, 0.6275, 0.7216);
-        float a = 1.0 - smoothstep(1.0 - 1.5 / R, 1.0, sqrt(r2));
-        pm = min(c * (float3(i) + es * tint), float3(1.0)) * a;
+        float rl = 0.0;
+        if (rim > 0.0) {
+            rl = pow(1.0 - z, 3.0) * max(0.0, d + 0.25) * rim;
+        }
+        float3 col = texel * sh + earthshine * float3(5.0, 7.0, 11.0) + float3(229.5, 199.75, 140.0) * rl;
+        if (ringOn > 0.5 && !edgeOn) {
+            float zr = -y * cosB / sinB;
+            if (zr > z) {
+                float4 rc = ringCol(length(float3(x, y, zr)));
+                col = col * (1.0 - rc.a) + rc.rgb * 0.86 * ringFace() * rc.a;
+            }
+        }
+        float a = min(1.0, (1.0 - sqrt(r2)) * R * 1.2);
+        pm = clamp(col, 0.0, 255.0) / 255.0 * a;
         pa = a;
     }
     if (ringOn > 0.5) {
-        float ps = -p.y;
-        float ra = 0.0;
-        float lit = 0.0;
-        if (abs(sinB) < 0.005) {
-            ra = ringAlpha(abs(p.x)) * (1.0 - smoothstep(0.0, 1.5 / R, abs(ps)));
+        float4 rc = float4(0.0);
+        float lit = ringFace();
+        if (edgeOn) {
+            rc = ringCol(abs(x));
+            rc.a *= 1.0 - smoothstep(0.0, 1.5 / R, abs(y));
             lit = 0.5;
-        } else {
-            float z = -ps * cosB / sinB;
-            float3 h = float3(p.x, ps, z);
-            ra = ringAlpha(length(h));
-            if (r2 < 1.0 && z < sqrt(1.0 - r2)) {
-                ra = 0.0;
-            }
-            float face = (sn * sinB > 0.0) ? 1.0 : 0.3;
+        } else if (r2 >= 1.0) {
+            float zr = -y * cosB / sinB;
+            float3 h = float3(x, y, zr);
+            rc = ringCol(length(h));
             float b = dot(h, sun);
             float cc = dot(h, h) - 1.0;
-            float shadow = (b < 0.0 && b * b - cc > 0.0) ? 0.12 : 1.0;
-            lit = face * shadow * (0.45 + 0.55 * sqrt(abs(sn)));
+            if (b < 0.0 && b * b - cc > 0.0) {
+                lit *= 0.12;
+            }
         }
-        float3 rc = float3(0.8314, 0.7608, 0.6196) * lit;
-        pm = rc * ra + pm * (1.0 - ra);
-        pa = ra + pa * (1.0 - ra);
+        pm = rc.rgb * 0.86 * lit / 255.0 * rc.a + pm * (1.0 - rc.a);
+        pa = rc.a + pa * (1.0 - rc.a);
     }
     return half4(half3(pm), half(pa));
 }
@@ -186,42 +164,39 @@ half4 main(float2 xy) {
 /** Compiles and feeds [PLANET_AGSL]. One instance per drawn planet (uniforms are per instance). */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 internal class PlanetShaderProgram private constructor(val shader: RuntimeShader) {
-    /** Texture slot (`tex`): a 1 px transparent placeholder until the owner's equirectangular maps arrive. */
-    private var texture: Shader =
-        BitmapShader(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
+    private var textureOf: Bitmap? = null
+
+    /** Binds the surface map (512 x 256 from [PlanetTextures]); linear filtering, repeat in longitude. */
+    fun setTexture(bitmap: Bitmap) {
+        if (textureOf === bitmap) return
+        val s = BitmapShader(bitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
+        s.filterMode = BitmapShader.FILTER_MODE_LINEAR
+        shader.setInputShader("tex", s)
+        textureOf = bitmap
+    }
 
     /** Sets every uniform for one frame of [body] in a [sizePx] square at spin [rot] radians. */
     fun update(body: PlanetBody, light: PlanetLight, sizePx: Float, rot: Float) {
         val style = planetStyle(body)
         val sun = light.unitSun()
-        val b = Math.toRadians((light.ringTiltDeg ?: 0f).toDouble())
-        shader.setInputShader("tex", texture)
-        shader.setFloatUniform("texSize", 0f, 0f)
+        val ringOn = light.ringTiltDeg != null
+        val b = light.ringTiltDeg?.let { Math.toRadians(it.toDouble()) } ?: style.axisTiltRad.toDouble()
+        val g = if (ringOn) 0.0 else style.axisRollRad.toDouble()
         shader.setFloatUniform("center", sizePx / 2f, sizePx / 2f)
         shader.setFloatUniform("R", planetRadiusPx(body, sizePx))
         shader.setFloatUniform("sun", sun[0], sun[1], sun[2])
-        shader.setFloatUniform("rot", rot)
+        shader.setFloatUniform("off", (rot / (2.0 * Math.PI) * PlanetTextures.WIDTH).toFloat())
         shader.setFloatUniform("model", style.model.code)
         shader.setFloatUniform("soft", style.soft)
         shader.setFloatUniform("limb", style.limb)
+        shader.setFloatUniform("exposure", style.exposure)
         shader.setFloatUniform("earthshine", style.earthshine)
-        shader.setFloatUniform("ringOn", if (light.ringTiltDeg != null) 1f else 0f)
+        shader.setFloatUniform("rim", style.rim)
+        shader.setFloatUniform("ringOn", if (ringOn) 1f else 0f)
         shader.setFloatUniform("sinB", kotlin.math.sin(b).toFloat())
         shader.setFloatUniform("cosB", kotlin.math.cos(b).toFloat())
-        setColour("colA", style.colA)
-        setColour("colB", style.colB)
-        setColour("colC", style.colC)
-        shader.setFloatUniform("bands", style.bands)
-        shader.setFloatUniform("spots", style.spots)
-    }
-
-    private fun setColour(name: String, argb: Long) {
-        shader.setFloatUniform(
-            name,
-            ((argb shr 16) and 0xFF) / 255f,
-            ((argb shr 8) and 0xFF) / 255f,
-            (argb and 0xFF) / 255f,
-        )
+        shader.setFloatUniform("sinG", kotlin.math.sin(g).toFloat())
+        shader.setFloatUniform("cosG", kotlin.math.cos(g).toFloat())
     }
 
     companion object {
@@ -238,5 +213,20 @@ internal class PlanetShaderProgram private constructor(val shader: RuntimeShader
             Log.w(TAG, "planet shader unavailable; using the canvas fallback")
             null
         }
+    }
+}
+
+/** One immutable Bitmap per body over [PlanetTextures.argb] (generate off the main thread). */
+internal object PlanetBitmaps {
+    private val cache = HashMap<PlanetBody, Bitmap>()
+
+    /** The cached bitmap if it already exists (never generates). */
+    fun peek(body: PlanetBody): Bitmap? = synchronized(cache) { cache[body] }
+
+    fun get(body: PlanetBody): Bitmap {
+        synchronized(cache) { cache[body]?.let { return it } }
+        val w = PlanetTextures.WIDTH
+        val bmp = Bitmap.createBitmap(PlanetTextures.argb(body), w, PlanetTextures.HEIGHT, Bitmap.Config.ARGB_8888)
+        synchronized(cache) { return cache.getOrPut(body) { bmp } }
     }
 }

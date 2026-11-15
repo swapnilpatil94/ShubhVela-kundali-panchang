@@ -13,6 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import app.parivaar.panchang.core.designsystem.PanchangTheme
 import app.parivaar.panchang.core.designsystem.PpTheme
+import app.parivaar.panchang.core.designsystem.R
+import app.parivaar.panchang.core.designsystem.components.GlassDock
+import app.parivaar.panchang.core.designsystem.components.NavItem
+import app.parivaar.panchang.core.designsystem.components.OrbTone
+import app.parivaar.panchang.core.designsystem.components.OrbUi
+import app.parivaar.panchang.core.designsystem.tokens.Gem
 import app.parivaar.panchang.core.designsystem.components.PpButton
 import app.parivaar.panchang.core.designsystem.components.PpButtonStyle
 import app.parivaar.panchang.core.designsystem.components.PpCard
@@ -58,3 +64,22 @@ private fun Gallery(mood: RatnaMood) = PanchangTheme(mood = mood) {
 @SurfaceShots @Composable private fun NightGallery() = Gallery(RatnaMood.NIGHT)
 @SurfaceShots @Composable private fun ChandanGallery() = Gallery(RatnaMood.CHANDAN)
 @SurfaceShots @Composable private fun PaperGallery() = Gallery(RatnaMood.PAPER)
+
+@Composable
+private fun DockStates(mood: RatnaMood) = PanchangTheme(mood = mood) {
+    val items = listOf(
+        NavItem("cal", R.string.tab_calendar, R.drawable.ic_tab_calendar),
+        NavItem("kun", R.string.tab_kundli, R.drawable.ic_tab_kundli),
+        NavItem("aaj", R.string.tab_aaj, R.drawable.ic_tab_aaj, center = true),
+        NavItem("bond", R.string.tab_bonds, R.drawable.ic_tab_bonds),
+        NavItem("bhakti", R.string.tab_bhakti, R.drawable.ic_tab_bhakti),
+    )
+    Column(Modifier.background(PpTheme.ratna.bg0).padding(PpSpace.l), verticalArrangement = Arrangement.spacedBy(PpSpace.l)) {
+        GlassDock(items, "aaj", Gem.NEELAM, OrbUi(OrbTone.GOOD, 0.49f, "9:33 AM", "Aaj. Good time now, until 9:33 AM."), true, {})
+        GlassDock(items, "aaj", Gem.NEELAM, OrbUi(OrbTone.AVOID, 0.3f, "10:57 AM", "Aaj. Better to wait, until 10:57 AM."), true, {})
+        GlassDock(items, "cal", Gem.PANNA, OrbUi(OrbTone.NEUTRAL, null, null, "Aaj. Open today's timings."), true, {})
+    }
+}
+
+@SurfaceShots @Composable private fun NightDock() = DockStates(RatnaMood.NIGHT)
+@SurfaceShots @Composable private fun ChandanDock() = DockStates(RatnaMood.CHANDAN)

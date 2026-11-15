@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalContentColor
@@ -13,6 +15,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -42,14 +46,33 @@ fun Lacquer(
     val shape = PpShapes.lacquer
     val spec = remember(r.mood) { PpPalette.of(r.mood) }
     val border = Color(SurfaceMath.lacquerBorder(spec, hero, warn))
-    val shadowColor = Color.Black.copy(alpha = if (r.isDark) 0.35f else 0.14f)
+    // .lacq: 0 10 24 at 35 %; .hero: 0 16 34 at 45 % and a warmer inset highlight.
+    val shadowColor = Color.Black.copy(alpha = (if (hero) 0.45f else 0.35f) * (if (r.isDark) 1f else 0.4f))
+    val highlight = if (hero) Color(PpPalette.HERO_HIGHLIGHT) else Color.White.copy(alpha = if (r.isDark) 0.05f else 0.6f)
     var m = modifier
-        .shadow(10.dp, shape, clip = false, ambientColor = shadowColor, spotColor = shadowColor)
+        .shadow(if (hero) 16.dp else 10.dp, shape, clip = false, ambientColor = shadowColor, spotColor = shadowColor)
         .clip(shape)
         .background(Brush.verticalGradient(listOf(r.lacquerTop, r.lacquerBottom)))
+        .drawWithContent {
+            drawContent()
+            // Inset top highlight (1 dp), following the straight part of the top edge.
+            val inset = 20.dp.toPx()
+            drawLine(highlight, Offset(inset, 1.dp.toPx()), Offset(size.width - inset, 1.dp.toPx()), strokeWidth = 1.dp.toPx())
+        }
         .border(1.dp, border, shape)
     m = if (onClick != null) m.clickable(role = Role.Button, onClick = onClick) else m
     CompositionLocalProvider(LocalContentColor provides r.text) {
         Column(m.semantics(mergeDescendants = mergeSemantics) {}.padding(PpSpace.l), content = content)
     }
+}
+
+/** `.hair`: 1 dp gold hairline fading out at both ends. Decorative; gold only beside auspicious content. */
+@Composable
+fun GoldHairline(modifier: Modifier = Modifier) {
+    val gold = PpTheme.ratna.goldFill
+    androidx.compose.foundation.layout.Box(
+        modifier.fillMaxWidth().height(1.dp).background(
+            Brush.horizontalGradient(listOf(Color.Transparent, gold.copy(alpha = 0.45f), Color.Transparent)),
+        ),
+    )
 }

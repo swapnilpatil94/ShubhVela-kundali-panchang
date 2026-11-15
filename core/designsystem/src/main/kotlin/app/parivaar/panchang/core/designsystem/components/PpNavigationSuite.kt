@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import app.parivaar.panchang.core.designsystem.R
 import app.parivaar.panchang.core.designsystem.surfaces.LocalGlassBackdrop
+import app.parivaar.panchang.core.designsystem.surfaces.LocalTilt
 import app.parivaar.panchang.core.designsystem.surfaces.glassSource
 import app.parivaar.panchang.core.designsystem.surfaces.rememberGlassBackdrop
 import app.parivaar.panchang.core.designsystem.tokens.Gem
@@ -61,7 +62,9 @@ fun PpNavigationSuite(
         } else {
             0.dp
         }
-        Box(contentBox) { CompositionLocalProvider(LocalDockInset provides inset, content = content) }
+        Box(contentBox) {
+            CompositionLocalProvider(LocalDockInset provides inset, LocalTilt provides backdrop.tilt, content = content)
+        }
         CompositionLocalProvider(LocalGlassBackdrop provides backdrop) {
             GlassDock(items, selected, gem, orbUi, dockVisible, onSelect, Modifier.align(Alignment.BottomCenter))
         }

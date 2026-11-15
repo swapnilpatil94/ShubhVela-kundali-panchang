@@ -29,7 +29,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import app.parivaar.panchang.core.designsystem.R
+import app.parivaar.panchang.core.designsystem.PpTheme
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
+import app.parivaar.panchang.core.designsystem.tokens.PpType
 
 @Composable
 fun PpTopBar(
@@ -39,18 +41,22 @@ fun PpTopBar(
     onAvatar: () -> Unit,
     onSearch: () -> Unit,
 ) {
-    GlassSurface(LocalGlassBackdrop.current, BAR_SHAPE, Modifier.fillMaxWidth()) {
+    // Not chrome: nothing scrolls under it, so a plain header (glass is for chrome only).
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = PpSpace.l, vertical = PpSpace.s),
+        modifier = Modifier.fillMaxWidth()
+            .padding(start = PpSpace.screen, end = PpSpace.s, top = PpSpace.s, bottom = PpSpace.s),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PpSpace.xs),
     ) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
+            Text(
+                title, style = PpType.displayM, color = PpTheme.ratna.text,
+                modifier = Modifier.semantics { heading() },
+            )
             if (subtitle != null) {
                 Text(
-                    subtitle, style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    subtitle, style = PpType.meta, color = PpTheme.ratna.text2,
+                    maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
             }
         }
@@ -72,8 +78,5 @@ fun PpTopBar(
             }
         }
     }
-    }
 }
 
-/** Glass bar: chrome, so glass (solid when no backdrop is provided). */
-private val BAR_SHAPE = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)

@@ -18,7 +18,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +38,7 @@ import app.parivaar.panchang.core.designsystem.PanchangTheme
 import app.parivaar.panchang.locale.LocaleApplier
 import app.parivaar.panchang.shell.DebugGate
 import app.parivaar.panchang.shell.GateUi
+import app.parivaar.panchang.core.designsystem.components.StatusBarIcons
 import app.parivaar.panchang.shell.KeyLostGate
 import app.parivaar.panchang.shell.KeyUnavailableGate
 import app.parivaar.panchang.shell.LoadingGate
@@ -169,8 +174,9 @@ class MainActivity : ComponentActivity() {
             settings.themeMode, settings.dynamicColor, settings.badaText, settings.reduceMotion,
             reduceTransparency = settings.reduceTransparency,
         ) {
+            GateChrome(ui)
             Surface(Modifier.fillMaxSize()) {
-                Box(Modifier.fillMaxSize().safeDrawingPadding()) {
+                Box(Modifier.fillMaxSize().windowInsetsPadding(gateInsets(ui))) {
                     when (ui) {
                         GateUi.Loading -> LoadingGate()
                         // A debug-forced gate must never reach the real recovery actions (no wipe).
@@ -230,4 +236,20 @@ class MainActivity : ComponentActivity() {
         } else {
             LocaleApplier.storedTag(this)
         }
+}
+
+/** The shell and onboarding let their sky run behind the status bar; every other gate pads its own top. */
+@androidx.compose.runtime.Composable
+private fun gateInsets(ui: GateUi): WindowInsets =
+    if (ui == GateUi.Shell || ui == GateUi.Onboarding) {
+        WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+    } else {
+        WindowInsets.safeDrawing
+    }
+
+/** Status-bar icons follow the app mood, not the system theme (the shell and onboarding set their own). */
+@androidx.compose.runtime.Composable
+private fun GateChrome(ui: GateUi) {
+    val dark = app.parivaar.panchang.core.designsystem.PpTheme.ratna.isDark
+    if (ui != GateUi.Shell && ui != GateUi.Onboarding) StatusBarIcons(darkIcons = !dark)
 }

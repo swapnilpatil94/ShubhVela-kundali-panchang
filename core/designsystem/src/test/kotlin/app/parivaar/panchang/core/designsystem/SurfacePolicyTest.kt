@@ -90,4 +90,39 @@ class SurfacePolicyTest {
         assertEquals(0.85f, SurfaceMath.specularX(50f), 1e-6f)
         assertEquals(0.15f, SurfaceMath.specularX(-10f), 1e-6f)
     }
+
+    @Test fun scrimRaisesTintToAtLeast92PercentAndNeverLowers() {
+        assertEquals(0xEBL, SurfaceMath.scrim(0x941C2238L) ushr 24 and 0xFFL) // .92 -> 235
+        assertEquals(0xF5L, SurfaceMath.scrim(0xF51C2238L) ushr 24 and 0xFFL) // already above: unchanged
+        assertEquals(0x1C2238L, SurfaceMath.scrim(0x941C2238L) and 0xFFFFFFL)
+        for (m in RatnaMood.entries) {
+            val p = PpPalette.of(m)
+            assertTrue((SurfaceMath.scrim(p.glassTintTop) ushr 24) >= 0xEAL, "$m top")
+            assertTrue((SurfaceMath.scrim(p.glassTintBottom) ushr 24) >= 0xEAL, "$m bottom")
+        }
+    }
+
+    /** Busiest content beneath the dock (white sky text on dark moods, black text on light ones) must not defeat the labels. */
+    @Test fun dockLabelsStayLegibleOverTheBusiestContent() {
+        for (m in RatnaMood.entries) {
+            val p = PpPalette.of(m)
+            val worst = if (p.isDark) listOf(PpPalette.WHITE, 0xFFFFFFFFL) else listOf(0xFF000000L, PpPalette.CHANDAN_TEXT)
+            for (backdrop in worst) for (tint in listOf(p.glassTintTop, p.glassTintBottom)) {
+                val ground = SurfaceMath.compositeOver(SurfaceMath.scrim(tint), backdrop)
+                assertTrue(app.parivaar.panchang.core.designsystem.tokens.contrastRatio(p.text2, ground) >= 4.5, "$m inactive label")
+                assertTrue(app.parivaar.panchang.core.designsystem.tokens.contrastRatio(p.text, ground) >= 4.5, "$m active label")
+            }
+        }
+    }
+
+    @Test fun compositeOverBlendsInSrgb() {
+        assertEquals(0xFF7F7F7FL, SurfaceMath.compositeOver(0x80000000L, 0xFFFFFFFFL))
+        assertEquals(0xFF123456L, SurfaceMath.compositeOver(0xFF123456L, 0xFFFFFFFFL))
+    }
+
+    @Test fun solidFallbackLadderUnchangedByScrim() {
+        assertEquals(GlassKind.SOLID, SurfacePolicy.glassKind(30, false, false, false, true))
+        assertEquals(GlassKind.SOLID, SurfacePolicy.glassKind(35, true, false, false, true))
+        assertEquals(PpPalette.INK3, SurfaceMath.solidFill(PpPalette.night))
+    }
 }

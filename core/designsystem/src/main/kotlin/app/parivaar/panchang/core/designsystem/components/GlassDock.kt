@@ -128,7 +128,7 @@ fun GlassDock(
 private fun OrbSlot(item: NavItem, isSelected: Boolean) {
     val r = PpTheme.ratna
     Box(Modifier.width(DockSpec.ORB_COLUMN.dp).height(DockSpec.HEIGHT.dp), contentAlignment = Alignment.BottomCenter) {
-        DockLabel(stringResource(item.label), if (isSelected) r.text else r.text3, Modifier.padding(bottom = 6.dp).clearAndSetSemantics { })
+        DockLabel(stringResource(item.label), if (isSelected) r.text else r.text2, Modifier.padding(bottom = 0.dp).clearAndSetSemantics { })
     }
 }
 
@@ -137,7 +137,7 @@ private fun TabSlot(item: NavItem, isSelected: Boolean, gem: Gem, modifier: Modi
     val r = PpTheme.ratna
     val label = stringResource(item.label)
     val tint = when {
-        !isSelected -> r.text3
+        !isSelected -> r.text2 // legibility over scrolling content: chandan2, not chandan3 (see DECISIONS)
         r.isDark -> Color(lighten(gem.argb))
         else -> Color(PpPalette.HALDI_DEEP)
     }
@@ -153,18 +153,25 @@ private fun TabSlot(item: NavItem, isSelected: Boolean, gem: Gem, modifier: Modi
             Modifier.size(DockSpec.ICON.dp + 12.dp).graphicsLayer { translationY = lift * density }
                 .drawBehind {
                     if (isSelected && r.isDark) {
-                        drawCircle(Brush.radialGradient(listOf(tint.copy(alpha = 0.32f), Color.Transparent), center, size.minDimension / 2f))
+                        drawCircle(Brush.radialGradient(listOf(tint.copy(alpha = 0.35f), Color.Transparent), center, size.minDimension / 2f))
                     }
                 },
             contentAlignment = Alignment.Center,
         ) {
             Icon(painterResource(item.icon), contentDescription = null, tint = tint, modifier = Modifier.size(DockSpec.ICON.dp))
         }
-        DockLabel(label, if (isSelected) r.text else r.text3, Modifier.clearAndSetSemantics { })
+        DockLabel(label, if (isSelected) r.text else r.text2, Modifier.clearAndSetSemantics { })
+        // Underline: 16 x 3 dp, transparent > gem+30 % white > transparent, with a soft gem glow (dark moods only).
+        val bar = if (r.isDark) Color(lighten(gem.argb, 0.3f)) else tint
         Box(
             Modifier.padding(top = 3.dp).size(width = 16.dp, height = 3.dp)
+                .drawBehind {
+                    if (isSelected && r.isDark) {
+                        drawCircle(Brush.radialGradient(listOf(Color(gem.argb).copy(alpha = 0.55f), Color.Transparent), center, 10.dp.toPx()), 10.dp.toPx())
+                    }
+                }
                 .background(
-                    if (isSelected) Brush.horizontalGradient(listOf(tint, tint.copy(alpha = 0.55f))) else Brush.horizontalGradient(listOf(Color.Transparent, Color.Transparent)),
+                    if (isSelected) Brush.horizontalGradient(listOf(Color.Transparent, bar, Color.Transparent)) else Brush.horizontalGradient(listOf(Color.Transparent, Color.Transparent)),
                     PpShapes.pill,
                 ),
         )

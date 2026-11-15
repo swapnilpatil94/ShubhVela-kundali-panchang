@@ -63,11 +63,15 @@ fun planetLightOf(
 enum class LightModel(val code: Float) { LAMBERT(0f), LOMMEL_SEELIGER(1f), EMISSIVE(2f) }
 
 /**
- * Per-body look until the owner textures arrive (procedural surface). Colours are ARGB; [soft] is the terminator
- * softness (cosmetic, spec values), [limb] a linear limb-darkening coefficient, [bands] the latitude band frequency
- * of the gas giants (0 = none), [spots] the noise contrast, [spinPxPerSec] the spin in texture pixels per second
- * of a 2048 px wide equirectangular map (the Moon keeps one face toward the Earth: 0), [earthshine] 1 adds the
- * faint earthshine on the Moon's night side.
+ * Per-body look (design/shubhvela-screens.html `setupPlanet`). The surface is the procedural map of
+ * [PlanetTextures] (owner textures later). [soft] terminator softness (cosmetic, spec values); [limb]: Lambert bodies
+ * use the design's limb factor 1 - limb (1 - mu^0.35) (0.45 = the HTML's 0.55 + 0.45 mu^0.35), other models a linear
+ * 1 - limb (1 - mu); [spinPxPerSec] spin in texels per second of the 512 px wide map (the Moon keeps one face toward
+ * the Earth: 0); [earthshine] 1 adds the design's ambient (5, 7, 11) on the Moon; [rim] the design's limb rim light
+ * (Venus 1.1, Mars / Jupiter / Saturn 0.55); [exposure] the lunar 0.62 brightness of the design;
+ * [axisTiltRad] / [axisRollRad] the cosmetic presentation of the spin axis (beta / gam of the HTML; Saturn uses the
+ * engine's ring tilt B instead and no roll, D9). [colA]..[spots] are the colours of the earlier procedural
+ * placeholder, kept for API compatibility and unused.
  */
 data class PlanetStyle(
     val model: LightModel,
@@ -80,6 +84,10 @@ data class PlanetStyle(
     val spots: Float,
     val spinPxPerSec: Float,
     val earthshine: Float = 0f,
+    val rim: Float = 0f,
+    val exposure: Float = 1f,
+    val axisTiltRad: Float = 0.15f,
+    val axisRollRad: Float = 0.2f,
 )
 
 fun planetStyle(body: PlanetBody): PlanetStyle = when (body) {
@@ -87,32 +95,40 @@ fun planetStyle(body: PlanetBody): PlanetStyle = when (body) {
     PlanetBody.MOON -> PlanetStyle(
         LightModel.LOMMEL_SEELIGER, 0.02f, 0f,
         0xFF5E5E62, 0xFF9C9A96, 0xFFC9C6C0,
-        0f, 1f, 0f, 1f,
+        0f, 1f, 0f, earthshine = 1f, exposure = 0.62f,
     )
     PlanetBody.MERCURY -> PlanetStyle(
         LightModel.LOMMEL_SEELIGER, 0.02f, 0f,
         0xFF6B6560, 0xFF9A928A, 0xFFBDB5AC,
-        0f, 1f, 2f,
+        0f, 1f, 2f, exposure = 0.62f,
     )
     PlanetBody.VENUS -> PlanetStyle(
-        LightModel.LAMBERT, 0.06f, 0.25f,
+        LightModel.LAMBERT, 0.06f, 0.45f,
         0xFFC9A66B, 0xFFE3C99A, 0xFFF3E4C4,
-        2.5f, 0.35f, 2f,
+        2.5f, 0.35f, 2f, rim = 1.1f,
     )
-    PlanetBody.MARS -> PlanetStyle(LightModel.LAMBERT, 0.06f, 0.1f, 0xFF7A3418, 0xFFB8542A, 0xFFD98A5A, 0f, 1f, 5f)
+    PlanetBody.MARS -> PlanetStyle(
+        LightModel.LAMBERT, 0.06f, 0.45f,
+        0xFF7A3418, 0xFFB8542A, 0xFFD98A5A,
+        0f, 1f, 3f, rim = 0.55f,
+    )
     PlanetBody.JUPITER -> PlanetStyle(
-        LightModel.LAMBERT, 0.15f, 0.2f,
+        LightModel.LAMBERT, 0.15f, 0.45f,
         0xFF9A6B45, 0xFFD3B48C, 0xFFF1E6D2,
-        14f, 0.6f, 9f,
+        14f, 0.6f, 5f, rim = 0.55f, axisTiltRad = 0.05f, axisRollRad = 0.05f,
     )
-    PlanetBody.SATURN -> PlanetStyle(LightModel.LAMBERT, 0.15f, 0.2f, 0xFFB08A55, 0xFFD9BE8A, 0xFFEFE0BC, 10f, 0.3f, 8f)
+    PlanetBody.SATURN -> PlanetStyle(
+        LightModel.LAMBERT, 0.15f, 0.45f,
+        0xFFB08A55, 0xFFD9BE8A, 0xFFEFE0BC,
+        10f, 0.3f, 2f, rim = 0.55f, axisTiltRad = 0f, axisRollRad = 0f,
+    )
 }
 
 /** Disc radius in px inside a square of [sizePx]: Saturn leaves room for the A ring (outer edge 2.269 radii). */
 fun planetRadiusPx(body: PlanetBody, sizePx: Float): Float =
     if (body == PlanetBody.SATURN) sizePx / (2f * SATURN_FRAME_RADII) else sizePx / 2f
 
-/** Spin in radians per second for [body] ([PlanetStyle.spinPxPerSec] on a 2048 px map). */
+/** Spin in radians per second for [body] ([PlanetStyle.spinPxPerSec] on the 512 px map). */
 fun spinRadPerSec(body: PlanetBody): Float = (2.0 * PI * planetStyle(body).spinPxPerSec / TEXTURE_WIDTH_PX).toFloat()
 
 /** Normalises a light vector (defensive: the shader assumes a unit vector). */
@@ -170,5 +186,5 @@ class FrameGate(private val minIntervalNanos: Long = MIN_FRAME_NANOS) {
 }
 
 private const val DEG = PI / 180.0
-private const val TEXTURE_WIDTH_PX = 2048.0
+private const val TEXTURE_WIDTH_PX = 512.0 // PlanetTextures.WIDTH
 internal const val SATURN_FRAME_RADII = 2.3f

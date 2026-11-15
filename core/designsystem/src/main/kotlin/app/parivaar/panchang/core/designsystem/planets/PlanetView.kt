@@ -26,6 +26,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ShaderBrush
@@ -40,6 +42,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
@@ -87,9 +90,10 @@ fun PlanetView(
         Modifier.semantics { this.contentDescription = contentDescription }
     }
     if (program == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-        StaticPlanet(body, light, size, modifier.then(a11y))
+        StaticPlanet(body, light, size, modifier.sunGlow(body).then(a11y))
         return
     }
+    val texture = rememberPlanetBitmap(body)
     val rot = remember { mutableFloatStateOf(0f) }
     var onScreen by remember { mutableStateOf(false) }
     val budget = LocalPlanetBudget.current
@@ -115,11 +119,44 @@ fun PlanetView(
             .size(size)
             .then(a11y)
             .onGloballyPositioned { onScreen = it.boundsInWindow().let { b -> b.width > 0f && b.height > 0f } }
+            .sunGlow(body)
             .drawBehind {
+                val tex = texture ?: return@drawBehind
+                program.setTexture(tex)
                 program.update(body, light, min(this.size.width, this.size.height), rot.floatValue)
                 drawRect(ShaderBrush(program.shader))
             },
     ) {}
+}
+
+/** The body's surface map as a Bitmap, generated once per body off the main thread (null until ready). */
+@Composable
+private fun rememberPlanetBitmap(body: PlanetBody): Bitmap? =
+    produceState(PlanetBitmaps.peek(body), body) {
+        value = withContext(Dispatchers.Default) { PlanetBitmaps.get(body) }
+    }.value
+
+/**
+ * The design's sun glow, drop-shadow(0 0 22px rgba(255, 120, 40, .8)): a radial falloff from the disc edge to
+ * 22 dp beyond it, drawn behind the Sun only.
+ */
+private fun Modifier.sunGlow(body: PlanetBody): Modifier = if (body != PlanetBody.SUN) {
+    this
+} else {
+    drawBehind {
+        val r = planetRadiusPx(body, min(size.width, size.height))
+        val outer = r + SUN_GLOW.toPx()
+        drawCircle(
+            brush = Brush.radialGradient(
+                0f to SUN_GLOW_COLOUR,
+                r / outer to SUN_GLOW_COLOUR,
+                1f to SUN_GLOW_COLOUR.copy(alpha = 0f),
+                center = center,
+                radius = outer,
+            ),
+            radius = outer,
+        )
+    }
 }
 
 /** Advances the spin at the body's rate, at most about 30 times a second, while composed. */
@@ -200,5 +237,7 @@ private fun rememberResumed(): State<Boolean> {
 }
 
 private const val MAX_FALLBACK_PX = 256
+private val SUN_GLOW = 22.dp
+private val SUN_GLOW_COLOUR = Color(red = 255, green = 120, blue = 40, alpha = 204)
 private const val TWO_PI = (2.0 * Math.PI).toFloat()
 private const val NANOS_PER_SECOND = 1e9f

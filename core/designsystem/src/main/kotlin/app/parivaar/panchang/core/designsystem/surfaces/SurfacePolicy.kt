@@ -39,6 +39,26 @@ object SurfaceMath {
     const val MAX_TILT_DEG = 10f
     const val TILT_LOW_PASS = 0.1f
 
+    /** Glass tint never lets more than 8 % of the content beneath through, so dock and bar text stay legible. */
+    const val MIN_SCRIM = 0.92f
+
+    /** [argb] with its alpha raised to at least [min]. */
+    fun scrim(argb: Long, min: Float = MIN_SCRIM): Long {
+        val a = ((argb ushr 24) and 0xFFL) / 255f
+        return withAlpha(argb, maxOf(a, min))
+    }
+
+    /** Opaque result of [fg] (alpha channel used) composited over opaque [bg]. */
+    fun compositeOver(fg: Long, bg: Long): Long {
+        val a = ((fg ushr 24) and 0xFFL) / 255.0
+        fun ch(s: Int): Long {
+            val f = ((fg shr s) and 0xFF).toDouble()
+            val b = ((bg shr s) and 0xFF).toDouble()
+            return Math.round(f * a + b * (1 - a)).coerceIn(0L, 255L)
+        }
+        return 0xFF000000L or (ch(16) shl 16) or (ch(8) shl 8) or ch(0)
+    }
+
     /** Replaces the alpha of [argb] with [alpha] (0..1). */
     fun withAlpha(argb: Long, alpha: Float): Long =
         ((alpha.coerceIn(0f, 1f) * 255f).roundToLong() shl 24) or (argb and 0xFFFFFFL)

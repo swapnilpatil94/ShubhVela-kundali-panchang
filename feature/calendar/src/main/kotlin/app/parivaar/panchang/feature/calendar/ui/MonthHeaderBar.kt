@@ -2,13 +2,24 @@
 
 package app.parivaar.panchang.feature.calendar.ui
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,8 +59,6 @@ fun MonthHeaderBar(
     modifier: Modifier = Modifier,
 ) {
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-    val prev = stringResource(if (rtl) R.string.cal_glyph_next else R.string.cal_glyph_prev)
-    val next = stringResource(if (rtl) R.string.cal_glyph_prev else R.string.cal_glyph_next)
     val prevDesc = stringResource(R.string.cal_prev_month)
     val nextDesc = stringResource(R.string.cal_next_month)
     val res = androidx.compose.ui.platform.LocalContext.current.resources
@@ -60,7 +69,7 @@ fun MonthHeaderBar(
         stringResource(R.string.cal_samvat_shaka, RegionalText.number(header.samvat.shaka, view, locale))
     }
     val r = PpTheme.ratna
-    Column(modifier.fillMaxWidth().padding(horizontal = PpSpace.s)) {
+    Column(modifier.fillMaxWidth().padding(start = PpSpace.s, end = PpSpace.s, top = PpSpace.m)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PpSpace.s)) {
             Text(
                 res.getString(R.string.cal_header_months, masaNames, samvat), Modifier.weight(1f).padding(start = PpSpace.s),
@@ -68,12 +77,17 @@ fun MonthHeaderBar(
             )
             if (showToday) PpButton(stringResource(R.string.cal_today), onToday, PpButtonStyle.Outline)
         }
+        val wide = androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.5f
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PpSpace.xs)) {
-            TextButton(onClick = onPrev, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget).widthIn(min = PpSpace.minTouchTarget).semantics { contentDescription = prevDesc }) { Text(prev, color = r.text2) }
+            ChevronButton(towardStart = !rtl, desc = prevDesc, onClick = onPrev)
             TextButton(onClick = onPick, modifier = Modifier.weight(1f).heightIn(min = PpSpace.minTouchTarget)) {
-                Text(monthTitle(header.ym, locale), style = PpType.displayXl, color = r.text, modifier = Modifier.semantics { heading() })
+                // One line (ellipsis as a floor); wrapping is allowed only at large font scales.
+                Text(
+                    monthTitle(header.ym, locale), style = PpType.displayL, color = r.text, textAlign = TextAlign.Center,
+                    maxLines = if (wide) 2 else 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() },
+                )
             }
-            TextButton(onClick = onNext, modifier = Modifier.heightIn(min = PpSpace.minTouchTarget).widthIn(min = PpSpace.minTouchTarget).semantics { contentDescription = nextDesc }) { Text(next, color = r.text2) }
+            ChevronButton(towardStart = rtl, desc = nextDesc, onClick = onNext)
         }
         if (header.masaChanges.isNotEmpty()) {
             val fmt = java.time.format.DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale, "MMMd"), locale)
@@ -86,3 +100,22 @@ fun MonthHeaderBar(
     }
 }
 
+
+/** 48 dp touch target with a 24 dp chevron pointing to the start edge ([towardStart]) or the end edge. */
+@Composable
+private fun ChevronButton(towardStart: Boolean, desc: String, onClick: () -> Unit) {
+    val color = PpTheme.ratna.text2
+    Box(
+        Modifier.size(PpSpace.minTouchTarget).clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = desc },
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(Modifier.size(24.dp)) {
+            val w = size.width
+            val h = size.height
+            val x0 = if (towardStart) w * 0.62f else w * 0.38f
+            val x1 = if (towardStart) w * 0.38f else w * 0.62f
+            val path = Path().apply { moveTo(x0, h * 0.25f); lineTo(x1, h * 0.5f); lineTo(x0, h * 0.75f) }
+            drawPath(path, color, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
+    }
+}

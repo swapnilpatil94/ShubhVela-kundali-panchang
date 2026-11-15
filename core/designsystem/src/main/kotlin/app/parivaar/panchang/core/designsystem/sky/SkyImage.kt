@@ -51,11 +51,13 @@ fun SkyImage(source: SkySource, modifier: Modifier = Modifier) {
 }
 
 private fun decodeSky(context: android.content.Context, source: SkySource, wPx: Int, hPx: Int, density: Float): ImageBitmap {
-    // Placeholders are smooth, so a quarter-size bitmap is enough; drawables are decoded at display size.
+    // Placeholders are rendered at display size (nebula at half scale inside, stars at full resolution) and cached per (gem, size, density).
     val (w, h, px) = when (source) {
         is SkySource.Placeholder -> {
-            val w = (wPx / 4).coerceAtLeast(16); val h = (hPx / 4).coerceAtLeast(16)
-            Triple(w, h, placeholderSkyPixels(source.gem, w, h))
+            val key = Triple(source.gem, wPx to hPx, density)
+            val cached = synchronized(placeholderCache) { placeholderCache[key] }
+            if (cached != null) return cached
+            Triple(wPx, hPx, placeholderSkyPixels(source.gem, wPx, hPx))
         }
         is SkySource.Drawable -> {
             val bmp = decodeCropped(context, source.id, wPx, hPx)
@@ -67,7 +69,16 @@ private fun decodeSky(context: android.content.Context, source: SkySource, wPx: 
     }
     val feather = SkySafeZone.FEATHER_DP * density * w / wPx
     applyTextSafeZone(px, w, h, feather)
-    return Bitmap.createBitmap(px, w, h, Bitmap.Config.ARGB_8888).asImageBitmap()
+    val image = Bitmap.createBitmap(px, w, h, Bitmap.Config.ARGB_8888).asImageBitmap()
+    if (source is SkySource.Placeholder) {
+        synchronized(placeholderCache) { placeholderCache[Triple(source.gem, wPx to hPx, density)] = image }
+    }
+    return image
+}
+
+/** Small LRU of finished (capped) placeholder skies: at most 4 bitmaps (about 4 MB each at 1080 x 990). */
+private val placeholderCache = object : LinkedHashMap<Triple<Gem, Pair<Int, Int>, Float>, ImageBitmap>(8, 0.75f, true) {
+    override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Triple<Gem, Pair<Int, Int>, Float>, ImageBitmap>?): Boolean = size > 4
 }
 
 private fun decodeCropped(context: android.content.Context, id: Int, wPx: Int, hPx: Int): Bitmap {
