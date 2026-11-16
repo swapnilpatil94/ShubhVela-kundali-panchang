@@ -41,6 +41,8 @@ class AajExtras(
     val showCityOnShare: Boolean = false,
     val cityName: String? = null,
     val onShare: (ShareFormat, ShareCardModel) -> Unit = { _, _ -> },
+    /** M10: the next family date (on screen only; never in widgets or notifications). */
+    val family: AajFamilyRow? = null,
 ) {
     companion object {
         val None = AajExtras()
@@ -135,4 +137,9 @@ internal fun ActionsRow(extras: AajExtras, script: () -> List<String>, card: () 
             dismissButton = { TextButton({ choosing = false }) { Text(stringResource(R.string.aaj_travel_cancel)) } },
         )
     }
+}
+
+/** The Aaj family row (M08 D7, M10): texts already formatted from resources. */
+data class AajFamilyRow(val title: String, val detail: String?, val daysText: String, val soon: Boolean) {
+    override fun toString(): String = "AajFamilyRow(redacted)"
 }

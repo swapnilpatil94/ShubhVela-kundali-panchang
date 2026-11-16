@@ -207,6 +207,7 @@ class MainActivity : ComponentActivity() {
                                 CalendarWiring(vm.calendar, vm.calendarController) {
                                     vm.shareIcs(this@MainActivity, it)
                                 },
+                                vm.kundliWiring,
                             )
                         }
                     }

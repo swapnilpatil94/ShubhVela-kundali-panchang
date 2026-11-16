@@ -1,6 +1,8 @@
 package app.parivaar.panchang.core.data.codec
 
 import app.parivaar.panchang.core.model.profile.BirthData
+import app.parivaar.panchang.core.model.profile.FamilyPrefs
+import app.parivaar.panchang.core.model.profile.PassingData
 import app.parivaar.panchang.core.model.profile.Profile
 import app.parivaar.panchang.core.model.profile.ProfileOrigin
 import app.parivaar.panchang.core.model.profile.RecordId
@@ -8,6 +10,7 @@ import app.parivaar.panchang.core.model.profile.Relation
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 
 internal object ProfileCodec {
@@ -33,6 +36,27 @@ internal object ProfileCodec {
             )
         }
 
+    /** v2 keys: absent in v1 export/snapshot documents (rows are migrated by [PayloadMigrations]). */
+    private val v2Keys = setOf("passing", "familyPrefs")
+
+    private fun hms(t: LocalTime) = "${two(t.hour)}:${two(t.minute)}:${two(t.second)}"
+
+    private fun passingToJson(p: PassingData?): JsonElement =
+        if (p == null) JsonNull else obj("date" to str(p.date.toString()), "time" to str(p.time?.let(::hms)))
+
+    private fun passingFromJson(o: JsonElement): PassingData =
+        read(o) {
+            val date = LocalDate.parse(string("date"))
+            check(date.year in DataLimits.BIRTH_YEAR_MIN..DataLimits.BIRTH_YEAR_MAX)
+            PassingData(date, stringOrNull("time")?.let(LocalTime::parse))
+        }
+
+    fun prefsToJson(f: FamilyPrefs): JsonObject =
+        obj("tithi" to bool(f.tithi), "nakshatra" to bool(f.nakshatra), "shraddha" to bool(f.shraddha))
+
+    private fun prefsFromJson(o: JsonElement): FamilyPrefs =
+        read(o) { FamilyPrefs(boolean("tithi"), boolean("nakshatra"), boolean("shraddha")) }
+
     fun toJson(p: Profile): JsonObject =
         obj(
             "id" to str(p.id.hex),
@@ -45,6 +69,8 @@ internal object ProfileCodec {
             "notes" to str(p.notes),
             "createdAt" to instant(p.createdAt),
             "updatedAt" to instant(p.updatedAt),
+            "passing" to passingToJson(p.passing),
+            "familyPrefs" to prefsToJson(p.familyPrefs),
         )
 
     /** True when [p] would decode again (same bounds as stored and imported rows). */
@@ -58,7 +84,7 @@ internal object ProfileCodec {
 
     fun fromJson(o: JsonElement): Profile =
         guarded {
-            read(o) {
+            read(o, optional = v2Keys) {
                 val name = string("name")
                 val notes = stringOrNull("notes")
                 check(name.length in 1..DataLimits.NAME_MAX)
@@ -74,6 +100,8 @@ internal object ProfileCodec {
                     notes = notes,
                     createdAt = instant("createdAt"),
                     updatedAt = instant("updatedAt"),
+                    passing = objectOrNull("passing")?.let(::passingFromJson),
+                    familyPrefs = objectOrNull("familyPrefs")?.let(::prefsFromJson) ?: FamilyPrefs(),
                 )
             }
         }

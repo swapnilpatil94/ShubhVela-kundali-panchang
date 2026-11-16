@@ -2,6 +2,7 @@
 
 package app.parivaar.panchang.feature.aaj.ui
 
+import app.parivaar.panchang.core.designsystem.family.FamilyDateRow
 import android.content.res.Resources
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -232,6 +233,11 @@ internal fun DayContent(
                             },
                         )
                         PanchangList(limbList, onOpen = { full = !full })
+                    }
+                }
+                extras.family?.let { f ->
+                    item {
+                        FamilyDateRow(f.title, f.detail, f.daysText, f.soon, Modifier.padding(horizontal = PpSpace.screen))
                     }
                 }
                 item {

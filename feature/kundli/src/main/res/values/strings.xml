@@ -1,5 +1,182 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- M10 Kundli and family. English source; the 12 locales come from the translation pass (keys stable). -->
 <resources>
-    <string name="kundli_placeholder_title">Coming soon</string>
-    <string name="kundli_placeholder_body">Birth charts will appear here in a coming update.</string>
+    <string name="kundli_title">Your birth sky</string>
+    <string name="kundli_eyebrow">%1$s · %2$s</string>
+    <string name="kundli_family">Parivaar</string>
+    <string name="kundli_me">Me</string>
+    <string name="kundli_edit">Edit</string>
+    <string name="kundli_add_profile">Add profile</string>
+    <string name="kundli_empty_title">No profiles yet</string>
+    <string name="kundli_empty_body">Add a birth date, time and place to see the chart. Everything stays encrypted on this phone.</string>
+    <string name="kundli_loading">Calculating the chart</string>
+    <string name="kundli_error_title">Chart not available</string>
+    <string name="kundli_error_body">This birth date is outside the range the app can calculate, or the place needs checking.</string>
+    <string name="kundli_tab_chart">Chart</string>
+    <string name="kundli_tab_planets">Planets</string>
+    <string name="kundli_tab_dasha">Dasha</string>
+    <string name="kundli_tab_yogas">Yogas</string>
+    <string name="kundli_tab_gochar">Gochar</string>
+    <string name="kundli_chip_d1">D1</string>
+    <string name="kundli_chip_d9">D9</string>
+    <string name="kundli_style_north">North</string>
+    <string name="kundli_style_south">South</string>
+    <string name="kundli_style_east">East</string>
+    <string name="kundli_chart_summary">%1$s chart, lagna %2$s</string>
+    <string name="kundli_lagna_unknown">not known (birth time unknown)</string>
+    <string name="kundli_house_n">House %1$s</string>
+    <string name="kundli_lagna">lagna</string>
+    <string name="kundli_lagna_row">Lagna</string>
+    <string name="kundli_retrograde">retrograde</string>
+    <string name="kundli_retro_short">vakri</string>
+    <string name="kundli_no_planets">no planets</string>
+    <string name="kundli_current_period">Current period</string>
+    <string name="kundli_antar_till">%1$s antardasha till %2$s</string>
+    <string name="kundli_dasha_approx">Birth time unknown: approximate</string>
+    <string name="kundli_planet_line">%1$s %2$s · %3$s pada %4$s · lord %5$s</string>
+    <string name="kundli_avakhada">Avakhada</string>
+    <string name="kundli_avakhada_line">Moon in %1$s · %2$s pada %3$s · lord %4$s</string>
+    <string name="kundli_avakhada_attrs">Gana %1$s · Nadi %2$s · Yoni %3$s</string>
+    <string name="kundli_under_review">under review</string>
+    <string name="kundli_yoga_present">Present</string>
+    <string name="kundli_yoga_absent">Not present</string>
+    <string name="kundli_yoga_variant">rule: %1$s</string>
+    <string name="kundli_sade_sati">Sade Sati</string>
+    <string name="kundli_sade_sati_step">%1$s · %2$s</string>
+    <string name="kundli_transits">Gochar today</string>
+    <string name="kundli_transit_line">%1$s in %2$s · house %3$s from Moon %4$s</string>
+    <string name="kundli_footer">Traditional interpretation, not a scientific prediction.</string>
+    <string name="kundli_ss_none">Not in Sade Sati</string>
+    <string name="kundli_ss_rising">Sade Sati, first phase</string>
+    <string name="kundli_ss_peak">Sade Sati, middle phase</string>
+    <string name="kundli_ss_setting">Sade Sati, last phase</string>
+    <string name="kundli_ss_dhaiya4">Shani dhaiya (4th from Moon)</string>
+    <string name="kundli_ss_dhaiya8">Shani dhaiya (8th from Moon)</string>
+    <string name="kundli_note_noon">Birth time unknown: noon chart, lagna and houses hidden</string>
+    <string name="kundli_note_ayanamsa">The saved ayanamsa is not available; Lahiri is used</string>
+    <string name="kundli_note_house">House system not available at this latitude; whole sign is used</string>
+    <string name="kundli_note_historical">Historical time offset: please check it</string>
+    <string name="kundli_note_lmt">Local mean time used (before standard time)</string>
+    <string name="kundli_note_manual">Offset set by hand</string>
+    <string name="kundli_note_dst">Clock time occurred twice; the chosen offset is used</string>
+    <string name="kundli_shukla">Shukla</string>
+    <string name="kundli_krishna">Krishna</string>
+    <string name="kundli_amavasya">Amavasya</string>
+
+    <string name="yoga_manglik_lagna">Manglik (from lagna)</string>
+    <string name="yoga_manglik_moon">Manglik (from Moon)</string>
+    <string name="yoga_manglik_venus">Manglik (from Venus)</string>
+    <string name="yoga_kaal_sarp">Kaal Sarp</string>
+    <string name="yoga_kemadruma">Kemadruma</string>
+    <string name="yoga_gajakesari">Gajakesari</string>
+    <string name="yoga_budhaditya">Budhaditya</string>
+    <string name="yoga_chandra_mangala">Chandra-Mangala</string>
+    <string name="yoga_ruchaka">Ruchaka</string>
+    <string name="yoga_bhadra">Bhadra</string>
+    <string name="yoga_hamsa">Hamsa</string>
+    <string name="yoga_malavya">Malavya</string>
+    <string name="yoga_shasha">Shasha</string>
+    <string name="yoga_dharma_karmadhipati">Dharma-Karmadhipati</string>
+    <string name="yoga_dhana_2_11">Dhana (2nd and 11th lords)</string>
+    <string name="yoga_unknown">Other</string>
+    <string name="av_gana_deva">Deva</string>
+    <string name="av_gana_manushya">Manushya</string>
+    <string name="av_gana_rakshasa">Rakshasa</string>
+    <string name="av_nadi_adi">Adi</string>
+    <string name="av_nadi_madhya">Madhya</string>
+    <string name="av_nadi_antya">Antya</string>
+
+    <string name="editor_title_add">Add profile</string>
+    <string name="editor_title_edit">Edit profile</string>
+    <string name="editor_name">Name</string>
+    <string name="editor_relation">Relation</string>
+    <string name="editor_birth_date">Birth date</string>
+    <string name="editor_date_hint">YYYY-MM-DD</string>
+    <string name="editor_birth_time">Birth time</string>
+    <string name="editor_time_hint">HH:MM (24-hour)</string>
+    <string name="editor_time_unknown">Birth time not known</string>
+    <string name="editor_noon_note">A noon chart is used: lagna and houses are hidden.</string>
+    <string name="editor_birth_place">Birth place</string>
+    <string name="editor_offset_line">UTC offset %1$s · source %2$s</string>
+    <string name="editor_src_iana">time zone database</string>
+    <string name="editor_src_overlay">historical table</string>
+    <string name="editor_src_lmt">local mean time</string>
+    <string name="editor_src_manual">set by hand</string>
+    <string name="editor_gap_time">This clock time did not exist; check the time or set an offset.</string>
+    <string name="editor_ambiguous">This clock time happened twice. Choose which one:</string>
+    <string name="editor_earlier">Earlier (%1$s)</string>
+    <string name="editor_later">Later (%1$s)</string>
+    <string name="editor_manual_offset">UTC offset by hand (optional, for example +05:30)</string>
+    <string name="editor_passing">Date of passing (optional)</string>
+    <string name="editor_passing_note">Used only to find the yearly shraddha tithi.</string>
+    <string name="editor_family_dates">Yearly family dates</string>
+    <string name="editor_save">Save</string>
+    <string name="editor_cancel">Cancel</string>
+    <string name="editor_delete">Delete profile</string>
+    <string name="editor_delete_title">Delete this profile?</string>
+    <string name="editor_delete_body">The profile and its family dates are removed from this phone.</string>
+    <string name="editor_save_failed">Could not save. Please try again.</string>
+    <string name="rel_self">Self</string>
+    <string name="rel_spouse">Spouse</string>
+    <string name="rel_parent">Parent</string>
+    <string name="rel_child">Child</string>
+    <string name="rel_sibling">Sibling</string>
+    <string name="rel_grandparent">Grandparent</string>
+    <string name="rel_grandchild">Grandchild</string>
+    <string name="rel_relative">Relative</string>
+    <string name="rel_friend">Friend</string>
+    <string name="rel_other">Other</string>
+
+    <string name="parivaar_title">Parivaar</string>
+    <plurals name="parivaar_eyebrow">
+        <item quantity="one">Family · %1$s profile</item>
+        <item quantity="other">Family · %1$s profiles</item>
+    </plurals>
+    <string name="parivaar_upcoming">Upcoming</string>
+    <string name="parivaar_none">No family dates in the coming year yet.</string>
+    <string name="parivaar_privacy">Encrypted on this phone</string>
+    <string name="family_add_button">+ Add</string>
+    <string name="family_kind_tithi">tithi birthday</string>
+    <string name="family_kind_nakshatra">janma nakshatra</string>
+    <string name="family_kind_shraddha">shraddha tithi</string>
+    <string name="family_row_title">%1$s · %2$s</string>
+    <string name="family_today">Today</string>
+    <plurals name="family_in_days">
+        <item quantity="one">%1$s day</item>
+        <item quantity="other">%1$s days</item>
+    </plurals>
+
+    <string-array name="kundli_rashi_names">
+        <item>Mesha</item><item>Vrishabha</item><item>Mithuna</item><item>Karka</item><item>Simha</item><item>Kanya</item>
+        <item>Tula</item><item>Vrishchika</item><item>Dhanu</item><item>Makara</item><item>Kumbha</item><item>Meena</item>
+    </string-array>
+    <string-array name="kundli_graha_names">
+        <item>Surya</item><item>Chandra</item><item>Mangal</item><item>Budh</item><item>Guru</item><item>Shukra</item>
+        <item>Shani</item><item>Rahu</item><item>Ketu</item>
+    </string-array>
+    <string-array name="kundli_graha_glyphs">
+        <item>Su</item><item>Mo</item><item>Ma</item><item>Me</item><item>Ju</item><item>Ve</item><item>Sa</item><item>Ra</item><item>Ke</item>
+    </string-array>
+    <string-array name="kundli_nakshatra_names">
+        <item>Ashwini</item><item>Bharani</item><item>Krittika</item><item>Rohini</item><item>Mrigashira</item>
+        <item>Ardra</item><item>Punarvasu</item><item>Pushya</item><item>Ashlesha</item><item>Magha</item>
+        <item>Purva Phalguni</item><item>Uttara Phalguni</item><item>Hasta</item><item>Chitra</item><item>Swati</item>
+        <item>Vishakha</item><item>Anuradha</item><item>Jyeshtha</item><item>Mula</item><item>Purva Ashadha</item>
+        <item>Uttara Ashadha</item><item>Shravana</item><item>Dhanishta</item><item>Shatabhisha</item>
+        <item>Purva Bhadrapada</item><item>Uttara Bhadrapada</item><item>Revati</item>
+    </string-array>
+    <string-array name="kundli_tithi_names">
+        <item>Pratipada</item><item>Dwitiya</item><item>Tritiya</item><item>Chaturthi</item><item>Panchami</item>
+        <item>Shashthi</item><item>Saptami</item><item>Ashtami</item><item>Navami</item><item>Dashami</item>
+        <item>Ekadashi</item><item>Dwadashi</item><item>Trayodashi</item><item>Chaturdashi</item><item>Purnima</item>
+    </string-array>
+    <string-array name="kundli_masa_names">
+        <item>Chaitra</item><item>Vaishakha</item><item>Jyeshtha</item><item>Ashadha</item><item>Shravana</item>
+        <item>Bhadrapada</item><item>Ashvina</item><item>Kartika</item><item>Margashirsha</item><item>Pausha</item>
+        <item>Magha</item><item>Phalguna</item>
+    </string-array>
+    <string-array name="kundli_yoni_names">
+        <item>Buffalo</item><item>Cat</item><item>Cow</item><item>Deer</item><item>Dog</item><item>Elephant</item><item>Horse</item>
+        <item>Lion</item><item>Mongoose</item><item>Monkey</item><item>Rat</item><item>Serpent</item><item>Sheep</item><item>Tiger</item>
+    </string-array>
 </resources>

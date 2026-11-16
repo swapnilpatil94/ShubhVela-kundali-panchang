@@ -1,5 +1,8 @@
 package app.parivaar.panchang.core.data.codec
 
+import app.parivaar.panchang.core.data.store.Tbl
+import app.parivaar.panchang.core.model.profile.FamilyPrefs
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 
 /**
@@ -7,7 +10,7 @@ import kotlinx.serialization.json.JsonObject
  * produces fromVersion + 1. A version above [current], below 1 or with a missing step is rejected.
  */
 internal class PayloadMigrations(
-    private val steps: Map<Pair<Int, Int>, (JsonObject) -> JsonObject> = emptyMap(),
+    private val steps: Map<Pair<Int, Int>, (JsonObject) -> JsonObject> = V1_TO_V2,
     val current: Int = CURRENT_VERSION,
 ) {
     fun migrate(tbl: Int, fromVersion: Int, payload: JsonObject): JsonObject {
@@ -23,7 +26,25 @@ internal class PayloadMigrations(
     }
 
     companion object {
-        const val CURRENT_VERSION = 1
+        const val CURRENT_VERSION = 2
+
+        /**
+         * M10: v1 -> v2. Profiles gain `passing = null` and default `familyPrefs`; the other tables are unchanged
+         * (their payload format did not change, only the shared version number).
+         */
+        val V1_TO_V2: Map<Pair<Int, Int>, (JsonObject) -> JsonObject> =
+            mapOf(
+                (Tbl.PROFILE to 1) to { o ->
+                    check("passing" !in o && "familyPrefs" !in o)
+                    JsonObject(
+                        o + ("passing" to JsonNull) + ("familyPrefs" to ProfileCodec.prefsToJson(FamilyPrefs())),
+                    )
+                },
+                (Tbl.PLACE to 1) to { o -> o },
+                (Tbl.BOND to 1) to { o -> o },
+                (Tbl.SETTINGS to 1) to { o -> o },
+            )
+
         val DEFAULT = PayloadMigrations()
     }
 }

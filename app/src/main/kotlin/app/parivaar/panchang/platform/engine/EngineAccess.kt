@@ -3,6 +3,9 @@ package app.parivaar.panchang.platform.engine
 import android.content.Context
 import app.parivaar.panchang.core.data.DataVault
 import app.parivaar.panchang.core.data.PlaceRepository
+import app.parivaar.panchang.core.data.ProfileRepository
+import app.parivaar.panchang.core.model.profile.Profile
+import app.parivaar.panchang.feature.kundli.CalInputsLite
 import app.parivaar.panchang.core.data.SettingsRepository
 import app.parivaar.panchang.core.data.VaultState
 import app.parivaar.panchang.core.geo.OffsetResolver
@@ -17,6 +20,13 @@ import app.parivaar.panchang.engine.astro.SelectingEphemeris
 import app.parivaar.panchang.engine.calendar.CalendarCalculator
 import app.parivaar.panchang.engine.jyotish.ChartCalculator
 import app.parivaar.panchang.engine.jyotish.Gochar
+import app.parivaar.panchang.engine.jyotish.NakshatraTable
+import app.parivaar.panchang.engine.jyotish.Vargas
+import app.parivaar.panchang.engine.jyotish.YogaRules
+import app.parivaar.panchang.feature.kundli.DirectKundliEngine
+import app.parivaar.panchang.feature.kundli.FinderFamilyDates
+import app.parivaar.panchang.engine.calendar.FamilyDateFinder
+import app.parivaar.panchang.feature.kundli.KundliEngine
 import app.parivaar.panchang.feature.calendar.CalendarEngine
 import app.parivaar.panchang.feature.calendar.DirectCalendarEngine
 import app.parivaar.panchang.feature.calendar.forTradition
@@ -78,6 +88,7 @@ class EngineAccess @Inject constructor(
     private val placesRepo: PlaceRepository,
     private val vault: DataVault,
     private val resolver: Lazy<OffsetResolver>,
+    private val profilesRepo: ProfileRepository,
 ) {
     /**
      * Calculators are not thread-safe. Every use, here and in [EngineAajEngine] (whose methods synchronize on
@@ -97,6 +108,7 @@ class EngineAccess @Inject constructor(
         val tables: PanchangTables,
         val sets: List<FestivalSet>,
         val calendar: CalendarEngine,
+        val kundli: KundliEngine,
     )
 
     private val engine: Engine by lazy {
@@ -127,7 +139,13 @@ class EngineAccess @Inject constructor(
         val recurring = sets.filter { it.file.startsWith("recurring") }.flatMap { s -> s.defs.map { it.id } }.toSet()
         // Same calculators as everything else; calls are serialised by the lock on `aaj` (see onEngine).
         val direct = DirectCalendarEngine(calc, cal, fest, ecl, ChartCalculator(eph), Gochar(eph), defs, recurring)
-        return Engine(calc, fest, ecl, defs, aaj, tables, sets, EngineCalendarEngine(direct, aaj))
+        // M10: Kundli over the same ephemeris and lock; rule files from the packaged assets.
+        val kundli = DirectKundliEngine(
+            ChartCalculator(eph), Vargas.parse(asset("rules/vargas.json")), YogaRules.parse(asset("rules/yogas.json")),
+            NakshatraTable.parse(asset("rules/nakshatra.json")), Gochar(eph), FinderFamilyDates(FamilyDateFinder(eph)),
+        )
+        val calendar = EngineCalendarEngine(direct, aaj)
+        return Engine(calc, fest, ecl, defs, aaj, tables, sets, calendar, EngineKundliEngine(kundli, aaj))
     }
 
     /** Builds the engine (ephemeris, rule files, festival sets) once, off the main thread. Call from app start. */
@@ -159,6 +177,9 @@ class EngineAccess @Inject constructor(
 
     /** The calendar tab's engine port: the one engine instance, every call under the single engine lock. */
     val calendarEngine: CalendarEngine get() = engine.calendar
+
+    /** The Kundli tab's engine port: the one engine instance, every call under the single engine lock. */
+    val kundliEngine: KundliEngine get() = engine.kundli
 
     /** The shipped festival definitions (immutable), for the festival guide. */
     val festivalDefs: List<FestivalDef> get() = engine.defs
@@ -222,6 +243,24 @@ class EngineAccess @Inject constructor(
             engine.eclipses.global(from, to).mapNotNull { engine.eclipses.local(it, a.place, a.calc) }
                 .filter { it.visible != null }
         }
+
+    /** Profiles while the vault is open (empty otherwise). Blocking; memory only. */
+    fun profiles(): List<Profile> =
+        runBlocking {
+            if (vault.state.value != VaultState.Ready) return@runBlocking emptyList()
+            profilesRepo.observeAll().first().items
+        }
+
+    /** The home place as the Kundli family-date input (D4), or null without one. Blocking. */
+    fun familyHome(): CalInputsLite? =
+        active()?.let { a ->
+            CalInputsLite(a.place, a.zone, a.offsetFor, a.calc, a.settings.monthSystem, a.settings.homePlaceId)
+        }
+
+    /** Bare family dates for reminders (no names). */
+    val familySource: ProfileFamilyDateSource by lazy {
+        ProfileFamilyDateSource(::profiles, ::familyHome, kundliEngine)
+    }
 
     fun today(a: ActivePlace, now: Instant): LocalDate = now.toLocalDateTime(a.zone).date
 

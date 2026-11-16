@@ -306,6 +306,27 @@ sealed interface FestivalRule {
         override fun toString(): String = "NakshatraInSolarMonth(redacted)"
     }
 
+    /**
+     * The [pick] day of lunar month [masa] in [system] on which [nakshatra] (0..26) touches [kala]
+     * (docs/specs/M10.md rule 8). A day belongs to the month whose label (per [system]) holds at its sunrise;
+     * the def's adhika policy and the kshaya rule of [TithiAt] select the months. JSON
+     * `nakshatra_in_lunar_month`. [pick] is FIRST or LAST (NEAREST_FULL_MOON is for solar months only).
+     */
+    data class NakshatraInLunarMonth(
+        val nakshatra: Int,
+        val masa: Masa,
+        val system: MonthSystem,
+        val kala: Kala,
+        val pick: Pick,
+    ) : FestivalRule {
+        init {
+            require(nakshatra in 0 until NAKSHATRAS) { "nakshatra out of range" }
+            require(pick != Pick.NEAREST_FULL_MOON) { "nearest full moon is for solar months only" }
+        }
+
+        override fun toString(): String = "NakshatraInLunarMonth(redacted)"
+    }
+
     /** [inner], kept only when its date falls on [weekday]. */
     data class WeekdayTithi(val weekday: Vaar, val inner: TithiAt) : FestivalRule {
         override fun toString(): String = "WeekdayTithi(redacted)"

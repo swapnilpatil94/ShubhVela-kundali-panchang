@@ -20,7 +20,7 @@ object PlatformWiring {
 
     fun start(context: Context, scope: CoroutineScope, access: EngineAccess, settings: SettingsRepository) {
         val app = context.applicationContext
-        ReminderRuntime.source = EngineReminderSource(access)
+        ReminderRuntime.source = EngineReminderSource(access, family = access.familySource)
         scope.launch(Dispatchers.IO) { ReplanJobService.schedule(app) }
         scope.launch(Dispatchers.IO) {
             // Re-plan when anything the plan or the widgets depend on changes (the vault opening also changes it).

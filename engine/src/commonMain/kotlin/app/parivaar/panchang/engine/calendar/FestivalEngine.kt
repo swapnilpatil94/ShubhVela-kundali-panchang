@@ -33,9 +33,12 @@ import kotlinx.datetime.plus
  * panchang days (sunrise to next sunrise) at the caller's offsets; results never hold the place. Holds the
  * caches of its calendars: not thread-safe.
  */
+@Suppress("TooManyFunctions") // one evaluator per rule type sharing the private Run; splitting would expose Run
 class FestivalEngine(eph: Ephemeris, time: TimeTables = TimeTables.DEFAULT) {
     private val calendar = CalendarCalculator(eph, time)
-    private val lunar = calendar.lunar
+
+    /** The lunar calendar behind the occurrences (shared with `FamilyDateFinder`; same caches, same thread). */
+    internal val lunar: LunarCalendar = calendar.lunar
     private val solar = calendar.solar
 
     /** Occurrences of [defs] dated [first]..[last], sorted by (date, id), one per (id, date). */
@@ -119,6 +122,7 @@ class FestivalEngine(eph: Ephemeris, time: TimeTables = TimeTables.DEFAULT) {
         is FestivalRule.FixedGregorian ->
             fixed(def, r, DayLookup.utcDate(run.from).year..DayLookup.utcDate(run.to).year)
         is FestivalRule.NakshatraInSolarMonth -> nakshatraInMonth(def, r, run)
+        is FestivalRule.NakshatraInLunarMonth -> nakshatraInLunarMonth(def, r, run)
         is FestivalRule.Relative -> error("relative rules are expanded by occurrences")
     }
 
@@ -197,6 +201,69 @@ class FestivalEngine(eph: Ephemeris, time: TimeTables = TimeTables.DEFAULT) {
         return FestivalOccurrence(def.id, pick, null, null, r.kala, window, muhurat, null, sunFlags(sun))
     }
 
+    /** Half a lunation (tithis 1..15 or 16..30) kept by a lunar month rule, and the new moon naming its month. */
+    private class Half(val span: TimeRange, val label: LunarLabel, val flags: Set<OccFlag>, val anchor: Instant)
+
+    /**
+     * docs/specs/M10.md rule 8: the halves whose label (per system) passes the masa / adhika filter, grouped
+     * into months by the lunation that names them (PURNIMANTA: a Krishna half belongs to the next nija
+     * lunation, an adhika lunation is its own month); in each month the days whose sunrise lies in a kept
+     * half, then the touch test and the pick of `nakshatra_in_solar_month`.
+     */
+    private fun nakshatraInLunarMonth(
+        def: FestivalDef,
+        r: FestivalRule.NakshatraInLunarMonth,
+        run: Run,
+    ): List<FestivalOccurrence> {
+        val ls = lunar.lunations(run.from - LUNAR_REACH, run.to + LUNAR_REACH, run.s)
+        val halves = ls.flatMapIndexed { i, l ->
+            val spans = listOf(TimeRange(l.newMoon, l.fullMoon), TimeRange(l.fullMoon, l.nextNewMoon))
+            spans.mapIndexedNotNull { h, span ->
+                val lab = lunar.label(l, if (h == 0) 1 else KRISHNA_FIRST, r.system, run.s)
+                val flags = labelFlags(def, r.masa, lab) ?: return@mapIndexedNotNull null
+                val own = r.system == MonthSystem.AMANTA || h == 0 || l.adhika
+                val next = if (own) null else ls.getOrNull(i + 1) ?: lunar.lunationAt(l.nextNewMoon, run.s)
+                val anchor = when {
+                    next == null -> l.newMoon
+                    next.adhika -> next.nextNewMoon
+                    else -> next.newMoon
+                }
+                Half(span, lab, flags, anchor)
+            }
+        }
+        return halves.groupBy { it.anchor }.values.mapNotNull { month ->
+            skipUnavailable { inLunarMonth(def, r, run, month) }
+        }
+    }
+
+    private fun inLunarMonth(
+        def: FestivalDef,
+        r: FestivalRule.NakshatraInLunarMonth,
+        run: Run,
+        month: List<Half>,
+    ): FestivalOccurrence? {
+        val days = month.flatMap { h -> sunriseDays(h.span, run).map { it to h } }
+        val cands = days.filter { touchedBy(r.nakshatra, it.first, r.kala, run) != null }
+        val (pick, half) = (if (r.pick == Pick.LAST) cands.lastOrNull() else cands.firstOrNull()) ?: return null
+        val window = run.ctx.kala(pick, r.kala)
+        val muhurat = touchedBy(r.nakshatra, pick, r.kala, run)?.takeIf { it.start < it.end }
+        val sun = DayFlag.SUN_FALLBACK in run.days.sunDay(pick).flags
+        val flags = sunFlags(sun) + half.flags
+        return FestivalOccurrence(def.id, pick, half.label, null, r.kala, window, muhurat, null, flags)
+    }
+
+    /** The days d with span.start <= sunrise(d) < span.end, in order. */
+    private fun sunriseDays(span: TimeRange, run: Run): List<LocalDate> {
+        var d = run.days.containing(span.start)
+        if (run.days.sunDay(d).sunrise < span.start) d = d.plus(ONE)
+        return buildList {
+            while (run.days.sunDay(d).sunrise < span.end) {
+                add(d)
+                d = d.plus(ONE)
+            }
+        }
+    }
+
     /** I_d: the part of a span of nakshatra [n] inside the kala of [d] ([p, p] for a point), or null. */
     private fun touchedBy(n: Int, d: LocalDate, k: Kala, run: Run): TimeRange? {
         val w = run.ctx.kala(d, k) ?: return null
@@ -253,8 +320,12 @@ class FestivalEngine(eph: Ephemeris, time: TimeTables = TimeTables.DEFAULT) {
         const val KRISHNA_EKADASHI = 26
         const val HOUR_S = 3_600L
         const val PRECEDED_SEARCH_DAYS = 30
+        const val KRISHNA_FIRST = 16
         val MARGIN = 40.days
         val FULL_MOON_REACH = 16.days
+
+        /** Extra lunations either side for a lunar month rule: a month split by an adhika month spans 60 days. */
+        val LUNAR_REACH = 30.days
         val ONE = DatePeriod(days = 1)
 
         /** Label filter of section 3.6: masa (or kshaya masa) and the adhika policy; null = skip. */

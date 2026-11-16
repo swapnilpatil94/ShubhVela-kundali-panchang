@@ -16,7 +16,8 @@ import kotlinx.serialization.json.JsonPrimitive
  * Strings (no I/O). Every defect is a [RuleFormatException] with a code and a JSON path, never a value.
  *
  * A rule is an object whose `type` is `tithi_at`, `weekday_tithi_combo`, `ekadashi`, `sankranti`,
- * `nakshatra_in_solar_month`, `fixed_gregorian` or `relative`; the other keys are the fields of the spec.
+ * `nakshatra_in_solar_month`, `nakshatra_in_lunar_month` (docs/specs/M10.md), `fixed_gregorian` or `relative`; the
+ * other keys are the fields of the spec.
  * Enum-like values
  * are lower case, except Rashi and Vaar names, which are the enum names.
  */
@@ -40,6 +41,7 @@ object FestivalRules {
     private val PAKSHAS = mapOf("shukla" to Paksha.SHUKLA, "krishna" to Paksha.KRISHNA, "both" to null)
     private val SOLAR_REGIONS = SolarRegion.entries.associateBy { it.name.lowercase() }
     private val PICKS = Pick.entries.associateBy { it.name.lowercase() }
+    private val LUNAR_PICKS = PICKS - "nearest_full_moon"
     private val TITHI_KALAS = KALAS - "ahoratra"
     private val TITHIS = 1..30
     private val NAKSHATRAS = 0..26
@@ -121,6 +123,7 @@ object FestivalRules {
             "ekadashi" -> ekadashi(o, path)
             "sankranti" -> sankranti(o, path)
             "nakshatra_in_solar_month" -> nakshatraInSolarMonth(o, path)
+            "nakshatra_in_lunar_month" -> nakshatraInLunarMonth(o, path)
             "fixed_gregorian" -> fixedGregorian(o, path)
             "relative" -> relative(o, path)
             else -> RuleJson.fail("BAD_VALUE", "$path.type")
@@ -245,6 +248,18 @@ object FestivalRules {
             precededBy = o["preceded_in_month_by"]?.let {
                 RuleJson.intIn(it, "$path.preceded_in_month_by", NAKSHATRAS)
             },
+        )
+    }
+
+    /** `masa` is required and never `any`; `occurrence` is `first` or `last`; `system` defaults to amanta. */
+    private fun nakshatraInLunarMonth(o: JsonObject, path: String): FestivalRule.NakshatraInLunarMonth {
+        RuleJson.onlyKeys(o, setOf("type", "nakshatra", "masa", "system", "kala", "occurrence"), path)
+        return FestivalRule.NakshatraInLunarMonth(
+            nakshatra = RuleJson.intIn(RuleJson.field(o, "nakshatra", path), "$path.nakshatra", NAKSHATRAS),
+            masa = masa(o, path) ?: RuleJson.fail("BAD_VALUE", "$path.masa"),
+            system = system(o, path),
+            kala = kala(o, path, KALAS),
+            pick = pick(LUNAR_PICKS, RuleJson.field(o, "occurrence", path), "$path.occurrence"),
         )
     }
 

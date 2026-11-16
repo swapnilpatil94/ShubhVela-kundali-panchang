@@ -36,6 +36,20 @@ import app.parivaar.panchang.feature.calendar.MonthCache
 import app.parivaar.panchang.feature.calendar.MonthModel
 import app.parivaar.panchang.platform.engine.EngineAccess
 import app.parivaar.panchang.feature.onboarding.OnboardingMachine
+import app.parivaar.panchang.feature.kundli.CalInputsLite
+import app.parivaar.panchang.feature.kundli.KundliBundle
+import app.parivaar.panchang.feature.kundli.KundliCache
+import app.parivaar.panchang.feature.kundli.KundliViewModel
+import app.parivaar.panchang.feature.kundli.ParivaarViewModel
+import app.parivaar.panchang.feature.kundli.ProfileEditorViewModel
+import app.parivaar.panchang.core.model.geo.CivilDayOffset
+import app.parivaar.panchang.engine.Place
+import app.parivaar.panchang.platform.zoneSafe
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +79,7 @@ class ShellViewModel
     constructor(
         vault: DataVault,
         private val settingsRepo: SettingsRepository,
-        profiles: ProfileRepository,
+        private val profiles: ProfileRepository,
         private val search: PlaceSearch,
         private val offsets: OffsetResolver,
         @ApplicationContext private val context: Context,
@@ -133,6 +147,65 @@ class ShellViewModel
                 calendarController.inputs, calendarController.engine, MonthCache(), Clock.System,
                 CalendarController::firstDayOfWeek, viewModelScope, Dispatchers.Default.limitedParallelism(1),
             )
+        }
+
+        /** M10: profiles while the vault is open (empty otherwise). Memory only. */
+        private val profileList =
+            vault.state
+                .flatMapLatest { if (it == VaultState.Ready) profiles.observeAll().catch { } else emptyFlow() }
+                .map { it.items }
+
+        /** Home place for family dates (D4): place, zone, offsets and calc; null without a home place. */
+        private val kundliHome: StateFlow<CalInputsLite?> =
+            vault.state
+                .flatMapLatest { if (it == VaultState.Ready) places.observeAll().catch { } else emptyFlow() }
+                .let { f -> kotlinx.coroutines.flow.combine(f, readySettings) { recs, s -> kundliHome(recs.items, s) } }
+                .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+        /** Bundle LRU (rule 10): in memory only, cleared whenever the vault is not Ready. */
+        private val kundliCache = KundliCache<KundliBundle>()
+
+        val kundliWiring: KundliWiring by lazy {
+            val kundli = KundliViewModel(
+                profileList, { kundliHome.value?.zone }, { kundliHome.value?.homePlaceId }, engineAccess.kundliEngine,
+                offsets, kundliCache, Clock.System, viewModelScope, Dispatchers.Default,
+            )
+            val parivaar = ParivaarViewModel(
+                profileList, kundliHome, engineAccess.kundliEngine, Clock.System, viewModelScope, Dispatchers.Default,
+            )
+            KundliWiring(kundli, parivaar) {
+                ProfileEditorViewModel(
+                    profiles, search, offsets, { settings.value.defaultCalc }, { kundli.evict(it.id) }, Clock.System,
+                    viewModelScope, Dispatchers.IO,
+                )
+            }
+        }
+
+        init {
+            viewModelScope.launch { vault.state.collect { if (it != VaultState.Ready) kundliCache.clear() } }
+        }
+
+        private fun kundliHome(items: List<SavedPlace>, s: AppSettings): CalInputsLite? {
+            val home = items.firstOrNull { it.id == s.homePlaceId }
+            val g = home?.place
+            val zone = g?.let { zoneSafe(null) { TimeZone.of(it.zoneId) } }
+            if (home == null || g == null || zone == null) return null
+            val place = Place(g.latDeg, g.lonDeg, g.elevationM ?: 0.0)
+            return CalInputsLite(place, zone, homeOffsets(g), s.defaultCalc, s.monthSystem, home.id)
+        }
+
+        /** Civil-day offset at [g]; a skipped civil day uses the offset at its UTC noon. */
+        private fun homeOffsets(g: GeoPlace): (LocalDate) -> Int {
+            val ctx = g.tzContext()
+            return { d ->
+                when (val o = offsets.civilDayOffset(d, ctx)) {
+                    is CivilDayOffset.Valid -> o.offset.offsetSeconds
+                    CivilDayOffset.Nonexistent -> {
+                        val noon = LocalDateTime(d, LocalTime(NOON, 0)).toInstant(TimeZone.UTC)
+                        offsets.offsetAt(noon, ctx).offsetSeconds
+                    }
+                }
+            }
         }
 
         /** The activity's permission request, reached through a bridge that survives `recreate()`. */
@@ -222,3 +295,4 @@ class ShellViewModel
     }
 
 private const val MILLIS = 1000
+private const val NOON = 12

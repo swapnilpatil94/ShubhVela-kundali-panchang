@@ -34,7 +34,6 @@ import app.parivaar.panchang.feature.aaj.ui.AajExtras
 import app.parivaar.panchang.feature.aaj.ui.AajScreen
 import app.parivaar.panchang.feature.bhakti.BhaktiPlaceholderScreen
 import app.parivaar.panchang.feature.bonds.BondsPlaceholderScreen
-import app.parivaar.panchang.feature.kundli.KundliPlaceholderScreen
 import app.parivaar.panchang.feature.settings.AppearanceModel
 import app.parivaar.panchang.feature.settings.ConventionsModel
 import app.parivaar.panchang.feature.settings.LanguageChoice
@@ -63,6 +62,7 @@ fun ShellScreen(
     aaj: AajModel,
     aajExtras: AajExtras,
     cal: CalendarWiring,
+    kundli: KundliWiring,
     modifier: Modifier = Modifier,
 ) {
     val navigator =
@@ -100,7 +100,7 @@ fun ShellScreen(
                         Tab.AAJ -> AajTab(aaj, homePlaceName, navigator, aajExtras, avatar, search)
                         Tab.CALENDAR ->
                             CalendarTab(cal, settings, homePlaceName, navigator, conventions, search)
-                        Tab.KUNDLI -> KundliPlaceholderScreen(homePlaceName, null, avatar, search)
+                        Tab.KUNDLI -> KundliTab(kundli)
                         Tab.BONDS -> BondsPlaceholderScreen(homePlaceName, null, avatar, search)
                         Tab.BHAKTI -> BhaktiPlaceholderScreen(homePlaceName, null, avatar, search)
                     }

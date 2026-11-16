@@ -291,6 +291,66 @@ class FestivalRulesTest {
         assertEquals(0, (ok.defs[0].rule as FestivalRule.NakshatraInSolarMonth).precededBy)
     }
 
+    /** docs/specs/M10.md: `nakshatra_in_lunar_month` with its defaults, and every rejection. */
+    @Test
+    fun nakshatraInLunarMonth_parse() {
+        val n = """"type":"nakshatra_in_lunar_month","nakshatra":12,"""
+        val s = FestivalRules.parse(
+            "t",
+            file(
+                item("""{$n"masa":"shravana","kala":"sunrise","occurrence":"first"}""", "a"),
+                item("""{$n"masa":"jyeshtha","system":"purnimanta","kala":"ahoratra","occurrence":"last"}""", "b"),
+            ),
+        )
+        assertEquals(
+            FestivalRule.NakshatraInLunarMonth(12, Masa.SHRAVANA, MonthSystem.AMANTA, Kala.SUNRISE, Pick.FIRST),
+            s.defs[0].rule,
+        )
+        assertEquals(
+            FestivalRule.NakshatraInLunarMonth(12, Masa.JYESHTHA, MonthSystem.PURNIMANTA, Kala.AHORATRA, Pick.LAST),
+            s.defs[1].rule,
+        )
+        assertEquals(AdhikaPolicy.NIJA, s.defs[0].adhika, "a named lunar month defaults to the nija month")
+        assertEquals("NakshatraInLunarMonth(redacted)", s.defs[0].rule.toString())
+    }
+
+    @Test
+    fun nakshatraInLunarMonth_rejections() {
+        fun r(body: String) = code(file(item("""{"type":"nakshatra_in_lunar_month",$body}""")))
+        val ok = """"masa":"magha","kala":"sunrise","occurrence":"first""""
+        assertEquals("BAD_VALUE", r(""""nakshatra":1,"masa":"any","kala":"sunrise","occurrence":"first""""))
+        assertEquals("BAD_VALUE", r(""""nakshatra":1,"masa":"magh","kala":"sunrise","occurrence":"first""""))
+        assertEquals("BAD_VALUE", r(""""nakshatra":1,"masa":"magha","kala":"sunrise","occurrence":"nearest""""))
+        assertEquals("BAD_VALUE", r(""""nakshatra":1,"masa":"magha","kala":"sunrise",""" +
+            """"occurrence":"nearest_full_moon""""))
+        assertEquals("BAD_VALUE", r(""""nakshatra":1,"masa":"magha","kala":"dusk","occurrence":"first""""))
+        assertEquals("BAD_VALUE", r(""""nakshatra":1,$ok,"system":"solar""""))
+        assertEquals("OUT_OF_RANGE", r(""""nakshatra":27,$ok"""))
+        assertEquals("OUT_OF_RANGE", r(""""nakshatra":-1,$ok"""))
+        assertEquals("BAD_TYPE", r(""""nakshatra":"1",$ok"""))
+        assertEquals("UNKNOWN_KEY", r(""""nakshatra":1,$ok,"region":"tamil""""))
+        assertEquals("MISSING_FIELD", r(""""nakshatra":1,"kala":"sunrise","occurrence":"first""""))
+        assertEquals("MISSING_FIELD", r(""""nakshatra":1,"masa":"magha","kala":"sunrise""""))
+        assertEquals("MISSING_FIELD", r(""""masa":"magha","kala":"sunrise","occurrence":"first""""))
+        assertEquals(
+            "$.festivals[0].rule.masa",
+            path(
+                file(
+                    item(
+                        """{"type":"nakshatra_in_lunar_month","nakshatra":1,"masa":"any","kala":"sunrise",""" +
+                            """"occurrence":"first"}""",
+                    ),
+                ),
+            ),
+        )
+        assertFailsWith<IllegalArgumentException> {
+            FestivalRule.NakshatraInLunarMonth(1, Masa.MAGHA, MonthSystem.AMANTA, Kala.SUNRISE, Pick.NEAREST_FULL_MOON)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            FestivalRule.NakshatraInLunarMonth(27, Masa.MAGHA, MonthSystem.AMANTA, Kala.SUNRISE, Pick.FIRST)
+        }
+    }
+
     private companion object {
         const val RULE_LIMIT = 262_144
     }

@@ -118,7 +118,22 @@ class CodecRoundTripTest {
         assertEquals(newKeys, settings.keys - (frozen["settings"] as JsonObject).keys)
         val defaults = SettingsCodec.toJson(AppSettings())
         for (k in newKeys) assertEquals(defaults[k], settings[k], k)
-        val stripped = JsonObject(reencoded + ("settings" to JsonObject(settings.filterKeys { it !in newKeys })))
+        // M10: each profile re-encodes with exactly the 2 payload-v2 keys, at their defaults.
+        val profiles = (reencoded["profiles"] as kotlinx.serialization.json.JsonArray).map { it as JsonObject }
+        val v2Keys = setOf("passing", "familyPrefs")
+        for (p in profiles) {
+            assertEquals(kotlinx.serialization.json.JsonNull, p["passing"])
+            val defaults = ProfileCodec.prefsToJson(app.parivaar.panchang.core.model.profile.FamilyPrefs())
+            assertEquals(defaults, p["familyPrefs"])
+        }
+        val strippedProfiles =
+            kotlinx.serialization.json.JsonArray(profiles.map { p -> JsonObject(p.filterKeys { it !in v2Keys }) })
+        val stripped =
+            JsonObject(
+                reencoded +
+                    ("settings" to JsonObject(settings.filterKeys { it !in newKeys })) +
+                    ("profiles" to strippedProfiles),
+            )
         assertEquals(frozen, stripped)
         assertEquals(2, doc.profiles.size)
         assertEquals(null, doc.profiles[1].birth.time)

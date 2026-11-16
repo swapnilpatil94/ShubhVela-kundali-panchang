@@ -75,7 +75,9 @@ class RowTamperTest {
     @Test
     fun changedVersionOrKeyIdIsRejected() = runBlocking {
         val (k, row) = setup()
-        assertRejected(k, StoredRow(row.tbl, row.id, row.pos, 2, row.blob), row)
+        // The version is bound into the AAD: any other version than the sealed one (M10: sealed at v2) is rejected.
+        assertRejected(k, StoredRow(row.tbl, row.id, row.pos, row.ver + 1, row.blob), row)
+        assertRejected(k, StoredRow(row.tbl, row.id, row.pos, row.ver - 1, row.blob), row)
         assertRejected(k, StoredRow(row.tbl, row.id, row.pos, 0, row.blob), row)
         k.ring.put(2, ByteArray(32) { 0x43 }, makeCurrent = false)
         val b = row.blob.copyOf().also { it[4] = 2 }

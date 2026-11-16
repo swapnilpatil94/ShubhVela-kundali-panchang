@@ -32,4 +32,14 @@
     <string name="orb_a11y_neutral">Aaj. Open today\'s timings.</string>
     <string name="dock_a11y">Main navigation</string>
     <string name="cd_gem_chip">Gem of the day: %1$s</string>
+    <!-- M10 chart, dasha and family components -->
+    <string name="chart_lagna_glyph">Asc</string>
+    <string name="chart_retro_suffix">R</string>
+    <string name="dasha_cd_expand">Show sub-periods</string>
+    <string name="dasha_cd_collapse">Hide sub-periods</string>
+    <string name="dasha_current">Current</string>
+    <string name="dasha_range">%1$s to %2$s</string>
+    <string name="family_add">+ Add</string>
+    <string name="family_cd_avatar">%1$s, profile</string>
+    <string name="family_cd_avatar_selected">%1$s, profile, selected</string>
 </resources>

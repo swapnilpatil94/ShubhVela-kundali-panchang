@@ -54,6 +54,18 @@ data class PlaceSnapshot(
     override fun toString(): String = "PlaceSnapshot(redacted)"
 }
 
+/** Date (and optional time, seconds precision) of passing, used only for the shraddha tithi. */
+data class PassingData(val date: LocalDate, val time: LocalTime?) {
+    init {
+        require(time == null || time.nanosecond == 0) { "Passing time must have seconds precision" }
+    }
+
+    override fun toString(): String = "PassingData(redacted)"
+}
+
+/** Which yearly family dates this profile contributes (M10). All on by default. */
+data class FamilyPrefs(val tithi: Boolean = true, val nakshatra: Boolean = true, val shraddha: Boolean = true)
+
 data class Profile(
     val id: RecordId,
     val displayName: String,
@@ -65,6 +77,9 @@ data class Profile(
     val notes: String?,
     val createdAt: Instant,
     val updatedAt: Instant,
+    /** Payload v2 (M10): null for the living and for every v1 row. */
+    val passing: PassingData? = null,
+    val familyPrefs: FamilyPrefs = FamilyPrefs(),
 ) {
     override fun toString(): String = "Profile(id=${id.hex})"
 }
