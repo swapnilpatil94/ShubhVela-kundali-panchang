@@ -22,6 +22,7 @@ import app.parivaar.panchang.engine.panchang.internal.DayWindows
 import app.parivaar.panchang.engine.panchang.internal.SunDay
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Instant
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -209,13 +210,24 @@ class FestivalEngine(eph: Ephemeris, time: TimeTables = TimeTables.DEFAULT) {
      * into months by the lunation that names them (PURNIMANTA: a Krishna half belongs to the next nija
      * lunation, an adhika lunation is its own month); in each month the days whose sunrise lies in a kept
      * half, then the touch test and the pick of `nakshatra_in_solar_month`.
+     *
+     * Completeness: a month named by lunation A holds halves of A-2..A only (Krishna half of A-2 when A-1 is
+     * adhika, of A-1 otherwise, then Shukla of A), so every month whose anchor A is a core lunation is complete
+     * once the two lunations before the core are added; months anchored outside the core are dropped. A month
+     * with a day in [first, last] has its anchor's new moon in (from + 9 d, to + 7 d) (from/to carry the 40 d
+     * margin; halves <= 16 d, lunations <= 30 d), inside the core [from, to + LUNAR_REACH).
      */
     private fun nakshatraInLunarMonth(
         def: FestivalDef,
         r: FestivalRule.NakshatraInLunarMonth,
         run: Run,
     ): List<FestivalOccurrence> {
-        val ls = lunar.lunations(run.from - LUNAR_REACH, run.to + LUNAR_REACH, run.s)
+        val core = lunar.lunations(run.from, run.to + LUNAR_REACH, run.s)
+        val before = generateSequence(lunar.lunationAt(core.first().newMoon - 1.nanoseconds, run.s)) {
+            lunar.lunationAt(it.newMoon - 1.nanoseconds, run.s)
+        }.take(LUNATIONS_BEFORE).toList().asReversed()
+        val ls = before + core
+        val anchors = core.map { it.newMoon }.toSet()
         val halves = ls.flatMapIndexed { i, l ->
             val spans = listOf(TimeRange(l.newMoon, l.fullMoon), TimeRange(l.fullMoon, l.nextNewMoon))
             spans.mapIndexedNotNull { h, span ->
@@ -231,7 +243,7 @@ class FestivalEngine(eph: Ephemeris, time: TimeTables = TimeTables.DEFAULT) {
                 Half(span, lab, flags, anchor)
             }
         }
-        return halves.groupBy { it.anchor }.values.mapNotNull { month ->
+        return halves.filter { it.anchor in anchors }.groupBy { it.anchor }.values.mapNotNull { month ->
             skipUnavailable { inLunarMonth(def, r, run, month) }
         }
     }
@@ -324,8 +336,11 @@ class FestivalEngine(eph: Ephemeris, time: TimeTables = TimeTables.DEFAULT) {
         val MARGIN = 40.days
         val FULL_MOON_REACH = 16.days
 
-        /** Extra lunations either side for a lunar month rule: a month split by an adhika month spans 60 days. */
-        val LUNAR_REACH = 30.days
+        /** Core lunations of a lunar month rule extend this far past `to` (relevant anchors end before to + 7 d). */
+        val LUNAR_REACH = 40.days
+
+        /** Lunations before the core that a core-anchored month can draw halves from (A-2, A-1). */
+        const val LUNATIONS_BEFORE = 2
         val ONE = DatePeriod(days = 1)
 
         /** Label filter of section 3.6: masa (or kshaya masa) and the adhika policy; null = skip. */

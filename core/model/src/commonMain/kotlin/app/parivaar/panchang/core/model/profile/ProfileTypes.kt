@@ -81,5 +81,5 @@ data class Profile(
     val passing: PassingData? = null,
     val familyPrefs: FamilyPrefs = FamilyPrefs(),
 ) {
-    override fun toString(): String = "Profile(id=${id.hex})"
+    override fun toString(): String = "Profile(redacted)"
 }

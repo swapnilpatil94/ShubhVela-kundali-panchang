@@ -80,5 +80,9 @@ class KundliCacheTest {
         assertEquals(null, c.get(key(2)))
         c.clear()
         assertEquals(0, c.size())
+        // A new local day is a new key (current dasha, Sade Sati and gochar refresh after midnight).
+        val k = key(3)
+        c.put(k.copy(day = kotlinx.datetime.LocalDate(2026, 11, 16)), b)
+        assertEquals(null, c.get(k.copy(day = kotlinx.datetime.LocalDate(2026, 11, 17))))
     }
 }

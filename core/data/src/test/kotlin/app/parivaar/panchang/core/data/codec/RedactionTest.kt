@@ -24,6 +24,17 @@ class RedactionTest {
             val s = o.toString()
             for (x in secrets) assertFalse(s.contains(x), "${o::class.simpleName} leaks")
         }
-        assertTrue(F.profileA.toString().contains(F.profileA.id.hex))
+        // M10 review: the record id is not printed either (it links log lines to one person's row).
+        assertFalse(F.profileA.toString().contains(F.profileA.id.hex))
+        assertTrue(F.profileA.toString() == "Profile(redacted)")
+        val withPassing = F.profileA.copy(
+            passing = app.parivaar.panchang.core.model.profile.PassingData(
+                kotlinx.datetime.LocalDate(2019, 3, 4), null,
+            ),
+        )
+        for (o in listOf<Any>(withPassing, withPassing.passing!!, withPassing.familyPrefs)) {
+            assertFalse(o.toString().contains("2019"), "${o::class.simpleName} leaks")
+            assertFalse(o.toString().contains(F.NAME_A))
+        }
     }
 }

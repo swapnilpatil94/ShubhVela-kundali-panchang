@@ -88,6 +88,9 @@ fun ParivaarScreen(
             Lacquer(mergeSemantics = false) { FamilyAvatars(avatarsOf(state.profiles, me), null, onOpenProfile) }
         }
         Text(stringResource(R.string.parivaar_upcoming), style = PpType.eyebrow, color = r.text3)
+        for (n in state.notes.sortedBy { it.ordinal }) {
+            Text(stringResource(familyNoteText(n)), style = PpType.meta, color = r.text2)
+        }
         if (state.upcoming.isEmpty() && !state.loading) {
             Text(stringResource(R.string.parivaar_none), style = PpType.body, color = r.text2)
         }
@@ -109,6 +112,12 @@ fun ParivaarScreen(
         Text(stringResource(R.string.parivaar_privacy), style = PpType.meta, color = r.text3)
         Spacer(Modifier.height(BOTTOM_INSET))
     }
+}
+
+private fun familyNoteText(n: FamilyNote): Int = when (n) {
+    FamilyNote.AYANAMSA_FALLBACK -> R.string.family_note_ayanamsa
+    FamilyNote.AMBIGUOUS_BIRTH_DAY -> R.string.family_note_ambiguous
+    FamilyNote.SOME_UNAVAILABLE -> R.string.family_note_unavailable
 }
 
 private const val MAX_ROWS = 30

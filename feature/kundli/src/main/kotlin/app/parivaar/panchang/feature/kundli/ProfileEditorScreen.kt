@@ -190,6 +190,15 @@ fun ProfileEditorScreen(
                     singleLine = true,
                     isError = EditorError.PASSING in s.errors,
                 )
+                OutlinedTextField(
+                    s.passingTimeText,
+                    vm::onPassingTime,
+                    Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.editor_passing_time)) },
+                    singleLine = true,
+                    isError = EditorError.PASSING in s.errors,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                )
                 Text(stringResource(R.string.editor_passing_note), style = PpType.meta, color = r.text2)
             }
         }

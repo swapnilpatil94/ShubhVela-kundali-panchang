@@ -32,6 +32,7 @@ class FamilyDatesGoldenTest {
     private val meta = M04Golden.meta(root)
     private val janma = root.getValue("janma").a().map { it.a() }
     private val defRows = root.getValue("defs").a().map { it.a() }
+    private val dayRows = root.getValue("days").a().map { it.a() }
 
     private class FamCity(val name: String, val place: Place, val offsetMin: Int, val rows: List<JsonArray>)
 
@@ -79,6 +80,8 @@ class FamilyDatesGoldenTest {
         assertEquals(JANMA_ROWS, janma.size, "janma rows")
         assertEquals(JANMA_ROWS, meta.getValue("janmaRows").i(), "meta.janmaRows")
         assertEquals(DEFS, defRows.size, "defs")
+        assertEquals(DAY_ROWS, dayRows.size, "unknown-time day rows")
+        assertEquals(DAY_EXACT, meta.getValue("dayExact").i(), "meta.dayExact")
         assertEquals(DEFS, meta.getValue("defs").i(), "meta.defs")
         assertEquals(ROWS, meta.getValue("rows").i(), "meta.rows")
         assertEquals(ROWS, cities.sumOf { it.rows.size }, "occurrence rows")
@@ -104,6 +107,56 @@ class FamilyDatesGoldenTest {
 
     @Test
     fun janmaBase() = janma(M04Golden.BASE)
+
+    @Test
+    fun unknownTimeDaysPrecision() = days(M04Golden.PRECISION)
+
+    @Test
+    fun unknownTimeDaysBase() = days(M04Golden.BASE)
+
+    /**
+     * Review regression (M10): a reminder query starting late June 2026, after the adhika Jyeshtha split of the
+     * purnimanta nija month, against the oracle rows of that window (lunar-basis defs, Delhi).
+     */
+    @Test
+    fun lunarDefsInANarrowWindowPrecision() {
+        val lim = M04Golden.PRECISION
+        val c = cities.first { it.name == "delhi" }
+        val lunarIds = defRows.filter { !it[3].isNull() && it[3].s() == "LUNAR" }.map { it[0].s() }.toSet()
+        val tally = M04Festivals.Tally()
+        for (first in listOf(LocalDate(2026, 6, 26), LocalDate(2026, 6, 28), LocalDate(2026, 7, 2))) {
+            val finder = FamilyDateFinder(lim.eph())
+            val defs = defs(finder).filter { it.id in lunarIds }
+            val rows = c.rows.filter { it[0].s() in lunarIds && LocalDate.parse(it[1].s()) in first..LAST }
+            val occ = finder.occurrences(defs, first, LAST, c.place) { c.offsetMin * SECONDS_PER_MINUTE }
+            M04Festivals.compare(lim, "delhi from $first", rows, occ, { typeOf.getValue(it) }, tally)
+        }
+        M04Golden.assertNoFailures("family narrow window", tally.failures.list())
+    }
+
+    private fun days(lim: M04Golden.Limits) {
+        val finder = FamilyDateFinder(lim.eph())
+        val failures = ArrayList<String>()
+        var compared = 0
+        var exact = 0
+        for (r in dayRows) {
+            if (r[lim.frag(DAY_FRAG_P)].b()) continue
+            val c = cities.first { it.name == r[1].s() }
+            val got = finder.janmaOfDay(LocalDate.parse(r[0].s()), c.offsetMin * SECONDS_PER_MINUTE, c.place)
+            val tithis = r[2].a().map { it.i() }
+            val naks = r[3].a().map { it.i() }
+            val want = JanmaFacts(r[4].i(), label(r[5]), label(r[6]), r[7].i(), Rashi.entries[r[8].i()])
+            compared++
+            val ok = when (got) {
+                is JanmaResult.Exact -> (tithis.size == 1 && naks.size == 1).also { if (it) exact++ }
+                is JanmaResult.Ambiguous -> got.tithis == tithis && got.nakshatras == naks
+            }
+            if (!ok || got.factsAtSunrise() != want) failures += "${lim.name} day ${r[0].s()} ${r[1].s()}"
+        }
+        M04Golden.report("family days ${lim.name}", listOf("rows compared $compared (exact $exact)"))
+        M04Golden.assertNoFailures("family days ${lim.name}", failures)
+        assertTrue(exact >= DAY_EXACT - DAY_FRAGILE_MAX && compared >= DAY_ROWS - DAY_FRAGILE_MAX, "too few day rows")
+    }
 
     @Test
     fun precision() = occurrences(M04Golden.PRECISION)
@@ -158,6 +211,10 @@ class FamilyDatesGoldenTest {
         const val JANMA_FRAG_P = 8
         const val JANMA_FRAGILE_MAX = 6
         const val DEFS = 483
+        const val DAY_ROWS = 137
+        const val DAY_EXACT = 18
+        const val DAY_FRAG_P = 9
+        const val DAY_FRAGILE_MAX = 10
         const val ROWS = 26_887
         const val DATES_HASH_HEX = 16
         const val SECONDS_PER_MINUTE = 60

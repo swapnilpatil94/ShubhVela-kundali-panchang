@@ -140,6 +140,45 @@ def must_haves(sky, tb, nbm, nbi, ski, skt, tz):
     return out, {"twice": twice, "absent": absent}
 
 
+# ------------------------------------------------------------------------------------- unknown-time days
+DAY_CITIES = ["delhi", "newyork"]
+N_DAY_RANDOM = 60
+
+
+def day_rows(sky, wj, tb, nbm, nbi):
+    """docs/specs/M10.md rule 2 (janmaOfDay): per city every 2024-2030 civil day with one tithi and one nakshatra
+    over [local midnight, next midnight) plus N_DAY_RANDOM random days (seed SEED + 1). Row: [date, city, tithis,
+    nakshatras, facts at sunrise..., fragP, fragB]; fragile if a tithi / nakshatra boundary lies within tauL of
+    either midnight or the sunrise facts are fragile (family_ref.janma_rows)."""
+    eph, _ = oc.load_kernel()
+    rng = random.Random(SEED + 1)
+    out = []
+    for name in DAY_CITIES:
+        off = cr.CITY_OFFSETS[cr.CITY_NAMES.index(name)]
+
+        def lists(d):
+            m0 = d * DAY - off * 60_000
+            m1 = m0 + DAY
+            i0, j0 = bisect.bisect_right(tb, m0) - 1, bisect.bisect_right(nbm, m0) - 1
+            ti = [i % 30 + 1 for i in range(i0, len(tb) - 1) if tb[i] < m1]
+            nk = [nbi[j] for j in range(j0, len(nbm) - 1) if nbm[j] < m1]
+            fr_ = {lvl: any(abs(b - m) <= fam.TAU_L[lvl] for m in (m0, m1)
+                            for b in tb[i0:i0 + len(ti) + 2] + nbm[j0:j0 + len(nk) + 2]) for lvl in ("P", "B")}
+            return ti, nk, fr_
+
+        exact = [d for d in range(D_FIRST, D_LAST + 1) if len(lists(d)[0]) == 1 and len(lists(d)[1]) == 1]
+        days = sorted(set(exact) | {rng.randrange(D_FIRST, D_LAST + 1) for _ in range(N_DAY_RANDOM)})
+        sd = fr.City(eph, oc.timescale(), name, off)
+        sd.ensure(days)
+        facts = fam.janma_rows(sky, wj, [(sd.get(d)[0], "day") for d in days])
+        for d, f in zip(days, facts):
+            ti, nk, fl = lists(d)
+            out.append([pr.date_str(d), name, ti, nk, f[2], list(f[3]), list(f[4]), f[5], f[6],
+                        fl["P"] or f[7], fl["B"] or f[8]])
+        print(f"  unknown-time days {name}: exact {len(exact)}, rows {len(days)}")
+    return out
+
+
 # ------------------------------------------------------------------------------------------ city worker
 def lunar_units(ctx, df):
     r, adh = df["rule"], df["adhika"]
@@ -231,6 +270,7 @@ def generate():
         extra, found = must_haves(sky, tb, nbm, nbi, ski, skt, tz)
         births += extra
         jrows = fam.janma_rows(sky, wj, [(b[0], b[1]) for b in births])
+        drows = day_rows(sky, wj, tb, nbm, nbi)
         occ = list(range(N_OCC)) + list(range(N_RANDOM, len(births)))
         defs = [d for b in occ for d in fam.defs_of(b, jrows[b], births[b][2] or fam.region_of(b))]
         res = pool.map(city_task, [(c, defs, tb, nbm, nbi, ski, skt) for c in OCC_CITIES], chunksize=1)
@@ -282,7 +322,8 @@ def generate():
     n_rows = sum(len(r[2]) for r in rows_out)
     meta = {"genVersion": GEN_VERSION, "schema": 1, "generator": "gen_family.py", "versions": oc.versions(),
             "kernelSha256": ksha, "ayanamsa": "TRUE_LAHIRI", "seed": SEED, "range": "2024-01-01..2030-12-31",
-            "randomBirths": N_RANDOM, "occurrenceBirths": len(occ), "janmaRows": len(jrows), "defs": len(defs),
+            "randomBirths": N_RANDOM, "occurrenceBirths": len(occ), "janmaRows": len(jrows), "dayRows": len(drows),
+            "dayExact": sum(1 for r in drows if len(r[2]) == 1 and len(r[3]) == 1), "defs": len(defs),
             "rows": n_rows, "datesSha256": sha(dates), "fragileCap": FRAGILE_CAP,
             "tauSeconds": {"P": 30, "B": 600}, "tauTithiSeconds": {"P": 30, "B": 150, "BonFSdays": 600},
             "fragileByKind": {k: {"rows": s[0], "fragP": s[1], "fragB": s[2]} for k, s in stat.items()},
@@ -293,13 +334,18 @@ def generate():
                      "nakshatra 0..26, sunRashi 0..11, fragP, fragB]; fragile: a fact changes when the instant moves "
                      "+-tauL (tithi, nakshatra, labels) or +-tauS (sun rashi), or one nearby new moon / sankranti "
                      "moves +-tauS",
+            "day": "[date, city, tithis, nakshatras (spans overlapping local midnight..next midnight, fixed city "
+                   "offset), tithi, amanta, purnimanta, nakshatra, sunRashi at the day's sunrise, fragP, fragB]: "
+                   "janmaOfDay; Exact iff one tithi and one nakshatra; fragile if a boundary is within tauL of a "
+                   "midnight or the sunrise facts are fragile",
             "def": "[id, birth, kind, basis|null, system|null, solarRegion|null]: docs/specs/M10.md rule 8 defaults",
             "row": "festivals_oracle.json row layout (gen_festivals.row_of); nakshatra rows carry the month label "
                    "for the lunar basis and null for the solar basis"}
     jtext = ",\n".join(dumps([i, r[1], r[0], r[2], list(r[3]), list(r[4]), r[5], r[6], r[7], r[8]])
                        for i, r in enumerate(jrows))
     dtext = ",\n".join(dumps([d["id"], d["birth"], d["kind"], d["basis"], d["system"], d["region"]]) for d in defs)
-    text = '{"meta":' + dumps(meta) + ',\n"janma":[\n' + jtext + '\n],\n"defs":[\n' + dtext + '\n],\n"cities":[\n' + \
+    text = '{"meta":' + dumps(meta) + ',\n"janma":[\n' + jtext + '\n],\n"days":[\n' + ",\n".join(dumps(r) for r in drows) + \
+        '\n],\n"defs":[\n' + dtext + '\n],\n"cities":[\n' + \
         ",\n".join('{"name":"%s","offsetMin":%d,"rows":[\n' % (n, off) + ",\n".join(dumps(x) for x in rr) + "\n]}"
                    for n, off, rr in rows_out) + "\n]}\n"
     print(f"rows {n_rows}; run time {time.time() - t_start:.0f} s")

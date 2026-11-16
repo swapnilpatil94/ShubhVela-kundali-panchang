@@ -23,8 +23,10 @@ data class UpcomingRow(val item: FamilyDateItem, val profile: Profile, val daysU
 }
 
 data class ParivaarState(
-    val profiles: List<Profile> = emptyList(), val upcoming: List<UpcomingRow> = emptyList(),
+    val profiles: List<Profile> = emptyList(),
+    val upcoming: List<UpcomingRow> = emptyList(),
     val loading: Boolean = true,
+    val notes: Set<FamilyNote> = emptySet(),
 ) {
     override fun toString(): String = "ParivaarState(redacted)"
 }
@@ -55,15 +57,21 @@ class ParivaarViewModel(
     init {
         scope.launch {
             combine(profiles, home) { ps, h -> ps to h }.collect { (ps, h) ->
-                _state.value = _state.value.copy(profiles = ps, loading = h != null)
-                if (h == null) return@collect
-                val today = clock.now().toLocalDateTime(h.zone).date
-                val items = withContext(compute) {
-                    runCatching { engine.familyDates(
-                        ps, today, today.plus(DatePeriod(days = windowDays)), h,
-                    ) }.getOrDefault(emptyList())
+                // Vault locked or no home place: nothing is retained on screen (rule 10).
+                if (h == null || ps.isEmpty()) {
+                    _state.value = ParivaarState(ps, emptyList(), loading = false)
+                    return@collect
                 }
-                _state.value = ParivaarState(ps, Upcoming.rows(items, ps, today), loading = false)
+                _state.value = _state.value.copy(profiles = ps, loading = true)
+                val today = clock.now().toLocalDateTime(h.zone).date
+                val last = today.plus(DatePeriod(days = windowDays))
+                val result = withContext(compute) {
+                    runCatching { engine.familyDates(ps, today, last, h) }
+                        .getOrElse { FamilyDatesResult(emptyList(), setOf(FamilyNote.SOME_UNAVAILABLE)) }
+                }
+                _state.value = ParivaarState(
+                    ps, Upcoming.rows(result.items, ps, today), loading = false, notes = result.notes,
+                )
             }
         }
     }

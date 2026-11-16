@@ -38,7 +38,15 @@ interface KundliEngine {
     /** Sub-periods of the Vimshottari period at [path] (empty path: the maha periods). */
     fun dasha(r: ChartRequest, path: List<Graha>): List<DashaPeriod<Graha>>
 
-    fun familyDates(ps: List<Profile>, first: LocalDate, last: LocalDate, home: CalInputsLite): List<FamilyDateItem>
+    fun familyDates(ps: List<Profile>, first: LocalDate, last: LocalDate, home: CalInputsLite): FamilyDatesResult
+}
+
+/** Calm notes about family dates (codes; text in resources). */
+enum class FamilyNote { AYANAMSA_FALLBACK, AMBIGUOUS_BIRTH_DAY, SOME_UNAVAILABLE }
+
+/** Family dates plus notes, so a failure is never a silent empty list. */
+data class FamilyDatesResult(val items: List<FamilyDateItem>, val notes: Set<FamilyNote> = emptySet()) {
+    override fun toString(): String = "FamilyDatesResult(redacted)"
 }
 
 /** One chart computation. [instant] is the birth instant, or local noon at the birth place when [noonChart]. */
@@ -112,11 +120,11 @@ data class FamilyDateItem(
 
 /** Computes family dates; backed by the engine's `FamilyDateFinder` in the app (not thread-safe, like the engine). */
 fun interface FamilyDates {
-    fun dates(ps: List<Profile>, first: LocalDate, last: LocalDate, home: CalInputsLite): List<FamilyDateItem>
+    fun dates(ps: List<Profile>, first: LocalDate, last: LocalDate, home: CalInputsLite): FamilyDatesResult
 
     companion object {
-        /** Used until the engine's family-date finder is wired: no dates (never a guessed date). */
-        val NONE = FamilyDates { _, _, _, _ -> emptyList() }
+        /** No finder: no dates (never a guessed date). */
+        val NONE = FamilyDates { _, _, _, _ -> FamilyDatesResult(emptyList()) }
     }
 }
 
@@ -187,7 +195,7 @@ class DirectKundliEngine(
         first: LocalDate,
         last: LocalDate,
         home: CalInputsLite,
-    ): List<FamilyDateItem> = fam.dates(ps, first, last, home)
+    ): FamilyDatesResult = fam.dates(ps, first, last, home)
 
     companion object {
         /** D2: maha > antar > pratyantar > sookshma. */

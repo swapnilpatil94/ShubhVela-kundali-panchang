@@ -38,6 +38,12 @@ import java.security.SecureRandom
 import kotlin.time.Clock
 import kotlin.time.Instant
 
+/** "HH:MM" (seconds kept only when non-zero). */
+internal fun hhmm(t: LocalTime): String {
+    val base = "${t.hour.toString().padStart(2, '0')}:${t.minute.toString().padStart(2, '0')}"
+    return if (t.second == 0) base else base + ":" + t.second.toString().padStart(2, '0')
+}
+
 /** A clock time the zone skipped: Save is blocked (rule 1). */
 fun isGap(o: ResolvedOffset): Boolean =
     o.flags.any { it == OffsetFlag.GAP_SHIFTED || it == OffsetFlag.NONEXISTENT_DATE }
@@ -67,6 +73,7 @@ data class EditorState(
     val ambiguity: AmbiguityChoice = AmbiguityChoice.EARLIER,
     val resolved: OffsetView? = null,
     val passingText: String = "",
+    val passingTimeText: String = "",
     val prefs: FamilyPrefs = FamilyPrefs(),
     val errors: Set<EditorError> = emptySet(),
     val confirmDelete: Boolean = false,
@@ -107,12 +114,11 @@ class ProfileEditorViewModel(
         } else {
             EditorState(
                 editingId = p.id.hex, name = p.displayName, relation = p.relation, dateText = p.birth.date.toString(),
-                timeText = p.birth.time?.let { "%02d:%02d".format(
-                    it.hour, it.minute,
-                ) } ?: "", timeUnknown = !p.birth.timeKnown,
+                timeText = p.birth.time?.let(::hhmm) ?: "", timeUnknown = !p.birth.timeKnown,
                 place = p.place.place, query = p.place.place.name, ambiguity = p.place.ambiguity,
                 manualText = p.place.manualOffset?.let { OffsetPickerModel.format(it.seconds) } ?: "",
                 passingText = p.passing?.date?.toString() ?: "", prefs = p.familyPrefs,
+                passingTimeText = p.passing?.time?.let { hhmm(it) } ?: "",
             )
         }
         resolve()
@@ -128,6 +134,7 @@ class ProfileEditorViewModel(
     fun onManual(v: String) = edit { it.copy(manualText = v) }
     fun onAmbiguity(c: AmbiguityChoice) = edit { it.copy(ambiguity = c) }
     fun onPassing(v: String) = edit { it.copy(passingText = v) }
+    fun onPassingTime(v: String) = edit { it.copy(passingTimeText = v) }
     fun onPrefs(p: FamilyPrefs) = _state.update { it.copy(prefs = p) }
     fun askDelete(v: Boolean) = _state.update { it.copy(confirmDelete = v) }
 
@@ -193,11 +200,16 @@ class ProfileEditorViewModel(
         if (!s.timeUnknown && time == null) errs += EditorError.TIME
         if (s.place == null) errs += EditorError.PLACE
         if (!manualOk) errs += EditorError.OFFSET
-        if (s.passingText.isNotBlank() && s.relation != Relation.SELF) {
-            val pd = parseDate(s.passingText)
-            if (pd == null || (date != null && pd < date)) errs += EditorError.PASSING
-        }
+        if (!passingOk(s, date)) errs += EditorError.PASSING
         return errs
+    }
+
+    /** The optional date (and time) of passing: valid, and not before the birth date. Ignored for SELF. */
+    private fun passingOk(s: EditorState, birth: LocalDate?): Boolean {
+        if (s.passingText.isBlank() || s.relation == Relation.SELF) return true
+        val pd = parseDate(s.passingText)
+        val timeOk = s.passingTimeText.isBlank() || parseTime(s.passingTimeText) != null
+        return pd != null && timeOk && (birth == null || pd >= birth)
     }
 
     private fun offsetView(
@@ -233,7 +245,9 @@ class ProfileEditorViewModel(
         checkNotNull(view)
         val now = clock.now()
         val o = original
-        val passing = if (s.relation == Relation.SELF) null else parseDate(s.passingText)?.let { PassingData(it, null) }
+        val passingTime = s.passingTimeText.takeIf { it.isNotBlank() }?.let(::parseTime)
+        val passingDate = if (s.relation == Relation.SELF) null else parseDate(s.passingText)
+        val passing = passingDate?.let { PassingData(it, passingTime) }
         return Profile(
             id = o?.id ?: newRecordId(rng),
             displayName = s.name.trim(),

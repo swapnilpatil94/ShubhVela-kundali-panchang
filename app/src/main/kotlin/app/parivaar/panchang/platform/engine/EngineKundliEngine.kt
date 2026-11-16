@@ -6,7 +6,7 @@ import app.parivaar.panchang.engine.jyotish.Graha
 import app.parivaar.panchang.feature.aaj.PpPerf
 import app.parivaar.panchang.feature.kundli.CalInputsLite
 import app.parivaar.panchang.feature.kundli.ChartRequest
-import app.parivaar.panchang.feature.kundli.FamilyDateItem
+import app.parivaar.panchang.feature.kundli.FamilyDatesResult
 import app.parivaar.panchang.feature.kundli.KundliBundle
 import app.parivaar.panchang.feature.kundli.KundliEngine
 import kotlinx.datetime.LocalDate
@@ -27,6 +27,6 @@ class EngineKundliEngine(private val delegate: KundliEngine, private val lock: A
         first: LocalDate,
         last: LocalDate,
         home: CalInputsLite,
-    ): List<FamilyDateItem> =
+    ): FamilyDatesResult =
         synchronized(lock) { PpPerf.time("kundli.family") { delegate.familyDates(ps, first, last, home) } }
 }

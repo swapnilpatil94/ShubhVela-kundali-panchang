@@ -118,6 +118,7 @@ class FamilyDatesTest {
                     exact++
                     assertEquals(finder.janma(m0).tithi, r.facts.tithi)
                     assertEquals(finder.janma(last).tithi, r.facts.tithi)
+                    assertEquals(finder.janma(m0).nakshatra, r.facts.nakshatra)
                     assertEquals(finder.janma(last).nakshatra, r.facts.nakshatra)
                 }
                 is JanmaResult.Ambiguous -> {
@@ -168,6 +169,37 @@ class FamilyDatesTest {
             LocalDate(2026, 1, 1), LocalDate(2026, 12, 31), delhi,
         ) { ist }
         assertTrue(last.single().date >= both[1].date)
+    }
+
+    /**
+     * Review regression: purnimanta nija Jyeshtha 2026 is split by adhika Jyeshtha (Krishna half about 1-16 May,
+     * Shukla half about 15-29 June). A window starting in late June must still see the May half, so FIRST never
+     * moves into June when May already has a matching day: a narrow window equals the wide one cut to it.
+     */
+    @Test
+    fun lunarMonthSplitByAdhikaIsCompleteInANarrowWindow() {
+        val defs = (0 until 27).flatMap { n ->
+            listOf(Kala.AHORATRA, Kala.SUNRISE).mapIndexed { k, kala ->
+                val rule =
+                    FestivalRule.NakshatraInLunarMonth(n, Masa.JYESHTHA, MonthSystem.PURNIMANTA, kala, Pick.FIRST)
+                val id = "fam_${100 * k + n}"
+                FestivalDef(
+                    id, "term:fest_$id", setOf("all"), rule, AdhikaPolicy.NIJA, emptyList(), RuleStatus.VERIFY, "s",
+                )
+            }
+        }
+        val wide = finder.occurrences(defs, LocalDate(2026, 1, 1), LocalDate(2027, 12, 31), delhi) { ist }
+        assertTrue(wide.any { it.date.year == 2026 && it.date.monthNumber == 5 }, "May half used by FIRST")
+        for (day in 24..30) {
+            val first = LocalDate(2026, 6, day)
+            val narrow = FamilyDateFinder(GoldenLoader.openDe440())
+                .occurrences(defs, first, LocalDate(2027, 6, 30), delhi) { ist }
+            assertEquals(
+                wide.filter { it.date >= first && it.date <= LocalDate(2027, 6, 30) }.map { it.id to it.date },
+                narrow.map { it.id to it.date },
+                "window from $first",
+            )
+        }
     }
 
     private companion object {

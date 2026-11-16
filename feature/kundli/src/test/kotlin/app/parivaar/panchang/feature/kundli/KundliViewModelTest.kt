@@ -25,6 +25,8 @@ import kotlin.time.Instant
 class KundliViewModelTest {
     private val now = object : Clock { override fun now() = Instant.parse("2026-11-16T06:00:00Z") }
 
+    private var profilesFlow = MutableStateFlow(emptyList<app.parivaar.panchang.core.model.profile.Profile>())
+
     private fun <T> withVm(
         p: app.parivaar.panchang.core.model.profile.Profile,
         block: suspend (KundliViewModel, KundliTestKit.CountingEngine) -> T,
@@ -33,7 +35,11 @@ class KundliViewModelTest {
         val scope = CoroutineScope(SupervisorJob() + pool.asCoroutineDispatcher())
         val engine = KundliTestKit.CountingEngine(KundliTestKit.direct())
         val vm = KundliViewModel(
-            MutableStateFlow(listOf(p)), { TimeZone.UTC }, { null }, engine, KundliTestKit.FakeResolver(),
+            MutableStateFlow(listOf(p)).also { profilesFlow = it },
+            { TimeZone.UTC },
+            { null },
+            engine,
+            KundliTestKit.FakeResolver(),
             KundliCache(),
             now, scope, pool.asCoroutineDispatcher(),
         )
@@ -80,6 +86,15 @@ class KundliViewModelTest {
         assertTrue(s.noon)
         assertTrue(KundliNote.NOON_CHART in s.notes)
         assertFalse(ChartModels.d1(s.bundle!!.facts, true).lagnaKnown)
+    }
+
+    @Test fun vaultLockRetainsNothing() = withVm(KundliTestKit.profile(5)) { vm, _ ->
+        vm.loaded()
+        profilesFlow.value = emptyList()
+        val s = withTimeout(TIMEOUT) { vm.state.first { it.profiles.isEmpty() } }
+        assertEquals(null, s.bundle)
+        assertEquals(null, s.selectedId)
+        assertTrue(s.children.isEmpty() && s.expanded.isEmpty() && s.notes.isEmpty())
     }
 
     private companion object {

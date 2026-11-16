@@ -25,6 +25,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
 enum class ChartTab { D1, D9 }
@@ -90,6 +91,12 @@ class KundliViewModel(
     init {
         scope.launch {
             profiles.collect { list ->
+                if (list.isEmpty()) {
+                    // Vault locked or no profiles: drop profiles, bundles and dasha children (rule 10).
+                    job?.cancel()
+                    _state.update { KundliState(chart = it.chart, style = it.style, tab = it.tab) }
+                    return@collect
+                }
                 val prev = _state.value
                 val sel = prev.selectedId?.takeIf { id -> list.any { it.id == id } }
                     ?: list.firstOrNull { it.relation == Relation.SELF }?.id ?: list.firstOrNull()?.id
@@ -135,8 +142,10 @@ class KundliViewModel(
             val result = withContext(compute) {
                 runCatching {
                     val r = request(p)
+                    // The local day is in the key so current dasha, Sade Sati and gochar refresh after midnight.
+                    val day = r.now.toLocalDateTime(homeZone() ?: TimeZone.UTC).date
                     val key = BundleKey(
-                        p.id, p.updatedAt.toEpochMilliseconds(), p.calc.hashCode(), r.noonChart, homePlaceId(),
+                        p.id, p.updatedAt.toEpochMilliseconds(), p.calc.hashCode(), r.noonChart, homePlaceId(), day,
                     )
                     val b = cache.get(key) ?: engine.bundle(r).also { cache.put(key, it) }
                     val expand = DashaRows.autoExpand(b.currentDasha)

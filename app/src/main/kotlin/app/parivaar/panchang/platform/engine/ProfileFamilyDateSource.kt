@@ -21,7 +21,7 @@ class ProfileFamilyDateSource(
         val h = home()
         val ps = if (h == null) emptyList() else profiles()
         if (h == null || ps.isEmpty()) return emptyList()
-        return enabledDates(engine.familyDates(ps, first, last, h), ps)
+        return enabledDates(engine.familyDates(ps, first, last, h).items, ps)
     }
 
     companion object {

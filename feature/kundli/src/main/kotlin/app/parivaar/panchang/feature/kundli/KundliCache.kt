@@ -1,14 +1,17 @@
 package app.parivaar.panchang.feature.kundli
 
 import app.parivaar.panchang.core.model.profile.RecordId
+import kotlinx.datetime.LocalDate
 
-/** Cache key (rule 10): profile, its edit time, calc settings, noon chart and the home place. */
+/** Cache key (rule 10): profile, its edit time, calc settings, noon chart, home place and local day. */
 data class BundleKey(
     val profileId: RecordId,
     val updatedAtMs: Long,
     val calcHash: Int,
     val noon: Boolean,
     val homePlaceId: RecordId?,
+    /** Local date at the home place: a new day recomputes the current-time parts. */
+    val day: LocalDate? = null,
 ) {
     override fun toString(): String = "BundleKey(redacted)"
 }

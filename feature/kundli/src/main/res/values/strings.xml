@@ -141,6 +141,10 @@
     <string name="family_kind_shraddha">shraddha tithi</string>
     <string name="family_row_title">%1$s · %2$s</string>
     <string name="family_today">Today</string>
+    <string name="family_note_ayanamsa">The saved ayanamsa is not available; family dates use Lahiri.</string>
+    <string name="family_note_ambiguous">For a profile with an unknown birth time, the tithi or nakshatra changed that day. Add the birth time to see its birthdays.</string>
+    <string name="family_note_unavailable">Some family dates could not be calculated. Please check the birth details.</string>
+    <string name="editor_passing_time">Time of passing (optional, HH:MM)</string>
     <plurals name="family_in_days">
         <item quantity="one">%1$s day</item>
         <item quantity="other">%1$s days</item>

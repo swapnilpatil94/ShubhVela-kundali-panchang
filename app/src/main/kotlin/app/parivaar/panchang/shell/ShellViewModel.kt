@@ -58,6 +58,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -151,15 +152,26 @@ class ShellViewModel
 
         /** M10: profiles while the vault is open (empty otherwise). Memory only. */
         private val profileList =
-            vault.state
-                .flatMapLatest { if (it == VaultState.Ready) profiles.observeAll().catch { } else emptyFlow() }
-                .map { it.items }
+            vault.state.flatMapLatest {
+                if (it == VaultState.Ready) {
+                    profiles.observeAll().catch { }.map { r -> r.items }
+                } else {
+                    flowOf(emptyList())
+                }
+            }
 
-        /** Home place for family dates (D4): place, zone, offsets and calc; null without a home place. */
+        /** Home place for family dates (D4); null without a home place or while the vault is locked. */
         private val kundliHome: StateFlow<CalInputsLite?> =
             vault.state
-                .flatMapLatest { if (it == VaultState.Ready) places.observeAll().catch { } else emptyFlow() }
-                .let { f -> kotlinx.coroutines.flow.combine(f, readySettings) { recs, s -> kundliHome(recs.items, s) } }
+                .flatMapLatest { st ->
+                    if (st == VaultState.Ready) {
+                        kotlinx.coroutines.flow.combine(places.observeAll().catch { }, readySettings) { recs, s ->
+                            kundliHome(recs.items, s)
+                        }
+                    } else {
+                        flowOf(null)
+                    }
+                }
                 .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
         /** Bundle LRU (rule 10): in memory only, cleared whenever the vault is not Ready. */

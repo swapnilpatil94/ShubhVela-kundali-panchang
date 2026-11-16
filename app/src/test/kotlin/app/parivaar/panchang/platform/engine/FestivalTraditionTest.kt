@@ -23,7 +23,9 @@ class FestivalTraditionTest {
 
     @Test fun smartaKeepsOnlySmarta() = assertEquals(listOf("ekadashi_smarta"), ekadashiIds(Tradition.SMARTA))
 
-    @Test fun vaishnavaKeepsOnlyVaishnava() = assertEquals(listOf("ekadashi_vaishnava"), ekadashiIds(Tradition.VAISHNAVA))
+    @Test fun vaishnavaKeepsOnlyVaishnava() = assertEquals(
+        listOf("ekadashi_vaishnava"), ekadashiIds(Tradition.VAISHNAVA),
+    )
 
     @Test fun nonEkadashiDefinitionsStay() {
         val others = defs.filter { !it.id.startsWith("ekadashi") }.map { it.id }

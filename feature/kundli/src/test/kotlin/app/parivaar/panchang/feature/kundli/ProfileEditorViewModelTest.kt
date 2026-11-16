@@ -96,4 +96,18 @@ class ProfileEditorViewModelTest {
         assertEquals(listOf(p.id), evicted)
         assertEquals(0, cache.size())
     }
+
+    @Test fun passingTimeIsKeptOnResave() {
+        val repo = FakeRepo()
+        val v = vm(KundliTestKit.FakeResolver(), repo)
+        val p = KundliTestKit.profile(8).copy(
+            passing = app.parivaar.panchang.core.model.profile.PassingData(
+                kotlinx.datetime.LocalDate(2015, 3, 10), kotlinx.datetime.LocalTime(21, 15),
+            ),
+        )
+        v.start(p)
+        assertEquals("21:15", v.state.value.passingTimeText)
+        v.save()
+        assertEquals(p.passing, repo.saved.single().passing)
+    }
 }

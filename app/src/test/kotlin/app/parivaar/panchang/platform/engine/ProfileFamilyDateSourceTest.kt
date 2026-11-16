@@ -19,6 +19,7 @@ import app.parivaar.panchang.engine.jyotish.Graha
 import app.parivaar.panchang.feature.kundli.CalInputsLite
 import app.parivaar.panchang.feature.kundli.ChartRequest
 import app.parivaar.panchang.feature.kundli.FamilyDateItem
+import app.parivaar.panchang.feature.kundli.FamilyDatesResult
 import app.parivaar.panchang.feature.kundli.FamilyKind
 import app.parivaar.panchang.feature.kundli.KundliBundle
 import app.parivaar.panchang.feature.kundli.KundliEngine
@@ -49,11 +50,14 @@ class ProfileFamilyDateSourceTest {
     private val engine = object : KundliEngine {
         override fun bundle(r: ChartRequest): KundliBundle = error("not used")
         override fun dasha(r: ChartRequest, path: List<Graha>): List<DashaPeriod<Graha>> = error("not used")
-        override fun familyDates(ps: List<Profile>, first: LocalDate, last: LocalDate, home: CalInputsLite) = listOf(
-            FamilyDateItem(ps[0].id, FamilyKind.TITHI_BIRTHDAY, d1, 5, null, null, null, emptySet()),
-            FamilyDateItem(ps[0].id, FamilyKind.NAKSHATRA_BIRTHDAY, d2, null, null, 3, null, emptySet()),
-            FamilyDateItem(ps[0].id, FamilyKind.SHRADDHA, d3, 9, null, null, null, emptySet()),
-        )
+        override fun familyDates(ps: List<Profile>, first: LocalDate, last: LocalDate, home: CalInputsLite) =
+            FamilyDatesResult(
+                listOf(
+                    FamilyDateItem(ps[0].id, FamilyKind.TITHI_BIRTHDAY, d1, 5, null, null, null, emptySet()),
+                    FamilyDateItem(ps[0].id, FamilyKind.NAKSHATRA_BIRTHDAY, d2, null, null, 3, null, emptySet()),
+                    FamilyDateItem(ps[0].id, FamilyKind.SHRADDHA, d3, 9, null, null, null, emptySet()),
+                ),
+            )
     }
 
     private val home = CalInputsLite(Place(0.0, 0.0), TimeZone.UTC, { 0 }, CalcSettings(), MonthSystem.AMANTA, null)
