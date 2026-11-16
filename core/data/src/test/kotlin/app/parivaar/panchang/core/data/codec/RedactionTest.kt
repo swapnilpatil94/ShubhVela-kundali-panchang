@@ -1,6 +1,8 @@
 package app.parivaar.panchang.core.data.codec
 
 import app.parivaar.panchang.core.data.codec.FamilyFixture as F
+import app.parivaar.panchang.core.model.geo.PlaceHit
+import app.parivaar.panchang.core.model.geo.tzContext
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -11,6 +13,8 @@ class RedactionTest {
         val all = listOf<Any>(
             F.profileA, F.profileA.birth, F.profileA.place, F.profileB.place, F.savedPlace, F.bond, F.bond.traits,
             F.settings, F.doc,
+            // Fable review item 6: geo types never print name, coordinates or zone.
+            F.placeA, F.placeB, PlaceHit(F.placeA, "Testville", 0), F.placeA.tzContext(), F.placeB.tzContext(),
         )
         val secrets = listOf(
             F.NAME_A, F.NAME_B, F.BOND_NAME, F.NOTE, "1990", "1985", "06:30", "12.5", "77.25", "Testville",

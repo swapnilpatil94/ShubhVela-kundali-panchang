@@ -37,7 +37,7 @@ class PanchangTileService : TileService() {
         val now = Clock.System.now()
         val date = access.today(a, now)
         val days = access.days(a, date.plus(DatePeriod(days = -1)), 3)
-        val text = WidgetText(ctx, a.offsetFor(date), date)
+        val text = WidgetText(ctx, a.zone.id, a.offsetFor(date), date)
         val windows = days.flatMap { it.windows }
         val rahu = windows.filter { it.kind == WindowKind.RAHU_KAAL && it.end > now }.minByOrNull { it.start }
         val cg = windows.firstOrNull { it.kind == WindowKind.CHOGHADIYA && it.start <= now && now < it.end }

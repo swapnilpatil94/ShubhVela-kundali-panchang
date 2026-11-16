@@ -4,7 +4,9 @@
 Run:   tools/oracle/.venv/bin/python tools/oracle/gen_panchang.py          (writes the two fixtures)
 Check: tools/oracle/.venv/bin/python tools/oracle/gen_panchang.py --check  (regenerates in memory, byte-compares
        with the committed files, exits non-zero on any difference or missing file)
-Writes panchang_limbs.json and panchang_windows.json under engine-golden/src/main/resources/golden/.
+Writes panchang_limbs.json, panchang_windows.json and panchang_highlat.json under
+engine-golden/src/main/resources/golden/. panchang_highlat.json (Fable review M1): sun days of four high-latitude
+places at their real civil offsets, around sunsets that cross local midnight and true polar day/night.
 panchang_reference.json is hand-written (status TODO_OWNER) and only checked for existence. Never reads
 rules/*.json or engine output. Synthetic places and dates only. Exits non-zero, writing nothing, if the fragile
 share exceeds 2 % for any kind or the kshaya/adhika coverage minimum is not met. One worker process per city.
@@ -69,21 +71,9 @@ def city_task(ci):
     for d in uniq:
         ws = wss[d]
         ev, fv = sw[ws], sw[ws + pr.DAY_MS]
-        rises_e = [t for k, t in ev["events"] if k == "RISE"]
-        rises_f = [t for k, t in fv["events"] if k == "RISE"]
-        sr = rises_e[0] if rises_e else None
-        ss = nsr = None
-        if sr is not None:
-            ss = next((t for k, t in sorted(ev["events"] + fv["events"], key=lambda e: e[1])
-                       if k == "SET" and t > sr), None)
-            nsr = rises_f[0] if rises_f else None
-        unavailable = not (sr is not None and ss is not None and nsr is not None and sr < ss < nsr)
-        fallback = ev["fallback"] or fv["fallback"]
-        extra = (not unavailable) and any(t > ss for t in rises_e)
-        sunfrag = ev["fragile"] or fv["fragile"]
-        days[d] = dict(sr=None if unavailable else sr, ss=None if unavailable else ss,
-                       nsr=None if unavailable else nsr, noon=ev["noon"], F=fallback, X=extra, S=sunfrag,
-                       U=unavailable)
+        x = pr.sun_day(ev, fv)
+        x["S"] = ev["fragile"] or fv["fragile"]
+        days[d] = x
     # grid cells covering [sunrise - 3 d, nextSunrise + 3 d] of every day
     ks = []
     for d in uniq:
@@ -139,6 +129,69 @@ def city_task(ci):
         t, idx, rate = bnd[kid]
         bl[kind] = [[int(i), int(m), float(r)] for m, i, r in zip(t, idx, rate)]
     return dict(name=name, off=off, bnd=bl, days=day_rows, wins=win_rows, stats=stats, flags=flagc)
+
+
+# (name, lat, lon, offset minutes, [(first date, last date)]): real civil offsets in force on those dates.
+HIGHLAT = [
+    ("reykjavik", 64.1466, -21.9426, 0, [((2026, 6, 5), (2026, 6, 28))]),
+    ("fairbanks", 64.8378, -147.7164, -480, [((2026, 5, 20), (2026, 6, 10))]),
+    ("oulu", 65.0121, 25.4651, 180, [((2026, 5, 28), (2026, 6, 18))]),
+    ("tromso_summer", 69.6492, 18.9553, 120, [((2026, 5, 8), (2026, 5, 28)), ((2026, 6, 18), (2026, 6, 24)),
+                                              ((2026, 7, 18), (2026, 8, 2))]),
+    ("tromso_winter", 69.6492, 18.9553, 60, [((2026, 11, 20), (2026, 12, 3)), ((2026, 12, 19), (2026, 12, 23)),
+                                             ((2027, 1, 8), (2027, 1, 20))]),
+]
+
+
+def highlat_task(hi):
+    """Rows [date, srMs|null, ssMs|null, nsrMs|null, flags(F,X,S,U), sources] for one place; sources has one
+    letter per event (sunrise, sunset, next sunrise): R observed crossing, C LOCAL_NOON_PM_6H convention."""
+    eph, _ = oc.load_kernel()
+    ts = oc.timescale()
+    name, lat, lon, off, ranges = HIGHLAT[hi]
+    site = gr.Site(eph, ts, lat, lon)
+    dates = []
+    for a, b in ranges:
+        dates += list(range(tsm._days_from_civil(*a), tsm._days_from_civil(*b) + 1))
+    wss = {d: d * pr.DAY_MS - off * 60_000 for d in dates}
+    starts = sorted({w for w in wss.values()} | {w + pr.DAY_MS for w in wss.values()})
+    sw = dict(zip(starts, pr.sun_windows(site, starts)))
+    rows = []
+    for d in dates:
+        ev, fv = sw[wss[d]], sw[wss[d] + pr.DAY_MS]
+        x = pr.sun_day(ev, fv)
+        sfrag = ev["fragile"] or fv["fragile"]
+        flags = flag_str(x["F"], x["X"], sfrag, x["U"])
+        if x["U"]:
+            rows.append([pr.date_str(d), None, None, None, flags, ""])
+            continue
+        real = {t for _, t in ev["real"] + fv["real"]}
+        src = "".join("R" if t in real else "C" for t in (x["sr"], x["ss"], x["nsr"]))
+        rows.append([pr.date_str(d), x["sr"], x["ss"], x["nsr"], flags, src])
+    return dict(name=name, lat=lat, lon=lon, off=off, rows=rows)
+
+
+def generate_highlat(ksha):
+    with Pool(len(HIGHLAT)) as pool:
+        places = pool.map(highlat_task, range(len(HIGHLAT)))
+    n = sum(len(p["rows"]) for p in places)
+    src = {}
+    for p in places:
+        for r in p["rows"]:
+            src[r[5] or "U"] = src.get(r[5] or "U", 0) + 1
+    print(f"highlat city-days {n}, sources {dict(sorted(src.items()))}")
+    meta = {"generator": "gen_panchang.py", "genVersion": GEN_VERSION, "schema": 1, "versions": oc.versions(),
+            "kernelSha256": ksha, "convention": pr.CONV, "highLatitudeRule": "LOCAL_NOON_PM_6H", "cityDays": n,
+            "sources": dict(sorted(src.items())),
+            "places": [{"name": p["name"], "lat": p["lat"], "lon": p["lon"], "offsetMin": p["off"],
+                        "days": len(p["rows"])} for p in places],
+            "dayRow": "[date, srMs, ssMs, nsrMs, flags(F,X,S,U), sources]; sources = one letter per event "
+                      "(sunrise, sunset, nextSunrise): R observed crossing, C convention (culmination -/+ 6 h); "
+                      "ms null and sources empty when flags has U"}
+    t = '{"meta":' + dumps(meta) + ',"places":[\n'
+    t += ",\n".join('{"name":"%s","offsetMin":%d,"days":[\n' % (p["name"], p["off"])
+                     + ",\n".join(dumps(r) for r in p["rows"]) + "\n]}" for p in places) + "\n]}\n"
+    return t
 
 
 def generate():
@@ -205,7 +258,7 @@ def generate():
     wt = '{"meta":' + dumps(wm) + ',"cities":[\n'
     wt += ",\n".join('{"name":"%s","offsetMin":%d,"days":[\n' % (c["name"], c["off"])
                      + ",\n".join(dumps(r) for r in c["wins"]) + "\n]}" for c in cities) + "\n]}\n"
-    return {"panchang_limbs.json": lt, "panchang_windows.json": wt}
+    return {"panchang_limbs.json": lt, "panchang_windows.json": wt, "panchang_highlat.json": generate_highlat(ksha)}
 
 
 def main():

@@ -24,8 +24,10 @@ internal object ProfileCodec {
 
     private fun birthFromJson(o: JsonElement): BirthData =
         read(o) {
+            val date = LocalDate.parse(string("date"))
+            check(date.year in DataLimits.BIRTH_YEAR_MIN..DataLimits.BIRTH_YEAR_MAX)
             BirthData(
-                date = LocalDate.parse(string("date")),
+                date = date,
                 time = stringOrNull("time")?.let(LocalTime::parse),
                 timeKnown = boolean("timeKnown"),
             )
@@ -44,6 +46,15 @@ internal object ProfileCodec {
             "createdAt" to instant(p.createdAt),
             "updatedAt" to instant(p.updatedAt),
         )
+
+    /** True when [p] would decode again (same bounds as stored and imported rows). */
+    fun isValid(p: Profile): Boolean =
+        try {
+            fromJson(toJson(p))
+            true
+        } catch (_: CodecException) {
+            false
+        }
 
     fun fromJson(o: JsonElement): Profile =
         guarded {

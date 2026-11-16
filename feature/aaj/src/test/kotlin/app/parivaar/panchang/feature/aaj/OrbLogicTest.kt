@@ -107,4 +107,78 @@ class OrbLogicTest {
             h += 5.0 / 60.0
         }
     }
+
+    // ---- M07R acceptance 4: values from the engine run (Pune 2026-11-15 +05:30; Tromso 2026-12-15), never from the PNG.
+    private val root = java.io.File(System.getProperty("pp.root.dir"))
+    private val calc = app.parivaar.panchang.engine.panchang.PanchangCalculator(
+        app.parivaar.panchang.engine.astro.AstronomyEngineEphemeris(),
+        app.parivaar.panchang.engine.panchang.PanchangRules.parse(
+            java.io.File(root, "rules/durmuhurta.json").readText(), java.io.File(root, "rules/choghadiya.json").readText(),
+        ),
+    )
+    private val puneDays by lazy {
+        calc.days(kotlinx.datetime.LocalDate(2026, 11, 14), 3, app.parivaar.panchang.engine.Place(18.5204, 73.8567, 560.0), app.parivaar.panchang.engine.CalcSettings()) { 19_800 }
+    }
+    private val puneDay get() = puneDays.first { it.date == kotlinx.datetime.LocalDate(2026, 11, 15) }
+    private fun minutes(w: app.parivaar.panchang.engine.panchang.Window) =
+        generateSequence(w.start) { it + kotlin.time.Duration.parse("1m") }.takeWhile { it < w.end }
+    private fun engineOrb(n: Instant) = orbUi(HeaderRule.evaluate(n, puneDays), puneDays, n, texts)
+    private fun dayParts(vararg codes: String) =
+        puneDay.windows.filter { it.kind == WindowKind.CHOGHADIYA && !it.night && it.code in codes }
+
+    @Test fun puneEngineGoodPartWithoutIntervalIsGoodWithExactFraction() {
+        val (part, n) = dayParts("SHUBH", "AMRIT", "LABH").asSequence()
+            .flatMap { p -> minutes(p).map { p to it } }
+            .first { (_, m) -> HeaderRule.evaluate(m, puneDays) is Header.GoodUntil }
+        val o = engineOrb(n)
+        assertEquals(OrbTone.GOOD, o.tone)
+        assertEquals(((part.end - n) / (part.end - part.start)).toFloat(), o.fractionLeft!!, 1e-6f)
+    }
+
+    @Test fun puneEngineRahuKaalIsAvoidUntilRahuEnd() {
+        val rahu = puneDay.windows.single { it.kind == WindowKind.RAHU_KAAL }
+        for (n in minutes(rahu)) {
+            val o = engineOrb(n)
+            assertEquals(OrbTone.AVOID, o.tone, "at $n")
+            assertEquals("T${rahu.end.epochSeconds}", o.untilText, "at $n")
+        }
+    }
+
+    @Test fun puneEngineCharWithoutIntervalIsNeutralAndAvoidPartsWithoutAbhijitAreAvoid() {
+        val charMinute = dayParts("CHAR").asSequence().flatMap { minutes(it) }
+            .first { HeaderRule.evaluate(it, puneDays).let { h -> h !is Header.WaitUntil && h !is Header.GoodUntil } }
+        assertEquals(OrbTone.NEUTRAL, engineOrb(charMinute).tone)
+        val abhijit = puneDay.windows.firstOrNull { it.kind == WindowKind.ABHIJIT }
+        val avoidMinute = dayParts("ROG", "KAAL", "UDVEG").asSequence().flatMap { minutes(it) }
+            .first { m -> abhijit == null || m !in abhijit.start..<abhijit.end }
+        assertEquals(OrbTone.AVOID, engineOrb(avoidMinute).tone)
+    }
+
+    @Test fun puneEngineBoundaryInstantIsTheNextPart() {
+        val parts = puneDay.windows.filter { it.kind == WindowKind.CHOGHADIYA && !it.night }.sortedBy { it.start }
+        val next = parts[1]
+        assertEquals(next, app.parivaar.panchang.feature.aaj.ui.currentChoghadiya(puneDays, next.start))
+        assertEquals(1f, engineOrb(next.start).fractionLeft!!, 1e-6f)
+    }
+
+    @Test fun puneEngineOrbAgreesWithAbhiStateEveryFiveMinutes() {
+        var n = puneDay.sunrise
+        while (n < puneDay.nextSunrise) {
+            val h = HeaderRule.evaluate(n, puneDays)
+            val o = orbUi(h, puneDays, n, texts)
+            val abhi = app.parivaar.panchang.feature.aaj.ui.abhiStateOf(h)
+            assertEquals(abhi == app.parivaar.panchang.feature.aaj.ui.AbhiState.GOOD, o.tone == OrbTone.GOOD, "at $n")
+            if (abhi == app.parivaar.panchang.feature.aaj.ui.AbhiState.WAIT) assertEquals(OrbTone.AVOID, o.tone, "at $n")
+            n += kotlin.time.Duration.parse("5m")
+        }
+    }
+
+    @Test fun tromsoPolarNightEngineIsNeutralWithNullFraction() {
+        val place = app.parivaar.panchang.engine.Place(69.65, 18.96, 0.0)
+        val days = calc.days(kotlinx.datetime.LocalDate(2026, 12, 14), 3, place, app.parivaar.panchang.engine.CalcSettings()) { 3_600 }
+        val n = Instant.parse("2026-12-15T11:00:00Z")
+        val o = orbUi(HeaderRule.evaluate(n, days), days, n, texts)
+        assertEquals(OrbTone.NEUTRAL, o.tone)
+        assertNull(o.fractionLeft)
+    }
 }

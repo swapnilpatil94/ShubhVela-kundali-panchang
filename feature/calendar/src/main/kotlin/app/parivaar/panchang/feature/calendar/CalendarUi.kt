@@ -83,6 +83,8 @@ class DayDetail(
     val eclipses: List<app.parivaar.panchang.engine.calendar.LocalEclipse>,
     val offsetSeconds: Int,
     val proof: ProofInfo,
+    /** The place's IANA zone id: the sheet formats D-1, D and D+1 per instant in it (DST-aware). */
+    val zoneId: String? = null,
 ) {
     override fun toString(): String = "DayDetail(redacted)"
 }

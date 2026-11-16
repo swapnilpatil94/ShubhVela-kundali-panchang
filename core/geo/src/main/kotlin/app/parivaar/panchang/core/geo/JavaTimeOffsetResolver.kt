@@ -10,6 +10,7 @@ import app.parivaar.panchang.core.model.geo.OffsetSource
 import app.parivaar.panchang.core.model.geo.ResolvedOffset
 import app.parivaar.panchang.core.model.geo.TzContext
 import app.parivaar.panchang.core.model.geo.UnknownZoneException
+import app.parivaar.panchang.core.model.geo.isKnownZoneId
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import java.time.DateTimeException
@@ -29,6 +30,7 @@ class JavaTimeOffsetResolver(private val overlay: TzOverlay) : OffsetResolver {
 
     private fun zone(zoneId: String): Zone =
         zones[zoneId] ?: run {
+            if (!isKnownZoneId(zoneId)) throw UnknownZoneException()
             val rules = try {
                 ZoneId.of(zoneId).rules
             } catch (@Suppress("SwallowedException") e: DateTimeException) {
@@ -109,18 +111,28 @@ class JavaTimeOffsetResolver(private val overlay: TzOverlay) : OffsetResolver {
     ): LocalResolution {
         val r = resolve(epochOf(local), ctx, choice, manual)
         val alt = r.alt?.let { Instant.fromEpochSeconds(it) }
-        return LocalResolution(Instant.fromEpochSeconds(r.epoch), r.offset, alt)
+        // A time on a civil date the zone skipped entirely (Apia 2011-12-30) keeps the shifted result, flagged.
+        val offset =
+            if (OffsetFlag.GAP_SHIFTED in r.offset.flags && daySkipped(local.date, ctx, manual)) {
+                r.offset.copy(flags = r.offset.flags + OffsetFlag.NONEXISTENT_DATE)
+            } else {
+                r.offset
+            }
+        return LocalResolution(Instant.fromEpochSeconds(r.epoch), offset, alt)
+    }
+
+    /** True when no local time of [date] exists (both the first and the last second fall in a gap). */
+    private fun daySkipped(date: LocalDate, ctx: TzContext, manual: ManualOffset?): Boolean {
+        val base = date.toEpochDays() * DAY
+        val start = resolve(base, ctx, AmbiguityChoice.EARLIER, manual)
+        val end = resolve(base + DAY - 1, ctx, AmbiguityChoice.EARLIER, manual)
+        return OffsetFlag.GAP_SHIFTED in start.offset.flags && OffsetFlag.GAP_SHIFTED in end.offset.flags
     }
 
     override fun civilDayOffset(date: LocalDate, ctx: TzContext, manual: ManualOffset?): CivilDayOffset {
-        val base = date.toEpochDays() * DAY
-        val noon = resolve(base + NOON, ctx, AmbiguityChoice.EARLIER, manual)
-        if (OffsetFlag.GAP_SHIFTED in noon.offset.flags) {
-            val start = resolve(base, ctx, AmbiguityChoice.EARLIER, manual)
-            val end = resolve(base + DAY - 1, ctx, AmbiguityChoice.EARLIER, manual)
-            if (OffsetFlag.GAP_SHIFTED in start.offset.flags && OffsetFlag.GAP_SHIFTED in end.offset.flags) {
-                return CivilDayOffset.Nonexistent
-            }
+        val noon = resolve(date.toEpochDays() * DAY + NOON, ctx, AmbiguityChoice.EARLIER, manual)
+        if (OffsetFlag.GAP_SHIFTED in noon.offset.flags && daySkipped(date, ctx, manual)) {
+            return CivilDayOffset.Nonexistent
         }
         return CivilDayOffset.Valid(noon.offset)
     }

@@ -6,6 +6,7 @@ import app.parivaar.panchang.core.model.geo.ManualOffset
 import app.parivaar.panchang.core.model.geo.OffsetFlag
 import app.parivaar.panchang.core.model.geo.OffsetSource
 import app.parivaar.panchang.core.model.geo.ResolvedOffset
+import app.parivaar.panchang.core.model.geo.isKnownZoneId
 import app.parivaar.panchang.core.model.place.SavedPlace
 import app.parivaar.panchang.core.model.profile.PlaceSnapshot
 import app.parivaar.panchang.core.model.profile.RecordId
@@ -39,17 +40,32 @@ internal object PlaceCodec {
                 val lat = double("lat")
                 val lon = double("lon")
                 check(lat in -MAX_LAT..MAX_LAT && lon in -MAX_LON..MAX_LON)
+                val name = string("name")
+                val admin1 = stringOrNull("admin1")
+                val cc = string("cc")
+                val elev = doubleOrNull("elev")
+                val pop = long("pop")
+                val zone = string("zone")
+                val overlay = stringOrNull("overlay")
+                check(name.isNotBlank() && name.length <= DataLimits.PLACE_NAME_MAX)
+                check(admin1 == null || admin1.length <= DataLimits.ADMIN1_MAX)
+                check(DataLimits.COUNTRY_CODE.matches(cc))
+                check(elev == null || elev in DataLimits.ELEVATION_MIN_M..DataLimits.ELEVATION_MAX_M)
+                check(pop in 0..DataLimits.POPULATION_MAX)
+                check(overlay == null || overlay.length in 1..DataLimits.OVERLAY_KEY_MAX)
+                // Unknown zones would crash every TimeZone.of caller at start: reject the row instead.
+                check(isKnownZoneId(zone))
                 GeoPlace(
                     id = long("id"),
-                    name = string("name"),
-                    admin1 = stringOrNull("admin1"),
-                    countryCode = string("cc"),
+                    name = name,
+                    admin1 = admin1,
+                    countryCode = cc,
                     latDeg = lat,
                     lonDeg = lon,
-                    elevationM = doubleOrNull("elev"),
-                    population = long("pop"),
-                    zoneId = string("zone"),
-                    overlayKey = stringOrNull("overlay"),
+                    elevationM = elev,
+                    population = pop,
+                    zoneId = zone,
+                    overlayKey = overlay,
                 )
             }
         }
@@ -67,11 +83,15 @@ internal object PlaceCodec {
             val names = array("flags").map { e -> (e as? JsonPrimitive)?.takeIf { it.isString }?.content ?: fail() }
             val flags = names.map { n -> OffsetFlag.entries.firstOrNull { it.name == n } ?: fail() }
             check(flags.toSet().size == flags.size)
+            val sec = int("sec")
+            val overlayId = stringOrNull("overlayId")
+            check(sec in ManualOffset.MIN_SECONDS..ManualOffset.MAX_SECONDS)
+            check(overlayId == null || overlayId.length in 1..DataLimits.OVERLAY_KEY_MAX)
             ResolvedOffset(
-                offsetSeconds = int("sec"),
+                offsetSeconds = sec,
                 source = enumValue("src", OffsetSource.entries),
                 flags = flags.toSet(),
-                overlayId = stringOrNull("overlayId"),
+                overlayId = overlayId,
             )
         }
 
@@ -104,6 +124,15 @@ internal object PlaceCodec {
             "pinned" to bool(p.pinned),
             "lastUsedAt" to instant(p.lastUsedAt),
         )
+
+    /** True when [p] would decode again (same bounds as stored and imported rows). */
+    fun isValid(p: SavedPlace): Boolean =
+        try {
+            fromJson(toJson(p))
+            true
+        } catch (_: CodecException) {
+            false
+        }
 
     fun fromJson(o: JsonElement): SavedPlace =
         guarded {

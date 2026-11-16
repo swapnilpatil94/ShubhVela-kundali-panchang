@@ -6,6 +6,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 /** docs/specs/M01.md section 4, `TimeScalesTest`. */
@@ -65,12 +67,29 @@ class TimeScalesTest {
     }
 
     @Test
-    fun afterValidThroughFallsBackToDeltaT() {
-        // Literal spec 3.2 rule: polynomial deltaT (about 75.07 s) right after the table horizon.
-        val after = at("2027-01-01T00:00:01Z")
-        val y = 2000 + (TimeScales.jdUtc(after).value - 2451544.5) / 365.2425
-        assertEquals(TimeScales.deltaTSeconds(y), TimeScales.ttMinusUtcSeconds(after, TimeTables.DEFAULT), 1e-9)
-        assertEquals(69.184, TimeScales.ttMinusUtcSeconds(at("2027-01-01T00:00:00Z"), TimeTables.DEFAULT), 1e-9)
+    fun afterValidThroughHoldsTheTableValueWithASmallSlope() {
+        // Fable review M2: 69.184 s held at the horizon, then +0.1 s per Julian year (no polynomial step).
+        val v = TimeTables.DEFAULT.validThrough
+        assertEquals(69.184, TimeScales.ttMinusUtcSeconds(v, TimeTables.DEFAULT), 1e-9)
+        val oneYear = Instant.fromEpochSeconds(v.epochSeconds + 31_557_600L)
+        assertEquals(69.284, TimeScales.ttMinusUtcSeconds(oneYear, TimeTables.DEFAULT), 1e-9)
+        val y2100 = at("2100-01-01T00:00:00Z")
+        val years = (y2100.epochSeconds - v.epochSeconds) / 31_557_600.0
+        assertEquals(69.184 + 0.1 * years, TimeScales.ttMinusUtcSeconds(y2100, TimeTables.DEFAULT), 1e-9)
+    }
+
+    @Test
+    fun noStepAtValidThrough() {
+        val v = TimeTables.DEFAULT.validThrough
+        val before = TimeScales.ttMinusUtcSeconds(v - 1.seconds, TimeTables.DEFAULT)
+        val after = TimeScales.ttMinusUtcSeconds(v + 1.seconds, TimeTables.DEFAULT)
+        assertTrue(abs(after - before) < 0.01, "step at validThrough: ${after - before} s")
+        // The TT Julian Day is continuous too (40 microsecond resolution of the JD).
+        val jump = (TimeScales.utcToTt(v + 1.seconds).value - TimeScales.utcToTt(v - 1.seconds).value) * 86400.0
+        assertEquals(2.0, jump, 0.01)
+        // And the inverse is unique around it.
+        val tt = TimeScales.utcToTt(v + 1.seconds)
+        assertTrue((TimeScales.ttToUtc(tt) - (v + 1.seconds)).absoluteValue < 1.milliseconds)
     }
 
     @Test

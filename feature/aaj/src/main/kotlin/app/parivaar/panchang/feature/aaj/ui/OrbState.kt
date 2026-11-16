@@ -14,6 +14,7 @@ import app.parivaar.panchang.core.designsystem.tokens.gemFor
 import app.parivaar.panchang.engine.panchang.Vaar
 import app.parivaar.panchang.feature.aaj.AajModel
 import app.parivaar.panchang.feature.aaj.AajUi
+import app.parivaar.panchang.feature.aaj.vedicDayAt
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlin.time.Instant
@@ -36,7 +37,7 @@ fun rememberDockState(model: AajModel): DockState {
     val ui by model.ui.collectAsStateWithLifecycle()
     val now by model.tick.collectAsStateWithLifecycle()
     val content = ui as? AajUi.Content
-    val fmt = rememberFmt(content?.day?.utcOffsetSeconds ?: 0, content?.date ?: PLACEHOLDER_DATE)
+    val fmt = rememberFmt(content?.day?.utcOffsetSeconds ?: 0, content?.date ?: PLACEHOLDER_DATE, content?.zoneId)
     val good = stringResource(DsR.string.orb_a11y_good, SLOT)
     val wait = stringResource(DsR.string.orb_a11y_wait, SLOT)
     val neutral = stringResource(DsR.string.orb_a11y_neutral)
@@ -54,7 +55,10 @@ internal fun dockState(ui: AajUi, now: Instant, texts: OrbTexts): DockState {
         ?: return DockState(OrbUi(OrbTone.NEUTRAL, null, null, texts.neutral), gemFor(DayOfWeek.THURSDAY))
     val orb = orbUi(c.header, c.days, now, texts)
     val rounded = orb.fractionLeft?.let { Math.round(it * RING_STEPS) / RING_STEPS }
-    return DockState(orb.copy(fractionLeft = rounded), gemFor(c.day.vaar.dayOfWeek()))
+    return DockState(orb.copy(fractionLeft = rounded), gemFor(vaarAt(c, now).dayOfWeek()))
 }
 
 internal fun Vaar.dayOfWeek(): DayOfWeek = DayOfWeek.valueOf(name)
+
+/** Vaar of the sunrise-to-sunrise day containing [now] (before sunrise it is still yesterday's vaar). */
+internal fun vaarAt(c: AajUi.Content, now: Instant): Vaar = (vedicDayAt(c.days, now) ?: c.day).vaar

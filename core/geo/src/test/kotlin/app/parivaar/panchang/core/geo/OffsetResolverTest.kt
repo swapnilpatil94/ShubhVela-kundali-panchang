@@ -81,6 +81,21 @@ class OffsetResolverTest {
         assertEquals(50_400, dayOff(kiri, 1995, 1, 1))
     }
 
+    /** Fable review item 7: a time on a fully skipped civil date is flagged, and still shifted. */
+    @Test
+    fun skippedCivilDateIsFlaggedNonexistent() {
+        val skipped = r.localToInstant(ldt(2011, 12, 30, 12, 0), apia)
+        assertTrue(OffsetFlag.NONEXISTENT_DATE in skipped.offset.flags)
+        assertTrue(OffsetFlag.GAP_SHIFTED in skipped.offset.flags)
+        assertEquals(z("2011-12-30T22:00:00Z"), skipped.instant)
+        val before = r.localToInstant(ldt(2011, 12, 29, 12, 0), apia)
+        assertTrue(OffsetFlag.NONEXISTENT_DATE !in before.offset.flags)
+        val dstGap = r.localToInstant(ldt(2026, 3, 8, 2, 30), ny)
+        assertTrue(OffsetFlag.GAP_SHIFTED in dstGap.offset.flags)
+        assertTrue(OffsetFlag.NONEXISTENT_DATE !in dstGap.offset.flags, "an hour gap is not a skipped date")
+        assertFailsWith<UnknownZoneException> { r.offsetAt(z("2020-01-01T00:00:00Z"), TzContext("X/Y", 0.0, null)) }
+    }
+
     @Test
     fun mumbaiOverlay() {
         val a = r.localToInstant(ldt(1950, 6, 15, 10, 0), mumbai)

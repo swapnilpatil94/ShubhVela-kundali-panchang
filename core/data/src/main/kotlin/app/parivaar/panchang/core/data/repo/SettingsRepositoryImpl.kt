@@ -18,7 +18,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import java.security.SecureRandom
 
-/** Settings live in one encrypted row (tbl 4, id = 16 zero bytes). An unreadable row reads as defaults. */
+/**
+ * Settings live in one encrypted row (tbl 4, id = 16 zero bytes). An unreadable row reads as defaults in memory
+ * only and is flagged by [unreadable]; [update] refuses to overwrite it until [resetUnreadable] (Fable review 3).
+ */
 internal class SettingsRepositoryImpl(
     store: RecordStore,
     ring: DekRing,
@@ -28,16 +31,20 @@ internal class SettingsRepositoryImpl(
 ) : EncryptedRepo(store, ring, state, rng, migrations), SettingsRepository {
     private val settingsId = RecordId("0".repeat(RecordId.LENGTH))
 
-    private fun read(row: StoredRow?): AppSettings =
-        row?.let { open(it, SettingsCodec::fromJson) { _ -> null } } ?: AppSettings()
+    private fun decode(row: StoredRow): AppSettings? = open(row, SettingsCodec::fromJson) { _ -> null }
 
-    override val settings: Flow<AppSettings> =
-        observe(Tbl.SETTINGS, SettingsCodec::fromJson) { null }.map { it.items.firstOrNull() ?: AppSettings() }
+    private val records = observe(Tbl.SETTINGS, SettingsCodec::fromJson) { null }
+
+    override val settings: Flow<AppSettings> = records.map { it.items.firstOrNull() ?: AppSettings() }
+
+    override val unreadable: Flow<Boolean> = records.map { it.unreadable > 0 }
 
     override suspend fun update(f: (AppSettings) -> AppSettings): DataResult<Unit> =
         ready {
             tx {
-                val current = read(get(Tbl.SETTINGS, settingsId.toBytes()))
+                val row = get(Tbl.SETTINGS, settingsId.toBytes())
+                val current =
+                    if (row == null) AppSettings() else decode(row) ?: return@tx DataResult.Err(DataError.UNREADABLE)
                 val next =
                     try {
                         f(current)
@@ -48,6 +55,17 @@ internal class SettingsRepositoryImpl(
                     return@tx DataResult.Err(DataError.VALIDATION)
                 }
                 put(seal(Tbl.SETTINGS, settingsId, SettingsCodec.toJson(next), pos = 0))
+                DataResult.Ok(Unit)
+            }
+        }
+
+    override suspend fun resetUnreadable(): DataResult<Unit> =
+        ready {
+            tx {
+                val row = get(Tbl.SETTINGS, settingsId.toBytes())
+                if (row != null && decode(row) == null) {
+                    put(seal(Tbl.SETTINGS, settingsId, SettingsCodec.toJson(AppSettings()), pos = 0))
+                }
                 DataResult.Ok(Unit)
             }
         }

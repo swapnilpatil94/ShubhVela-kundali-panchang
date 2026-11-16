@@ -21,9 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -39,6 +39,7 @@ import app.parivaar.panchang.core.designsystem.tokens.PpSpace
 import app.parivaar.panchang.feature.aaj.AajModel
 import app.parivaar.panchang.feature.aaj.AajUi
 import app.parivaar.panchang.feature.aaj.HoraSky
+import app.parivaar.panchang.feature.aaj.PlaceClock
 import app.parivaar.panchang.feature.aaj.PpPerf
 import app.parivaar.panchang.feature.aaj.R
 import kotlin.time.Instant
@@ -64,9 +65,9 @@ fun AajScreen(
     extras: AajExtras,
     modifier: Modifier = Modifier,
 ) {
-    val ui by model.ui.collectAsState()
-    val now by model.tick.collectAsState()
-    val sky by model.sky.collectAsState()
+    val ui by model.ui.collectAsStateWithLifecycle()
+    val now by model.tick.collectAsStateWithLifecycle()
+    val sky by model.sky.collectAsStateWithLifecycle()
     ClockChangeEffect(model::refresh)
     LaunchedEffect(ui is AajUi.Content) { if (ui is AajUi.Content) PpPerf.mark("aaj.firstContentComposed") }
     AajScreenContent(ui, now, subtitle, avatarInitials, actions, modifier, extras, sky)
@@ -135,10 +136,12 @@ internal fun rememberNames(): AajNames {
 }
 
 @Composable
-internal fun rememberFmt(offsetSeconds: Int, shown: LocalDate): TimeFmt {
+internal fun rememberFmt(offsetSeconds: Int, shown: LocalDate, zoneId: String? = null): TimeFmt {
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
-    return remember(offsetSeconds, shown, locale) { TimeFmt(offsetSeconds, shown, DateFormat.is24HourFormat(context), locale) }
+    return remember(offsetSeconds, shown, zoneId, locale) {
+        TimeFmt(PlaceClock(zoneId, offsetSeconds, shown), shown, DateFormat.is24HourFormat(context), locale)
+    }
 }
 
 @Composable
@@ -154,7 +157,7 @@ internal fun InfoCard(title: String, body: String, modifier: Modifier = Modifier
 @Composable
 private fun PolarDayContent(ui: AajUi.PolarDay, actions: AajActions) {
     val names = rememberNames()
-    val fmt = rememberFmt(0, ui.date)
+    val fmt = rememberFmt(ui.offsetSeconds, ui.date, ui.zoneId)
     val res = LocalContext.current.resources
     LazyColumn(contentPadding = PaddingValues(start = PpSpace.l, end = PpSpace.l, top = PpSpace.m, bottom = LocalDockInset.current + PpSpace.l), verticalArrangement = Arrangement.spacedBy(PpSpace.m)) {
         item { InfoCard(stringResource(R.string.aaj_polar_title), stringResource(R.string.aaj_polar_body)) }

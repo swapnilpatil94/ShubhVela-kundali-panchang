@@ -112,23 +112,37 @@ class RiseSet(private val eph: Ephemeris, private val tables: TimeTables = TimeT
      *   poles) or the ephemeris does not reach that far.
      *
      * VERIFY with pandit (spec TODO): both conventions; the UI flag stays off until sign-off.
+     *
+     * The panchang day does not use this window-level choice: it takes real and convention events one by one
+     * through [sunWindow], so a sunset that falls just after the window end is not replaced (Fable review M1).
      */
     fun sunWithFallback(
         place: Place,
         windowStart: Instant,
         settings: CalcSettings = CalcSettings(),
     ): List<RiseSetEvent> {
-        val real = find(Body.SUN, place, windowStart, settings)
-        if (real is RiseSetResult.Events && hasRiseAndSet(real.list)) return real.list
-        return when (settings.highLatitudeRule) {
-            HighLatitudeRule.LOCAL_NOON_PM_6H -> {
-                val noon = culmination(place, windowStart)
-                listOf(
-                    RiseSetEvent(RiseSetKind.RISE, noon - NOON_OFFSET, isFallback = true),
-                    RiseSetEvent(RiseSetKind.SET, noon + NOON_OFFSET, isFallback = true),
-                )
+        val window = sunWindow(place, windowStart, settings)
+        return if (hasRiseAndSet(window.real)) window.real else window.fallback
+    }
+
+    /**
+     * The real Sun crossings of the 24 h window from [windowStart] and, computed on first use, the
+     * [CalcSettings.highLatitudeRule] events of that window (every one with `isFallback = true`, as in
+     * [sunWithFallback]). The panchang day picks real or convention events one by one (Fable review M1).
+     */
+    internal fun sunWindow(place: Place, windowStart: Instant, settings: CalcSettings = CalcSettings()): SunWindow {
+        val real = (find(Body.SUN, place, windowStart, settings) as? RiseSetResult.Events)?.list ?: emptyList()
+        return SunWindow(real) {
+            when (settings.highLatitudeRule) {
+                HighLatitudeRule.LOCAL_NOON_PM_6H -> {
+                    val noon = culmination(place, windowStart)
+                    listOf(
+                        RiseSetEvent(RiseSetKind.RISE, noon - NOON_OFFSET, isFallback = true),
+                        RiseSetEvent(RiseSetKind.SET, noon + NOON_OFFSET, isFallback = true),
+                    )
+                }
+                HighLatitudeRule.NEAREST_DAY -> nearestDay(place, windowStart, settings)
             }
-            HighLatitudeRule.NEAREST_DAY -> nearestDay(place, windowStart, settings)
         }
     }
 
@@ -212,6 +226,9 @@ class RiseSet(private val eph: Ephemeris, private val tables: TimeTables = TimeT
     }
 
     private fun nearestDay(place: Place, windowStart: Instant, settings: CalcSettings): List<RiseSetEvent> {
+        fun inEphemerisRange(start: Instant): Boolean =
+            TimeScales.utcToTt(start, tables) in eph.validRange &&
+                TimeScales.utcToTt(start + DAY_HOURS.hours, tables) in eph.validRange
         for (k in 1..NEAREST_DAY_REACH) {
             for (shift in arrayOf(-k.days, k.days)) {
                 val start = windowStart + shift
@@ -225,9 +242,12 @@ class RiseSet(private val eph: Ephemeris, private val tables: TimeTables = TimeT
         return emptyList()
     }
 
-    private fun inEphemerisRange(windowStart: Instant): Boolean =
-        TimeScales.utcToTt(windowStart, tables) in eph.validRange &&
-            TimeScales.utcToTt(windowStart + DAY_HOURS.hours, tables) in eph.validRange
+    /** Real crossings of one window and its convention events (lazy: rarely needed). */
+    internal class SunWindow(val real: List<RiseSetEvent>, fallbackOf: () -> List<RiseSetEvent>) {
+        val fallback: List<RiseSetEvent> by lazy(LazyThreadSafetyMode.NONE, fallbackOf)
+
+        override fun toString(): String = "SunWindow(redacted)"
+    }
 
     private class Sight(val altitudeDeg: Double, val distanceKm: Double, val topocentricKm: Vec3)
 

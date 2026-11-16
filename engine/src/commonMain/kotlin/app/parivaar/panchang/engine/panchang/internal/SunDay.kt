@@ -1,5 +1,6 @@
 package app.parivaar.panchang.engine.panchang.internal
 
+import app.parivaar.panchang.engine.astro.RiseSet
 import app.parivaar.panchang.engine.astro.RiseSetEvent
 import app.parivaar.panchang.engine.astro.RiseSetKind
 import app.parivaar.panchang.engine.panchang.DayFlag
@@ -22,22 +23,37 @@ internal class SunDay(
 
     companion object {
         /**
-         * From the events of the window [midnight, +24 h] ([ev]) and of the next one ([fv]): sunrise = first
-         * RISE of [ev]; sunset = first SET of both after sunrise; nextSunrise = first RISE of [fv]. Throws
-         * [PanchangUnavailableException] (NO_SUN_DAY) unless sunrise < sunset < nextSunrise all exist.
+         * From the sun windows [midnight, +24 h] ([ev]) and the next one ([fv]), event by event (Fable review M1):
+         * sunrise = first real RISE of [ev], else the first convention RISE of [ev]; nextSunrise = the same for
+         * [fv] (so it equals the next day's sunrise); sunset = first real SET of both windows in
+         * (sunrise, nextSunrise), else the first convention SET of [ev], then of [fv], in that interval. A
+         * convention event is used only when no real crossing exists, so a sunset just after local midnight
+         * (Reykjavik in June) stays real. Throws [PanchangUnavailableException] (NO_SUN_DAY) unless
+         * sunrise < sunset < nextSunrise all exist.
          */
-        fun of(midnight: Instant, ev: List<RiseSetEvent>, fv: List<RiseSetEvent>): SunDay {
-            val rise = ev.filter { it.kind == RiseSetKind.RISE }.minByOrNull { it.at } ?: unavailable()
-            val set = (ev + fv).filter { it.kind == RiseSetKind.SET && it.at > rise.at }.minByOrNull { it.at }
-                ?: unavailable()
-            val next = fv.filter { it.kind == RiseSetKind.RISE }.minByOrNull { it.at } ?: unavailable()
-            if (next.at <= set.at) unavailable()
+        fun of(midnight: Instant, ev: RiseSet.SunWindow, fv: RiseSet.SunWindow): SunDay {
+            val rise = firstRise(ev) ?: unavailable()
+            val next = firstRise(fv) ?: unavailable()
+            if (next.at <= rise.at) unavailable()
+            val set = sunset(rise.at, next.at, ev, fv) ?: unavailable()
             val flags = buildSet {
                 if (rise.isFallback || set.isFallback || next.isFallback) add(DayFlag.SUN_FALLBACK)
-                if (ev.any { it.kind == RiseSetKind.RISE && it.at > set.at }) add(DayFlag.EXTRA_SUNRISE)
+                val sameKind = if (rise.isFallback) ev.fallback else ev.real
+                if (sameKind.any { it.kind == RiseSetKind.RISE && it.at > set.at }) add(DayFlag.EXTRA_SUNRISE)
             }
             return SunDay(midnight, rise.at, set.at, next.at, flags)
         }
+
+        /** First real SET of both windows in (rise, next), else the first convention SET of [ev], then [fv]. */
+        private fun sunset(rise: Instant, next: Instant, ev: RiseSet.SunWindow, fv: RiseSet.SunWindow): RiseSetEvent? {
+            fun first(list: List<RiseSetEvent>) =
+                list.filter { it.kind == RiseSetKind.SET && it.at > rise && it.at < next }.minByOrNull { it.at }
+            return first(ev.real + fv.real) ?: first(ev.fallback) ?: first(fv.fallback)
+        }
+
+        private fun firstRise(w: RiseSet.SunWindow): RiseSetEvent? =
+            w.real.filter { it.kind == RiseSetKind.RISE }.minByOrNull { it.at }
+                ?: w.fallback.filter { it.kind == RiseSetKind.RISE }.minByOrNull { it.at }
 
         private fun unavailable(): Nothing = throw PanchangUnavailableException(PanchangError.NO_SUN_DAY)
     }

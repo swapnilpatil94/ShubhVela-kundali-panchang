@@ -45,6 +45,7 @@ import app.parivaar.panchang.engine.panchang.WindowKind
 import app.parivaar.panchang.feature.aaj.ui.FactRow
 import app.parivaar.panchang.feature.aaj.ui.LimbCard
 import app.parivaar.panchang.feature.aaj.ui.ProofCopy
+import app.parivaar.panchang.feature.aaj.PlaceClock
 import app.parivaar.panchang.feature.aaj.ui.TimeFmt
 import app.parivaar.panchang.feature.calendar.DayDetail
 import app.parivaar.panchang.feature.calendar.R
@@ -71,7 +72,9 @@ fun DaySheet(
 ) {
     val context = LocalContext.current
     val res = context.resources
-    val fmt = remember(detail, locale) { TimeFmt(detail.offsetSeconds, detail.date, DateFormat.is24HourFormat(context), locale) }
+    val fmt = remember(detail, locale) {
+        TimeFmt(PlaceClock(detail.zoneId, detail.offsetSeconds, detail.date), detail.date, DateFormat.is24HourFormat(context), locale)
+    }
     var explain by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), shape = PpShapes.sheetTop, containerColor = PpTheme.ratna.ink3, tonalElevation = 0.dp) {
         Column(

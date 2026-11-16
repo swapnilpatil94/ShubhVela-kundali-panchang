@@ -7,6 +7,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.YearMonth
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.plus
@@ -58,6 +60,17 @@ class MonthModel(
         scope.launch {
             combine(inputs.distinctUntilChanged(), shown, dateTicks) { i, ym, _ -> i to ym }
                 .collectLatest { (i, ym) -> run(i, ym) }
+        }
+        // The today ring follows the place's midnight, not the device's (ACTION_DATE_CHANGED is device-zone only).
+        scope.launch { inputs.distinctUntilChanged().collectLatest { i -> if (i != null) placeMidnights(i) } }
+    }
+
+    private suspend fun placeMidnights(i: CalInputs) {
+        while (true) {
+            val now = clock.now()
+            val next = now.toLocalDateTime(i.zone).date.plus(1, DateTimeUnit.DAY).atStartOfDayIn(i.zone)
+            delay((next - now).inWholeMilliseconds.coerceAtLeast(MIN_WAIT_MS))
+            onDateChanged()
         }
     }
 
@@ -104,7 +117,7 @@ class MonthModel(
         val eclipses = b.eclipses.filter { e -> MonthBuilder.eclipseDate(e, i) == date }
         val pan = b.pan[idx]
         val offset = pan?.utcOffsetSeconds ?: i.offsetFor(date)
-        return DayDetail(date, pan, b.cal[idx + 1], fests, b.defs, eclipses, offset, cm.proof)
+        return DayDetail(date, pan, b.cal[idx + 1], fests, b.defs, eclipses, offset, cm.proof, i.zone.id)
     }
 
     private fun current(): YearMonth =
@@ -176,5 +189,9 @@ class MonthModel(
         last = content
         lastInputs = i
         _ui.value = content
+    }
+
+    private companion object {
+        const val MIN_WAIT_MS = 1_000L
     }
 }

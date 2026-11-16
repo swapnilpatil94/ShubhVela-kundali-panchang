@@ -111,9 +111,23 @@ internal class DekManager(
             return if (hasRows) KeyState.Lost else KeyState.Empty
         }
         val loaded = LinkedHashMap<Int, ByteArray>()
-        val state = keystoreState {
+        val lost = HashSet<Int>()
+        var state = keystoreState {
             if (!wrapper.exists()) throw KeyLostException()
-            for ((g, f) in files) loaded[g] = WrappedKeyFile.open(wrapper, f.readBytes(), DEK, g)
+            for ((g, f) in files) {
+                // A damaged generation is only fatal if a row needs it (checked below); keep loading the rest.
+                if (keystoreState { loaded[g] = WrappedKeyFile.open(wrapper, f.readBytes(), DEK, g) } ==
+                    KeyState.Lost
+                ) {
+                    lost += g
+                } else if (g !in loaded) {
+                    throw KeyUnavailableException()
+                }
+            }
+        }
+        if (state == KeyState.Ready && lost.isNotEmpty()) {
+            val used = store.tx { TABLES.flatMap { list(it) }.mapNotNull { keyIdOrNull(it.blob) }.toSet() }
+            if (loaded.isEmpty() || lost.any { it in used }) state = KeyState.Lost
         }
         keys.close()
         if (state == KeyState.Ready) {

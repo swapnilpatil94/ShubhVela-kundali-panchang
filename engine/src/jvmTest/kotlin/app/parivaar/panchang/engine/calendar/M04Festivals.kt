@@ -21,7 +21,7 @@ import kotlin.time.Instant
  */
 internal object M04Festivals {
     val FILES = listOf("pan_india", "recurring", "tamil", "malayalam", "bengali", "odia")
-    const val ROWS = 34_780
+    const val ROWS = 34_777
     const val DEFS = 45
     const val ROWS_PER_CITY_MIN = 3_000
 

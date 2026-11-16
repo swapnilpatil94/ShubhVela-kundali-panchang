@@ -121,4 +121,9 @@ class TravelModeTest {
         m.onTimeZoneChanged(false, 19_800, 19_800)
         assertEquals(TravelUi.Idle, m.ui.value)
     }
+
+    @Test fun `travel ui never prints the place name`() {
+        val s = TravelUi.InPlace("Secretpur").toString()
+        assertEquals("InPlace(redacted)", s)
+    }
 }

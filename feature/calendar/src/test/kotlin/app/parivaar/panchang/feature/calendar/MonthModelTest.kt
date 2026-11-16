@@ -185,5 +185,27 @@ class MonthModelTest {
         }
     }
 
+    @Test fun `the today ring moves at the place's midnight by itself, in the place zone`() {
+        val e = Fake()
+        var now = Instant.parse("2026-11-15T18:29:59Z") // 23:59:59 in Kolkata
+        val moving = object : Clock { override fun now(): Instant = now }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            val m = MonthModel(MutableStateFlow<CalInputs?>(Fx.inputs()), e, MonthCache(), moving, { DayOfWeek.SUNDAY }, scope, Dispatchers.Default)
+            runBlocking {
+                withTimeout(TIMEOUT_MS) {
+                    assertEquals(LocalDate(2026, 11, 15), m.content(nov).today)
+                    settled(e, 3)
+                    now = Instant.parse("2026-11-15T18:30:01Z") // 00:00:01 on the 16th in Kolkata (still the 15th in UTC)
+                    m.ui.first { it is MonthUi.Content && it.today == LocalDate(2026, 11, 16) } // no onDateChanged call
+                    val d = assertNotNull(m.detail(LocalDate(2026, 11, 16)))
+                    assertEquals("Asia/Kolkata", d.zoneId)
+                }
+            }
+        } finally {
+            scope.cancel()
+        }
+    }
+
     private companion object { const val TIMEOUT_MS = 20_000L }
 }

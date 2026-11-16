@@ -12,6 +12,13 @@
     <string name="settings_section_privacy">Privacy</string>
     <string name="settings_conventions_summary">Ayanamsa, sunrise, month system and more</string>
     <string name="settings_privacy_summary">What stays on your phone</string>
+    <string name="settings_unreadable_title">Your settings could not be opened</string>
+    <string name="settings_unreadable_body">The app is using its standard settings for now, and changes you make here are not saved yet. Your places, profiles and family data are not affected. You can start fresh with standard settings.</string>
+    <string name="settings_unreadable_action">Start fresh with standard settings</string>
+    <string name="settings_unreadable_confirm_title">Use standard settings?</string>
+    <string name="settings_unreadable_confirm_body">The saved settings will be replaced by the standard ones. Your places, profiles and family data stay as they are; you may need to choose your home city and preferences again.</string>
+    <string name="settings_unreadable_confirm_yes">Use standard settings</string>
+    <string name="settings_unreadable_confirm_no">Not now</string>
 
     <string name="settings_theme_title">Theme</string>
     <string name="settings_theme_system">Follow system</string>

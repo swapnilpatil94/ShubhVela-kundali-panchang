@@ -1,7 +1,7 @@
 package app.parivaar.panchang.platform.widget
 
 import app.parivaar.panchang.feature.aaj.DayRef
-import app.parivaar.panchang.feature.aaj.rangeRefs
+import app.parivaar.panchang.feature.aaj.PlaceClock
 import kotlinx.datetime.LocalDate
 import kotlin.time.Instant
 
@@ -25,14 +25,14 @@ internal fun timeWithDayRef(
 internal fun rangeWithDayRef(
     from: Instant,
     to: Instant,
-    offsetSeconds: Int,
+    placeClock: PlaceClock,
     shown: LocalDate,
     clock: (Instant) -> String,
     nextDay: String,
     previousDay: String,
     dateLabel: (LocalDate) -> String,
 ): Pair<String, String> {
-    val (a, b) = rangeRefs(from, to, offsetSeconds, shown)
+    val (a, b) = placeClock.rangeRefs(from, to, shown)
     return timeWithDayRef(clock(from), a, nextDay, previousDay, dateLabel) to
         timeWithDayRef(clock(to), b, nextDay, previousDay, dateLabel)
 }

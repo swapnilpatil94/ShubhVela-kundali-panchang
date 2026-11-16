@@ -28,6 +28,7 @@ internal class PlaceRepositoryImpl(
 
     override suspend fun upsert(p: SavedPlace): DataResult<Unit> =
         ready {
+            if (!PlaceCodec.isValid(p)) return@ready DataResult.Err(DataError.VALIDATION)
             tx {
                 val exists = get(Tbl.PLACE, p.id.toBytes()) != null
                 if (!exists && count(Tbl.PLACE) >= DataLimits.MAX_PLACES) {

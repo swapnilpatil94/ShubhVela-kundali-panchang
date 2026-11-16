@@ -87,7 +87,8 @@ internal class RemoteViewsBinder(private val context: Context, private val text:
                 setText(rv, R.id.rahu_city, model.city)
                 // Count down in the system chronometer: no per-second widget updates.
                 val target = if (model.active) model.end else model.start
-                val base = SystemClock.elapsedRealtime() + (target.toEpochMilliseconds() - now.toEpochMilliseconds())
+                // Wall clock read at bind time, not the refresh's start `now` (engine work in between would skew the count).
+                val base = SystemClock.elapsedRealtime() + (target.toEpochMilliseconds() - System.currentTimeMillis())
                 rv.setChronometerCountDown(R.id.rahu_chrono, true)
                 rv.setChronometer(R.id.rahu_chrono, base, null, true)
                 rv.setViewVisibility(R.id.rahu_chrono, View.VISIBLE)

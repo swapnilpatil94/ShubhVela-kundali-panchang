@@ -4,7 +4,6 @@ import app.parivaar.panchang.engine.CalcSettings
 import app.parivaar.panchang.engine.Place
 import app.parivaar.panchang.engine.astro.Ephemeris
 import app.parivaar.panchang.engine.astro.RiseSet
-import app.parivaar.panchang.engine.astro.RiseSetEvent
 import app.parivaar.panchang.engine.astro.SelectingEphemeris
 import app.parivaar.panchang.engine.astro.TimeScales
 import app.parivaar.panchang.engine.astro.TimeTables
@@ -35,7 +34,7 @@ class PanchangCalculator(
 
     private data class SunKey(val place: Place, val settings: CalcSettings, val windowStart: Instant)
 
-    private val sunMemo = LinkedHashMap<SunKey, List<RiseSetEvent>>()
+    private val sunMemo = LinkedHashMap<SunKey, RiseSet.SunWindow>()
 
     /**
      * The panchang day of civil [date] at [place]; [utcOffsetSeconds] is the offset in force at local noon,
@@ -91,11 +90,11 @@ class PanchangCalculator(
         }
     }
 
-    /** `sunWithFallback` of one 24 h window; the last few windows are kept (a day's second is the next's first). */
-    private fun sunEvents(place: Place, windowStart: Instant, s: CalcSettings): List<RiseSetEvent> {
+    /** `sunWindow` of one 24 h window; the last few windows are kept (a day's second is the next's first). */
+    private fun sunEvents(place: Place, windowStart: Instant, s: CalcSettings): RiseSet.SunWindow {
         val key = SunKey(place, s, windowStart)
         sunMemo[key]?.let { return it }
-        val events = riseSet.sunWithFallback(place, windowStart, s)
+        val events = riseSet.sunWindow(place, windowStart, s)
         if (sunMemo.size >= SUN_MEMO_SIZE) sunMemo.remove(sunMemo.keys.first())
         sunMemo[key] = events
         return events

@@ -3,7 +3,6 @@ package app.parivaar.panchang.engine.calendar.internal
 import app.parivaar.panchang.engine.CalcSettings
 import app.parivaar.panchang.engine.Place
 import app.parivaar.panchang.engine.astro.RiseSet
-import app.parivaar.panchang.engine.astro.RiseSetEvent
 import app.parivaar.panchang.engine.calendar.Sankranti
 import app.parivaar.panchang.engine.calendar.SankrantiDay
 import app.parivaar.panchang.engine.panchang.PanchangUnavailableException
@@ -112,10 +111,10 @@ internal class DayLookup(
         private val ONE_DAY = DatePeriod(days = 1)
         private val WINDOW = 24.hours
 
-        /** Real sun days of [place] via [riseSet] (`sunWithFallback` of [midnight, +24 h] and the next window). */
+        /** Real sun days of [place] via [riseSet] (`sunWindow` of [midnight, +24 h] and the next window). */
         fun of(riseSet: RiseSet, place: Place, s: CalcSettings, offsetOf: (LocalDate) -> Int): DayLookup {
-            val windows = HashMap<Instant, List<RiseSetEvent>>()
-            fun events(start: Instant) = windows.getOrPut(start) { riseSet.sunWithFallback(place, start, s) }
+            val windows = HashMap<Instant, RiseSet.SunWindow>()
+            fun events(start: Instant) = windows.getOrPut(start) { riseSet.sunWindow(place, start, s) }
             return DayLookup(offsetOf) { _, midnight ->
                 SunDay.of(midnight, events(midnight), events(midnight + WINDOW))
             }

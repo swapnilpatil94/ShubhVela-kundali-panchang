@@ -65,6 +65,8 @@ sealed interface AajUi {
         val highLatitude: Set<DayFlag>,
         val proof: ProofInfo,
         val travel: Boolean,
+        /** The place's IANA zone id: times are formatted per instant in it (DST-aware). Null: fixed day offset. */
+        val zoneId: String? = null,
     ) : AajUi {
         /** The panchang day of [date]. [days] holds D-1, D, D+1 minus any neighbour that has no sunrise or sunset. */
         val day: PanchangDay get() = days.first { it.date == date }
@@ -72,8 +74,14 @@ sealed interface AajUi {
         override fun toString(): String = "Content(redacted)"
     }
 
-    /** The Sun does not rise or set: only limbs are shown. */
-    data class PolarDay(val date: LocalDate, val limbs: Map<LimbKind, List<LimbSpan>>, val proof: ProofInfo) : AajUi {
+    /** The Sun does not rise or set: only limbs are shown, in the place's zone ([offsetSeconds] of [date]). */
+    data class PolarDay(
+        val date: LocalDate,
+        val limbs: Map<LimbKind, List<LimbSpan>>,
+        val proof: ProofInfo,
+        val offsetSeconds: Int = 0,
+        val zoneId: String? = null,
+    ) : AajUi {
         override fun toString(): String = "PolarDay(redacted)"
     }
 }

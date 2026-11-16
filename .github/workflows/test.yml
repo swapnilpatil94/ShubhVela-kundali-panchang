@@ -20,3 +20,37 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :engine:jvmTest :engine:goldenTest :engine:benchmarkTest --no-daemon
+  # Oracle --check (Fable review, minor 4): every tools/oracle/gen_*.py regenerates its golden fixtures in memory
+  # and byte-compares them with the committed files (exit non-zero on any difference). Same steps as the local
+  # venv (tools/oracle/.venv, Python 3.12, requirements.txt).
+  # TODO(owner): most generators need JPL DE440 (de440.bsp, size and sha256 in tools/oracle/kernel.lock) in
+  # $PP_EPHEM_DIR. CI has no offline cache and this workflow must not download the kernel, so the job is guarded:
+  # provide the kernel to the runner (for example an actions/cache entry seeded once by the owner under the key
+  # below) and set the repository variable PP_ORACLE_CHECK to 'true' to enable it.
+  oracle-check:
+    if: ${{ vars.PP_ORACLE_CHECK == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PP_EPHEM_DIR: ${{ github.workspace }}/.ephem
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: .ephem
+          key: pp-de440-${{ hashFiles('tools/oracle/kernel.lock') }}
+          fail-on-cache-miss: true
+      - name: Oracle venv
+        run: |
+          python -m venv tools/oracle/.venv
+          tools/oracle/.venv/bin/pip install -r tools/oracle/requirements.txt
+      - name: Every oracle generator --check
+        run: |
+          set -e
+          for g in tools/oracle/gen_*.py; do
+            echo "== $g"
+            tools/oracle/.venv/bin/python -I "$g" --check
+          done

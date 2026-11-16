@@ -5,37 +5,45 @@ package app.parivaar.panchang.feature.aaj.ui
 import android.content.res.Resources
 import android.text.format.DateFormat
 import app.parivaar.panchang.feature.aaj.R
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 import kotlin.time.Duration
 import kotlin.time.Instant
 import app.parivaar.panchang.feature.aaj.DayRef
-import app.parivaar.panchang.feature.aaj.dayRef
-import app.parivaar.panchang.feature.aaj.rangeRefs
+import app.parivaar.panchang.feature.aaj.PlaceClock
 import kotlinx.datetime.LocalDate
 
-/** Local time of the place (fixed offset of the day), 12 or 24 hour. */
-class TimeFmt(
-    private val offsetSeconds: Int,
+/**
+ * Local time of the place, 12 or 24 hour. Each instant uses the place's own offset at that instant ([PlaceClock]),
+ * so D-1, D and D+1 around a DST change all read as wall-clock time.
+ */
+class TimeFmt internal constructor(
+    private val clock: PlaceClock,
     private val shown: LocalDate,
-    is24Hour: Boolean,
+    timePattern: String,
     private val locale: Locale,
 ) {
-    private val zone = ZoneOffset.ofTotalSeconds(offsetSeconds)
-    private val pattern = DateTimeFormatter.ofPattern(
-        DateFormat.getBestDateTimePattern(locale, if (is24Hour) "Hm" else "hm"), locale,
-    )
+    constructor(clock: PlaceClock, shown: LocalDate, is24Hour: Boolean, locale: Locale) :
+        this(clock, shown, DateFormat.getBestDateTimePattern(locale, if (is24Hour) "Hm" else "hm"), locale)
 
-    fun time(at: Instant): String = pattern.format(java.time.Instant.ofEpochSecond(at.epochSeconds).atOffset(zone))
+    /** Fixed-offset formatter (previews and callers without a zone). */
+    constructor(offsetSeconds: Int, shown: LocalDate, is24Hour: Boolean, locale: Locale) :
+        this(PlaceClock.fixed(offsetSeconds), shown, is24Hour, locale)
 
-    private val shortDate = DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMMd"), locale)
+    private val pattern = DateTimeFormatter.ofPattern(timePattern, locale)
+
+    fun time(at: Instant): String = pattern.format(java.time.Instant.ofEpochSecond(at.epochSeconds).atZone(clock.zone))
+
+    private val shortDate by lazy { DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMMd"), locale) }
 
     /** The time with a day note when its civil date is not the shown date: (next day), (previous day) or (Nov 17). */
-    fun stamp(res: Resources, at: Instant): String = withRef(res, at, dayRef(at, offsetSeconds, shown))
+    fun stamp(res: Resources, at: Instant): String = withRef(res, at, refOf(at))
 
-    fun refOf(at: Instant): DayRef = dayRef(at, offsetSeconds, shown)
+    fun refOf(at: Instant): DayRef = clock.dayRef(at, shown)
+
+    /** The place's UTC offset at [at], in seconds. */
+    fun offsetAt(at: Instant): Int = clock.offsetAt(at)
 
     private fun withRef(res: Resources, at: Instant, ref: DayRef): String {
         val note = when (val r = ref) {
@@ -48,7 +56,7 @@ class TimeFmt(
     }
 
     fun range(res: Resources, from: Instant, to: Instant): String =
-        rangeRefs(from, to, offsetSeconds, shown).let { (a, b) ->
+        clock.rangeRefs(from, to, shown).let { (a, b) ->
             res.getString(R.string.aaj_range, withRef(res, from, a), withRef(res, to, b))
         }
 

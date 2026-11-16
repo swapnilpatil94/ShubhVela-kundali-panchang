@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
@@ -70,6 +71,7 @@ fun ProvidePlanetBudget(content: @Composable () -> Unit) {
  * nor battery saver is on; otherwise a static frame. Below 33, or if the shader does not compile: a CPU-rendered
  * static frame of the same lighting ([PlanetShading]), computed off the main thread.
  */
+@Suppress("CyclomaticComplexMethod")
 @Composable
 fun PlanetView(
     body: PlanetBody,
@@ -80,7 +82,8 @@ fun PlanetView(
     contentDescription: String? = null,
 ) {
     val inPreview = LocalInspectionMode.current
-    val program = remember {
+    // One RuntimeShader per view (its uniforms and texture are per-view state), compiled once for the view's life.
+    val program = remember(inPreview) {
         val agsl = !inPreview && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
         if (agsl) PlanetShaderProgram.createOrNull() else null
     }
@@ -102,7 +105,12 @@ fun PlanetView(
     val wants = animated && spinRadPerSec(body) > 0f
     DisposableEffect(budget, wants) {
         granted = wants && budget.tryAcquire(token)
-        onDispose { budget.release(token) }
+        onDispose { budget.release(token); granted = false }
+    }
+    // Retry: when the holder releases the budget (scrolled away, disposed), a waiting view takes it.
+    LaunchedEffect(budget, wants) {
+        if (!wants) return@LaunchedEffect
+        snapshotFlow { budget.isFree || budget.holds(token) }.collect { if (it) granted = budget.tryAcquire(token) }
     }
     val gate = AnimationGate(
         requested = wants,

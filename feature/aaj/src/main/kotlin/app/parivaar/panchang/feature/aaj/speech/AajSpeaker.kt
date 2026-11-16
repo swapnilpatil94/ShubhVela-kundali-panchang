@@ -26,10 +26,19 @@ class AajSpeaker(private val context: Context) {
     private var ready = false
     private var screenOff: BroadcastReceiver? = null
 
-    /** Starts the engine once. Safe to call repeatedly. */
+    private var locale: Locale? = null
+    private var generation = 0
+
+    /**
+     * Starts the engine for [locale]. Safe to call repeatedly; a different locale (app language change) shuts the
+     * old engine down and picks a voice for the new language, so speech never continues in the previous language.
+     */
     fun ensureReady(locale: Locale = Locale.getDefault()) {
-        if (tts != null) return
-        tts = TextToSpeech(context.applicationContext) { status -> onInit(status, locale) }
+        if (tts != null && locale == this.locale) return
+        if (tts != null) shutdown()
+        this.locale = locale
+        val gen = ++generation
+        tts = TextToSpeech(context.applicationContext) { status -> if (gen == generation) onInit(status, locale) }
     }
 
     private fun onInit(status: Int, locale: Locale) {
@@ -78,6 +87,7 @@ class AajSpeaker(private val context: Context) {
         tts?.shutdown()
         tts = null
         ready = false
+        locale = null
         _state.value = SpeechUi.Checking
     }
 

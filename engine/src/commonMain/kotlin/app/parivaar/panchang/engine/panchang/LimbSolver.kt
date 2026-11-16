@@ -32,6 +32,10 @@ class LimbSolver(private val eph: Ephemeris, private val tables: TimeTables = Ti
     private val roots = HashMap<RootKey, Instant>()
     private var cachedAyanamsa: AyanamsaId? = null
 
+    /** Largest samples + roots cache size seen so far (tests: the caches stay bounded on long ranges). */
+    internal var peakCacheSize: Int = 0
+        private set
+
     /** The index of [k] at [at] by the floor rule on F(at) (TITHI 1..30, KARANA 1..60, others 0-based). */
     fun indexAt(k: LimbKind, at: Instant, s: CalcSettings = CalcSettings()): Int =
         reportedIndex(k, arcIndex(k, LimbSample.at(eph, tables, at, s.ayanamsa).value(k.function)))
@@ -72,15 +76,26 @@ class LimbSolver(private val eph: Ephemeris, private val tables: TimeTables = Ti
             val end = boundary(fn, arcStartDeg(k, j + 1), cellOf(span.end))
             span = LimbSpan(k, reportedIndex(k, j.mod(k.divisions)), span.end, end)
             out += span
+            trim()
         }
         return out
     }
 
     private fun prepare(s: CalcSettings) {
-        if (s.ayanamsa != cachedAyanamsa || samples.size > MAX_CACHE || roots.size > MAX_CACHE) {
+        if (s.ayanamsa != cachedAyanamsa) {
             samples.clear()
             roots.clear()
             cachedAyanamsa = s.ayanamsa
+        }
+        trim()
+    }
+
+    /** Empties the caches once either passes [MAX_CACHE] (a long [spans] call trims as it goes; Fable review). */
+    private fun trim() {
+        peakCacheSize = maxOf(peakCacheSize, samples.size + roots.size)
+        if (samples.size > MAX_CACHE || roots.size > MAX_CACHE) {
+            samples.clear()
+            roots.clear()
         }
     }
 

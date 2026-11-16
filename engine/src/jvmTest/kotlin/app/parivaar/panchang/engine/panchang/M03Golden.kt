@@ -33,7 +33,7 @@ internal object M03Golden {
 
     /** Literal per-kind boundary totals of the committed fixture; `meta.boundaryTotals` must agree. */
     val BOUNDARY_TOTALS = mapOf(
-        LimbKind.TITHI to 14_511, LimbKind.KARANA to 29_027, LimbKind.NAKSHATRA to 14_101,
+        LimbKind.TITHI to 14_511, LimbKind.KARANA to 29_028, LimbKind.NAKSHATRA to 14_102,
         LimbKind.YOGA to 15_160, LimbKind.MOON_RASHI to 6_261,
     )
 

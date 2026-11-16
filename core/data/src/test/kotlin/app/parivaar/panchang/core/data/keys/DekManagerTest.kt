@@ -112,6 +112,34 @@ class DekManagerTest {
         assertTrue(f.exists())
     }
 
+    /** Fable review item 4: a corrupt generation no row uses must not lock out rows under a newer key. */
+    @Test fun corruptUnusedOlderKeyDoesNotLockOutNewerData() = runBlocking {
+        val m = manager().apply { createFresh() }
+        seedRows(m)
+        val oldFile = File(dir, "dek.1.bin").readBytes()
+        assertEquals(2, m.rotate(store))
+        val before = readAll(m)
+        // A stale, damaged dek.1.bin reappears (e.g. a failed prune and later bit rot); no row names key 1.
+        File(dir, "dek.1.bin").writeBytes(oldFile.also { it[30] = (it[30].toInt() xor 1).toByte() })
+        val m2 = manager()
+        assertEquals(KeyState.Ready, m2.open(store))
+        assertEquals(2, m2.ring.currentId)
+        assertEquals(before, readAll(m2))
+    }
+
+    @Test fun corruptKeyThatARowNeedsIsStillLost() = runBlocking {
+        val m = manager().apply { createFresh() }
+        seedRows(m)
+        val old = File(dir, "dek.1.bin").readBytes()
+        // Crash after writing dek.2 but before re-encrypting: rows still need key 1, which is damaged.
+        assertFailsWith<IOException> { m.rotate(FailingTxStore(store)) }
+        val f = File(dir, "dek.1.bin")
+        val damaged = old.also { it[30] = (it[30].toInt() xor 1).toByte() }
+        f.writeBytes(damaged)
+        assertEquals(KeyState.Lost, manager().open(store))
+        assertContentEquals(damaged, f.readBytes(), "a key a row needs is never deleted")
+    }
+
     @Test fun unavailableIsRetriedOnceAfter250ms() = runBlocking {
         manager().createFresh()
         wrapper.unavailableCalls = 2

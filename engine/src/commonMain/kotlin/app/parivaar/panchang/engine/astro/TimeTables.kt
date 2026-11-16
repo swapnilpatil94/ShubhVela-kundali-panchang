@@ -8,7 +8,8 @@ import kotlin.time.Instant
  *
  * @property leapSeconds (00:00 UTC instant from which the value applies, TAI-UTC in seconds), ascending.
  * @property validThrough last instant for which [leapSeconds] is authoritative. Instants in
- *   `[leapSeconds.first().first, validThrough]` use the table; all others use the deltaT polynomials.
+ *   `[leapSeconds.first().first, validThrough]` use the table; earlier ones the deltaT polynomials; later ones
+ *   the value at `validThrough` extended by a small slope (continuous, see [TimeScales]).
  */
 data class TimeTables(val leapSeconds: List<Pair<Instant, Int>>, val validThrough: Instant) {
     init {

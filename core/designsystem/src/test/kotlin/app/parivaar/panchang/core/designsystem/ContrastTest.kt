@@ -1,8 +1,13 @@
+@file:Suppress("MaxLineLength")
+
 package app.parivaar.panchang.core.designsystem
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import app.parivaar.panchang.core.designsystem.tokens.PpPalette
+import app.parivaar.panchang.core.designsystem.tokens.RatnaMood
+import app.parivaar.panchang.core.designsystem.tokens.ratnaColorsOf
 import app.parivaar.panchang.core.designsystem.tokens.adjustForContrast
-import app.parivaar.panchang.core.designsystem.tokens.containerOf
 import app.parivaar.panchang.core.designsystem.tokens.contrastRatio
 import app.parivaar.panchang.core.designsystem.tokens.relativeLuminance
 import kotlin.math.abs
@@ -22,44 +27,35 @@ class ContrastTest {
         assertTrue(abs(contrastRatio(0xFFFFFFFFL, 0xFF000000L) - 21.0) < 1e-9)
     }
 
-    @Test fun lightTextPairs() = with(PpPalette.Light) {
-        pass("onPrimary", ON_PRIMARY, PRIMARY)
-        pass("onSecondary", ON_SECONDARY, SECONDARY)
-        pass("onTertiary", ON_TERTIARY, TERTIARY)
-        pass("onError", ON_ERROR, ERROR)
-        for (bg in listOf(SURFACE, SURFACE_CONTAINER)) {
-            pass("onSurface", ON_SURFACE, bg)
-            pass("onSurfaceVariant", ON_SURFACE_VARIANT, bg)
-            pass("primaryText", PRIMARY_TEXT, bg)
-            pass("secondary text", SECONDARY, bg)
-            pass("tertiary text", TERTIARY, bg)
+    private fun Color.argb(): Long = toArgb().toLong() and 0xFFFFFFFFL
+
+    /** The live Material scheme ([ratnaScheme]) every screen reads, in every Ratna mood (not the retired M07 palette). */
+    @Test fun liveRatnaSchemePairsInEveryMood() {
+        for (mood in RatnaMood.entries) {
+            val c = ratnaScheme(ratnaColorsOf(mood))
+            pass("$mood onPrimary", c.onPrimary.argb(), c.primary.argb())
+            pass("$mood onPrimaryContainer", c.onPrimaryContainer.argb(), c.primaryContainer.argb())
+            pass("$mood onSecondaryContainer", c.onSecondaryContainer.argb(), c.secondaryContainer.argb())
+            pass("$mood onTertiaryContainer", c.onTertiaryContainer.argb(), c.tertiaryContainer.argb())
+            pass("$mood onErrorContainer", c.onErrorContainer.argb(), c.errorContainer.argb())
+            for ((name, bg) in listOf(
+                "background" to c.background, "surface" to c.surface, "surfaceVariant" to c.surfaceVariant,
+                "surfaceContainerLow" to c.surfaceContainerLow, "surfaceContainer" to c.surfaceContainer,
+                "surfaceContainerHigh" to c.surfaceContainerHigh, "surfaceContainerHighest" to c.surfaceContainerHighest,
+            )) {
+                pass("$mood onSurface on $name", c.onSurface.argb(), bg.argb())
+                pass("$mood onSurfaceVariant on $name", c.onSurfaceVariant.argb(), bg.argb())
+                pass("$mood secondary text on $name", c.secondary.argb(), bg.argb())
+                pass("$mood tertiary text on $name", c.tertiary.argb(), bg.argb())
+                pass("$mood outline on $name", c.outline.argb(), bg.argb(), 3.0)
+            }
+            pass("$mood inverse", c.inverseOnSurface.argb(), c.inverseSurface.argb())
         }
-        pass("primaryText on chips bg", PRIMARY_TEXT, SURFACE_VARIANT)
-        pass("auspicious chip", AUSPICIOUS_FG, AUSPICIOUS_BG)
-        pass("inauspicious chip", INAUSPICIOUS_FG, INAUSPICIOUS_BG)
-        for (role in listOf(PRIMARY, SECONDARY, TERTIARY)) pass("onContainer", ON_SURFACE, containerOf(SURFACE, role))
     }
 
-    @Test fun darkTextPairs() = with(PpPalette.Dark) {
-        pass("onPrimary", ON_PRIMARY, PRIMARY)
-        pass("onSecondary", ON_SECONDARY, SECONDARY)
-        pass("onTertiary", ON_TERTIARY, TERTIARY)
-        pass("onError", ON_ERROR, ERROR)
-        for (bg in listOf(SURFACE, SURFACE_CONTAINER)) {
-            pass("onSurface", ON_SURFACE, bg)
-            pass("onSurfaceVariant", ON_SURFACE_VARIANT, bg)
-            pass("primaryText", PRIMARY_TEXT, bg)
-        }
-        pass("auspicious chip", AUSPICIOUS_FG, AUSPICIOUS_BG)
-        pass("inauspicious chip", INAUSPICIOUS_FG, INAUSPICIOUS_BG)
-        for (role in listOf(PRIMARY, SECONDARY, TERTIARY)) pass("onContainer", ON_SURFACE, containerOf(SURFACE, role))
-    }
-
-    @Test fun nonTextGraphicsAtLeast3() {
-        pass("light outline", PpPalette.Light.OUTLINE, PpPalette.Light.SURFACE, 3.0)
-        pass("light primary icon", PpPalette.Light.PRIMARY, PpPalette.Light.SURFACE_CONTAINER, 2.5)
-        pass("dark outline", PpPalette.Dark.OUTLINE, PpPalette.Dark.SURFACE, 3.0)
-        pass("dark gold", PpPalette.Dark.GOLD, PpPalette.Dark.SURFACE, 3.0)
+    /** The share card still renders with the M07 light palette (ShareCardRenderer): its pairs stay checked. */
+    @Test fun shareCardPalettePairs() = with(PpPalette.Light) {
+        for (fg in listOf(ON_SURFACE, ON_SURFACE_VARIANT, PRIMARY_TEXT)) pass("share ${java.lang.Long.toHexString(fg)}", fg, BACKGROUND)
     }
 
     @Test fun seedSaffronFailsAsTextAndVariantIsDerivedByRule() {

@@ -3,6 +3,7 @@ package app.parivaar.panchang.feature.aaj.ui
 
 import app.parivaar.panchang.core.designsystem.components.OrbTone
 import app.parivaar.panchang.core.designsystem.components.OrbUi
+import app.parivaar.panchang.engine.panchang.DayFlag
 import app.parivaar.panchang.engine.panchang.PanchangDay
 import app.parivaar.panchang.engine.panchang.Window
 import app.parivaar.panchang.engine.panchang.WindowKind
@@ -21,9 +22,12 @@ class OrbTexts(
  * Orb state (M07R section 6, decisions D10 and D14). Pure: reads the existing Aaj header and days, makes no engine call.
  * Tone, first match: WaitUntil header -> AVOID until its end; GoodUntil header -> GOOD until its end; else the current
  * choghadiya C: Amrit/Shubh/Labh GOOD, Char NEUTRAL, Rog/Kaal/Udveg AVOID (until C.end). The ring always shows C
- * (half-open [start, end)); with no C the orb is NEUTRAL with a null fraction (lit diya), so the dock never contradicts the header card.
+ * (half-open [start, end)); on a SUN_FALLBACK day, or with no C, the orb is NEUTRAL with a null fraction (lit diya), so the dock never contradicts the header card.
  */
 fun orbUi(header: Header, days: List<PanchangDay>, now: Instant, texts: OrbTexts): OrbUi {
+    // D10: a high-latitude fallback day (polar night or day) has conventional, not observed, sun times: neutral, no ring.
+    val day = app.parivaar.panchang.feature.aaj.vedicDayAt(days, now)
+    if (day != null && DayFlag.SUN_FALLBACK in day.flags) return OrbUi(OrbTone.NEUTRAL, null, null, texts.neutral)
     val c = currentChoghadiya(days, now)
     val fraction = c?.let { ((it.end - now) / (it.end - it.start)).toFloat().coerceIn(0f, 1f) }
     val (tone, until) = toneAndUntil(header, c)

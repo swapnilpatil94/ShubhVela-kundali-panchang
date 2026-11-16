@@ -100,16 +100,29 @@ internal fun nextRows(res: Resources, names: AajNames, fmt: TimeFmt, c: AajUi.Co
     return rows
 }
 
-/** The span of [kind] running at [now] (else at sunrise, else the first) as a list row. */
-internal fun limbRows(res: Resources, names: AajNames, fmt: TimeFmt, day: PanchangDay, now: Instant): List<LimbRowUi> =
+/**
+ * The span of [k] running at [now], searched over all loaded days (D-1 included, as the widget does), so between
+ * midnight and sunrise the row shows the limb actually current and its true end. Fallbacks: the span at the shown
+ * day's sunrise, else its first span (both may lie ahead of [now]; the row then says "from ... till ...").
+ */
+internal fun currentLimb(days: List<PanchangDay>, day: PanchangDay, k: LimbKind, now: Instant): LimbSpan? =
+    days.asSequence().flatMap { it.limbs[k].orEmpty().asSequence() }.firstOrNull { now in it }
+        ?: day.limbs[k].orEmpty().let { spans -> spans.firstOrNull { day.sunrise in it } ?: spans.firstOrNull() }
+
+/** One row per limb, each the span current at [now] (see [currentLimb]). */
+internal fun limbRows(res: Resources, names: AajNames, fmt: TimeFmt, days: List<PanchangDay>, day: PanchangDay, now: Instant): List<LimbRowUi> =
     listOf(LimbKind.TITHI, LimbKind.NAKSHATRA, LimbKind.YOGA, LimbKind.KARANA).mapNotNull { k ->
-        val spans = day.limbs[k].orEmpty()
-        val span: LimbSpan = spans.firstOrNull { now in it } ?: spans.firstOrNull { day.sunrise in it } ?: spans.firstOrNull() ?: return@mapNotNull null
+        val span = currentLimb(days, day, k, now) ?: return@mapNotNull null
         val note = buildList {
             if (span.kshaya) add(res.getString(R.string.aaj_badge_kshaya) + ": " + res.getString(R.string.aaj_badge_kshaya_note))
             if (span.adhika) add(res.getString(R.string.aaj_badge_adhika) + ": " + res.getString(R.string.aaj_badge_adhika_note))
         }.joinToString(" ").ifEmpty { null }
-        LimbRowUi(names.limbTitle(k), names.limbSpan(k, span.index), res.getString(R.string.aaj_limb_till, fmt.stamp(res, span.end)), note)
+        val value = if (span.start > now) {
+            res.getString(R.string.aaj_limb_from_till, fmt.stamp(res, span.start), fmt.stamp(res, span.end))
+        } else {
+            res.getString(R.string.aaj_limb_till, fmt.stamp(res, span.end))
+        }
+        LimbRowUi(names.limbTitle(k), names.limbSpan(k, span.index), value, note)
     }
 
 private fun eclipseBody(kind: EclipseKind): PlanetBody =
@@ -128,7 +141,7 @@ internal fun DayContent(
     extras: AajExtras,
 ) {
     val names = rememberNames()
-    val fmt = rememberFmt(c.day.utcOffsetSeconds, c.date)
+    val fmt = rememberFmt(c.day.utcOffsetSeconds, c.date, c.zoneId)
     val res = LocalContext.current.resources
     var explain by rememberSaveable { mutableStateOf(false) }
     var full by rememberSaveable { mutableStateOf(false) }
@@ -147,6 +160,9 @@ internal fun DayContent(
     val segs = remember(day, names) { pathSegments(day, names) }
     val arc = remember(day, minute) { arcOf(day, now) }
     val rows = remember(c, minute, names, fmt) { nextRows(res, names, fmt, c, now) }
+    val limbList = remember(c, minute, names, fmt) { limbRows(res, names, fmt, c.days, day, now) }
+    val pathCd = remember(day, minute, names, fmt, arc.nowFraction) { pathDescription(res, names, day, now, fmt, arc.nowFraction) }
+    val headline = remember(c.header, names, fmt) { headerText(res, names, fmt, c.header) }
     val bottom = LocalDockInset.current + PpSpace.l
     ProvidePlanetBudget {
         Box(Modifier.fillMaxSize()) {
@@ -165,7 +181,7 @@ internal fun DayContent(
                                 AbhiState.WAIT -> stringResource(R.string.abhi_wait_hi)
                                 AbhiState.NEUTRAL -> null
                             },
-                            line = headerText(res, names, fmt, c.header),
+                            line = headline,
                             detail = abhiDetail,
                             onClick = { explain = true },
                         )
@@ -179,7 +195,7 @@ internal fun DayContent(
                     SuryaPath(
                         segments = segs, nowFrac = arc.nowFraction, sunriseText = stringResource(R.string.aaj_path_sunrise, fmt.time(day.sunrise)),
                         sunsetText = stringResource(R.string.aaj_path_sunset, fmt.time(day.sunset)), nowLabel = stringResource(R.string.aaj_path_now),
-                        abhijit = abhijitFrac(day), a11y = pathDescription(res, names, day, now, fmt, arc.nowFraction),
+                        abhijit = abhijitFrac(day), a11y = pathCd,
                         onSegment = { explain = true }, modifier = Modifier.padding(horizontal = PpSpace.screen),
                     )
                 }
@@ -215,7 +231,7 @@ internal fun DayContent(
                                 stringResource(R.string.aaj_panchang_eyebrow_plain)
                             },
                         )
-                        PanchangList(limbRows(res, names, fmt, day, now), onOpen = { full = !full })
+                        PanchangList(limbList, onOpen = { full = !full })
                     }
                 }
                 item {

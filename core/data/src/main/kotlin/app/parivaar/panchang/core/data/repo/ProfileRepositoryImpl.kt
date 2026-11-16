@@ -39,7 +39,9 @@ internal class ProfileRepositoryImpl(
 
     override suspend fun upsert(p: Profile): DataResult<Unit> =
         ready {
-            if (p.displayName.length !in 1..DataLimits.NAME_MAX || (p.notes?.length ?: 0) > DataLimits.NOTES_MAX) {
+            if (p.displayName.length !in 1..DataLimits.NAME_MAX || (p.notes?.length ?: 0) > DataLimits.NOTES_MAX ||
+                !ProfileCodec.isValid(p)
+            ) {
                 return@ready DataResult.Err(DataError.VALIDATION)
             }
             tx {

@@ -116,6 +116,46 @@ class PanchangCalculatorTest {
         assertEquals(12.hours, d.sunset - d.sunrise)
     }
 
+    /** Fable review M1: a sunset just after local midnight is real, not a reason for the noon fallback. */
+    @Test
+    fun `sunsets crossing local midnight stay real at Reykjavik, Fairbanks and Oulu`() {
+        val cases = listOf(
+            Triple(Place(64.1466, -21.9426), 0, LocalDate(2026, 6, 15)),
+            Triple(Place(64.8378, -147.7164), -8 * 3600, LocalDate(2026, 5, 30)),
+            Triple(Place(65.0121, 25.4651), 3 * 3600, LocalDate(2026, 6, 8)),
+        )
+        for ((place, offset, date) in cases) {
+            val days = calc.days(date.plus(DatePeriod(days = -1)), 3, place) { offset }
+            for ((a, b) in days.zipWithNext()) assertEquals(a.nextSunrise, b.sunrise, "$date days tile")
+            for (d in days) {
+                assertTrue(d.flags.isEmpty(), "${d.date} flags ${d.flags}")
+                val midnight = kotlin.time.Instant.fromEpochSeconds(d.date.toEpochDays() * 86_400L - offset)
+                // Rise between 02:00 and 04:30 local, set within 15 min of the next local midnight.
+                assertTrue(d.sunrise - midnight in 2.hours..4.5.hours, "${d.date} sunrise")
+                assertTrue((d.sunset - (midnight + 24.hours)).absoluteValue < 0.25.hours, "${d.date} sunset")
+            }
+        }
+        val reykjavik = calc.day(LocalDate(2026, 6, 15), 0, Place(64.1466, -21.9426))
+        // Oracle (Skyfield + DE440): sunrise 02:57 UTC, sunset 2026-06-16 00:00 UTC.
+        assertTrue(reykjavik.sunrise - kotlin.time.Instant.parse("2026-06-15T02:57:30Z") in (-1).hours..1.hours)
+    }
+
+    @Test
+    fun `Tromso entering the midnight sun keeps the real sunrise and has a sun day`() {
+        val tromso = Place(69.6492, 18.9553)
+        val days = calc.days(LocalDate(2026, 5, 14), 8, tromso) { 7200 }
+        for ((a, b) in days.zipWithNext()) assertEquals(a.nextSunrise, b.sunrise, "days tile")
+        val byDate = days.associateBy { it.date }
+        for (d in 14..17) assertTrue(byDate.getValue(LocalDate(2026, 5, d)).flags.isEmpty(), "05-$d real")
+        val may18 = byDate.getValue(LocalDate(2026, 5, 18))
+        assertTrue(DayFlag.SUN_FALLBACK in may18.flags)
+        val midnight = kotlin.time.Instant.parse("2026-05-17T22:00:00Z")
+        assertTrue(may18.sunrise - midnight < 1.5.hours, "real sunrise just before 01:00 local")
+        assertTrue(may18.sunrise < may18.sunset && may18.sunset < may18.nextSunrise)
+        val may16 = byDate.getValue(LocalDate(2026, 5, 16))
+        assertTrue(may16.sunrise - (midnight - 48.hours) < 2.hours, "05-16 sunrise is the real one, not 06:40")
+    }
+
     @Test
     fun `offset out of range is rejected without the value`() {
         for (bad in listOf(-43_201, 50_401)) {

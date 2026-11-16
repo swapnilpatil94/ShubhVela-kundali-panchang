@@ -37,6 +37,11 @@ LEAP_TABLE = [(_epoch(*ymd), n) for ymd, n in _LEAP_DATES]
 # TimeTables.DEFAULT.validThrough in the engine (written by C1); B3/B4 assert nothing else about it.
 VALID_THROUGH = _epoch(2027, 1, 1)
 FIRST_LEAP = LEAP_TABLE[0][0]
+# Fable review M2: after VALID_THROUGH, TT-UT1 is the table value at VALID_THROUGH (TAI-UTC + 32.184 s, DUT1
+# ignored) growing by 0.1 s per Julian year of 365.25 days, so the rule has no step at the horizon. Source
+# assumption (VERIFY / TODO(owner)): mean excess length of day about +0.27 ms over the coming decades. Must match
+# TimeScales.FUTURE_SLOPE_SECONDS_PER_YEAR in the engine (the golden tests prove it).
+GROWTH_PER_DAY_AFTER_HORIZON = 0.1 / 365.25
 
 
 def jd_utc(epoch_s):
@@ -88,12 +93,17 @@ def utc_to_tt_ut1(epoch_s):
     """Returns (tt_jd_parts, ut1_jd_parts); each is (whole, fraction) with whole + fraction = JD.
 
     In-table instants (1972-01-01 .. VALID_THROUGH): TT = UTC + TAI-UTC + 32.184 s, UT1 = UTC.
-    Otherwise the instant is read as UT1 and TT = UT1 + deltaT(y)."""
+    Otherwise the instant is read as UT1: before the table TT = UT1 + deltaT(y); after it
+    TT = UT1 + (TT-UT1 at VALID_THROUGH) + GROWTH_PER_DAY_AFTER_HORIZON * days since VALID_THROUGH."""
     if FIRST_LEAP <= epoch_s <= VALID_THROUGH:
         tt_s = epoch_s + tai_minus_utc(epoch_s) + 32.184
         return _split(tt_s), _split(epoch_s)
     ut1 = _split(epoch_s)
-    dt = delta_t_seconds(_decimal_year(ut1[0] + ut1[1]))
+    if epoch_s > VALID_THROUGH:
+        held = tai_minus_utc(VALID_THROUGH) + 32.184
+        dt = held + GROWTH_PER_DAY_AFTER_HORIZON * ((epoch_s - VALID_THROUGH) / 86400.0)
+    else:
+        dt = delta_t_seconds(_decimal_year(ut1[0] + ut1[1]))
     return _split(epoch_s + dt), ut1
 
 

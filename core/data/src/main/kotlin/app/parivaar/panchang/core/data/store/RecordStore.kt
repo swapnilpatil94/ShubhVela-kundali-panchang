@@ -56,7 +56,10 @@ internal interface RecordStore {
     /** Allows transactions again (called when the vault opens). */
     suspend fun reopen()
 
-    /** Emits once on collection and again after every committed transaction. The value is a change counter. */
+    /**
+     * Emits once on collection and again after every committed transaction that wrote (put, delete that removed a
+     * row, clearAll). Read-only transactions never emit, so observers that re-read on emission stay quiet.
+     */
     val changes: Flow<Int>
 }
 

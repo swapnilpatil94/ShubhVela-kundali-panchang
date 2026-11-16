@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength")
+
 package app.parivaar.panchang.feature.settings
 
 import android.os.Build
@@ -7,8 +9,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -16,6 +25,8 @@ import androidx.compose.ui.semantics.semantics
 import app.parivaar.panchang.core.data.DataResult
 import app.parivaar.panchang.core.data.SettingsRepository
 import app.parivaar.panchang.core.designsystem.PanchangTheme
+import app.parivaar.panchang.core.designsystem.components.PpButton
+import app.parivaar.panchang.core.designsystem.components.PpButtonStyle
 import app.parivaar.panchang.core.designsystem.components.PpCard
 import app.parivaar.panchang.core.designsystem.preview.PpPreviews
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
@@ -54,6 +65,9 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(PpSpace.l),
     ) {
         ScreenTitle(R.string.settings_title)
+
+        val unreadable by appearance.unreadable.collectAsState(initial = false)
+        if (unreadable) UnreadableSettingsCard(appearance::resetUnreadable)
 
         PpCard(Modifier.fillMaxWidth(), mergeSemantics = false) {
             SectionTitle(R.string.settings_section_appearance)
@@ -106,6 +120,28 @@ fun SettingsScreen(
             SectionTitle(R.string.settings_section_privacy)
             Hint(R.string.settings_privacy_summary)
         }
+    }
+}
+
+/** Shown while the saved settings cannot be read: calm copy, and a reset that runs only after an explicit confirm. */
+@Composable
+private fun UnreadableSettingsCard(onConfirmReset: () -> Unit) {
+    var asking by rememberSaveable { mutableStateOf(false) }
+    PpCard(Modifier.fillMaxWidth(), mergeSemantics = false) {
+        SectionTitle(R.string.settings_unreadable_title)
+        Hint(R.string.settings_unreadable_body)
+        PpButton(stringResource(R.string.settings_unreadable_action), { asking = true }, PpButtonStyle.Outline)
+    }
+    if (asking) {
+        AlertDialog(
+            onDismissRequest = { asking = false },
+            title = { Text(stringResource(R.string.settings_unreadable_confirm_title)) },
+            text = { Text(stringResource(R.string.settings_unreadable_confirm_body)) },
+            confirmButton = {
+                TextButton({ asking = false; onConfirmReset() }) { Text(stringResource(R.string.settings_unreadable_confirm_yes)) }
+            },
+            dismissButton = { TextButton({ asking = false }) { Text(stringResource(R.string.settings_unreadable_confirm_no)) } },
+        )
     }
 }
 

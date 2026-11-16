@@ -15,7 +15,9 @@ fun rememberAajExtras(vm: ShellViewModel, settings: AppSettings, homeName: Strin
     val travelPlace by vm.travel.place.collectAsStateWithLifecycle()
     val speech by vm.speaker.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    LaunchedEffect(Unit) { vm.speaker.ensureReady() }
+    // The app language (per-app locale) drives the voice: a language change re-initialises it.
+    val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
+    LaunchedEffect(locale) { vm.speaker.ensureReady(locale) }
     return AajExtras(
         travel = travel,
         onTravelUpdate = vm.travel::onOfferTapped,

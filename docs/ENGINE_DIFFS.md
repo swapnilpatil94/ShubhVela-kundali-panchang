@@ -6,13 +6,18 @@ Each entry: what differs, how large, and who decides. Nothing here may be used t
 ## M01 Astronomy core, [C1]-[C4] (2026-11-14)
 
 ### Time scales (spec 3.2)
-- **deltaT step at the leap-table horizon. VERIFY / TODO(owner).** The rule is implemented literally: instants in
-  `[1972-01-01, validThrough]` use TT = UTC + (TAI-UTC) + 32.184 s; all others are read as UT1 with
-  TT = UT1 + deltaT(y). At `validThrough` TT-UT therefore jumps from 69.184 s to about 75.07 s (+5.9 s; the
-  2005-2050 polynomial gives 75.074584 s at 2026.0). The oracle (`tools/oracle/timescale.py`) uses the same
-  rule, so golden tests agree. In absolute terms the step moves the ephemeris argument by 5.9 s for instants
-  after the horizon: about 0.24 arcsec for the Sun and 3.2 arcsec for the Moon (Earth rotation is unaffected,
-  the Instant is read as UT1), until the owner decides the blend.
+- **No step at the leap-table horizon (Fable review M2, 2026-11-16). VERIFY / TODO(owner).** Instants in
+  `[1972-01-01, validThrough]` use TT = UTC + (TAI-UTC) + 32.184 s. After `validThrough` the Instant is read as UT1
+  and TT-UT1 = (table value at `validThrough`, 69.184 s) + 0.1 s per Julian year since `validThrough`
+  (`TimeScales.FUTURE_SLOPE_SECONDS_PER_YEAR`; assumption: mean excess LOD about +0.27 ms, between the near-zero
+  IERS drift since 2017 and the +0.6 s/yr tidal trend of the polynomials). Before the table the Espenak-Meeus
+  polynomials still apply. The old literal rule jumped by +6.5 s at 2027-01-01 (75.69 s polynomial vs 69.184 s);
+  by 2100 the two rules differ by 126 s (202.7 s vs 76.5 s), so post-2027 UTC-keyed golden instants moved (lunar
+  boundaries up to about 2 minutes in 2099; see engine-golden/CHANGELOG.md). `tools/oracle/timescale.py` applies the
+  same rule in its own form (days since the horizon), still forced into Skyfield. Tests: `noStepAtValidThrough`
+  (|value(v + 1 s) - value(v - 1 s)| < 0.01 s), `afterValidThroughHoldsTheTableValueWithASmallSlope` (to 2100),
+  and every UTC-keyed golden (riseset, panchang, calendar, festivals, eclipses, sky) to 2099 at unchanged gates.
+  TODO(owner): refresh `TimeTables.DEFAULT` from IERS Bulletin C (and the slope from Bulletin A) before release.
 - **`validThrough` is confirmed (2026-11-14).** `TimeTables.DEFAULT.validThrough` = 2027-01-01T00:00:00Z,
   identical to `timescale.VALID_THROUGH` (asserted in `TimeScalesTest`). IERS Bulletin C 72 (2026-07-06) states
   no leap second at the end of December 2026; the KDoc cites it. This is the conservative end of the period
@@ -96,6 +101,18 @@ took about 5 ms on the JVM (limit 300 ms). The committed gates are G1-G3 and B6,
   distance); refraction 34 arcmin x (P / 1010) x (283 / (273 + T)) (non-default scaling is VERIFY).
   CENTER_GEOMETRIC is topocentric too. Elevation raises the observer; horizon dip is not modelled.
 - **High-latitude fallback** (`sunWithFallback`, VERIFY with pandit): see `docs/DECISIONS.md` (M01 C6).
+- **Fallback per event in the panchang day (Fable review M1, 2026-11-16).** `sunWithFallback` decides per 24 h
+  window (unchanged public behaviour), but `SunDay` now takes each event on its own (`RiseSet.sunWindow`):
+  sunrise = first observed RISE of [local midnight, +24 h), else the convention RISE; nextSunrise = the same for
+  the next civil day (so days still tile); sunset = first observed SET in (sunrise, nextSunrise), else the
+  convention SET. Before, a sunset a few seconds after local midnight made the whole day a convention day
+  (Reykjavik 2026-06-15 at UTC+0: 07:28/19:28 instead of 02:57:25 / 06-16 00:00:04; same at Fairbanks 05-30,
+  Oulu 06-08), and Tromso at UTC+2 threw NO_SUN_DAY on 2026-05-18 (now real sunrise 00:52, convention sunset
+  and next sunrise, flag SUN_FALLBACK) and used 06:40-18:40 on 2026-05-16 (now 01:31:52 - 05-17 00:02:43). Mixed
+  days (one real, one convention event) occur only on the first and last day of polar day/night and carry
+  SUN_FALLBACK; they can be up to about 30 h long (Tromso 2027-01-14). VERIFY with pandit. Oracle:
+  `panchang_ref.sun_day` (independent Python), new fixture `panchang_highlat.json` (Reykjavik 0, Fairbanks -480,
+  Oulu +180, Tromso +120 / +60 min, 144 city-days incl. polar day and night), `PanchangHighLatitudeGoldenTest`.
 
 ### Scratch pre-flight against the committed golden JSON (information only, not a gate)
 Temporary test, not committed, run on 2026-11-14 against `positions.json` (10,000 epochs) and `riseset.json`
@@ -337,3 +354,15 @@ New additive API `engine/sky/SkyGeometry.kt` (no existing output changes). Golde
   error / limit: elongation <= 3e-4, phase <= 0.32, k <= 0.16, chi*sin(psi) <= 0.006, B 0.05, q*sin(z) 0.02; Base
   <= 0.18, 0.24, 0.16, 0.13, 0.25, 0.18. chi and q are gated weighted by sin(elongation) / sin(zenith distance)
   because both are undefined at 0 (new moon; body at the zenith).
+
+## Fable review: engine (2026-11-16)
+
+- **Purnimanta Krishna half before a kshaya lunation (review minor 6): not changed, documented.** For tithi 16..30
+  of a non-adhika lunation L the label is (masa of L', nija, kshaya null), L' = next non-adhika lunation. When L'
+  is a kshaya lunation (A with kshaya B, e.g. 1963-64 and 1982-83) the Krishna half of L reads (A, null) while
+  L''s Shukla half reads (A, kshaya B). This is the literal rule of docs/specs/M04.md section 3.1 ("(masa(L'),
+  nija) ... its first name"), and the oracle (`calendar_ref.purnimanta`) and `calendar_days.json` follow it, so
+  it is a convention, not a code defect. Carrying B on the Krishna half would make purnimanta festivals of the
+  kshaya masa B match the Krishna half of amanta A, which is a pandit-level choice. VERIFY with pandit together
+  with the existing "adhika/kshaya masa handling, purnimanta adhika split" sign-off item (M04 section 5).
+

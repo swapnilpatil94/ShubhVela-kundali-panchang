@@ -13,10 +13,15 @@ import kotlin.time.Instant
  *
  * - Inside the leap-second table (`first entry <= i <= validThrough`): TT = UTC + (TAI-UTC) + 32.184 s and
  *   UT1 = UTC (DUT1, under 0.9 s, is ignored).
- * - Outside it the Instant is read as UT1 and TT = UT1 + deltaT(y), y = 2000 + (jdUt - 2451544.5) / 365.2425.
+ * - Before the table the Instant is read as UT1 and TT = UT1 + deltaT(y), y = 2000 + (jdUt - 2451544.5) / 365.2425.
+ * - After `validThrough` the Instant is read as UT1 and TT - UT1 is held continuous: the table value at
+ *   `validThrough` (TAI-UTC + 32.184 s, i.e. TT-UT1 with DUT1 ignored) plus [FUTURE_SLOPE_SECONDS_PER_YEAR] per
+ *   Julian year after it. There is no step at the horizon (the old literal rule jumped by about +6.5 s to the
+ *   2005-2050 polynomial, 75.69 s at 2027.0; docs/ENGINE_DIFFS.md, Fable review M2).
  *
- * VERIFY / TODO(owner): implemented literally, so TT-UT steps by about +5.9 s at `validThrough` (polynomial
- * 75.07 s at 2026.0 against 69.184 s from the table); see docs/ENGINE_DIFFS.md.
+ * TODO(owner): before release refresh [TimeTables.DEFAULT] (leap seconds and `validThrough`) from the latest IERS
+ * Bulletin C, and re-check the slope against IERS Bulletin A UT1-UTC predictions; change
+ * `tools/oracle/timescale.py` in lock step and regenerate the golden data.
  */
 object TimeScales {
     private const val UNIX_EPOCH_JD = 2440587.5
@@ -27,6 +32,16 @@ object TimeScales {
     private const val DECIMAL_YEAR_EPOCH_JD = 2451544.5 // 2000-01-01 00:00
     private const val GREGORIAN_YEAR_DAYS = 365.2425
     private const val TT_TO_UTC_PASSES = 3
+    private const val SECONDS_PER_JULIAN_YEAR = 365.25 * 86400.0
+
+    /**
+     * Growth of TT - UT1 after `validThrough`, seconds per Julian year. Source assumption (VERIFY / TODO(owner)):
+     * a mean excess length of day of about +0.27 ms over the coming decades (0.27 ms x 365.25 = 0.1 s/yr). That
+     * sits between the near-zero drift observed by the IERS since 2017 (TT-UT1 about 69.0-69.2 s, Bulletin A)
+     * and the long-term tidal trend of the Espenak-Meeus polynomials (about +0.6 s/yr at 2027). The prediction
+     * error grows to tens of seconds by 2100 whichever value is chosen; the slope only keeps the rule smooth.
+     */
+    const val FUTURE_SLOPE_SECONDS_PER_YEAR = 0.1
 
     /** Julian Day of the Instant on its own (UTC) scale: 2440587.5 + epoch seconds / 86400. */
     fun jdUtc(i: Instant): JulianDay = jdOf(i, 0.0)
@@ -76,15 +91,26 @@ object TimeScales {
         return utc
     }
 
-    /** TT - (the Instant's own scale) in seconds: table value + 32.184 s inside the table, else deltaT(y). */
-    internal fun ttMinusUtcSeconds(i: Instant, t: TimeTables): Double {
-        if (i >= t.leapSeconds.first().first && i <= t.validThrough) {
-            var taiMinusUtc = 0
-            for ((from, value) in t.leapSeconds) if (i >= from) taiMinusUtc = value
-            return taiMinusUtc + TT_MINUS_TAI_SECONDS
+    /**
+     * TT - (the Instant's own scale) in seconds: table value + 32.184 s inside the table; after `validThrough`
+     * the value at `validThrough` plus the slope (continuous); before the table deltaT(y).
+     */
+    internal fun ttMinusUtcSeconds(i: Instant, t: TimeTables): Double = when {
+        i < t.leapSeconds.first().first ->
+            deltaTSeconds(2000.0 + (jdUtc(i).value - DECIMAL_YEAR_EPOCH_JD) / GREGORIAN_YEAR_DAYS)
+        i <= t.validThrough -> tableSeconds(i, t)
+        else -> {
+            val v = t.validThrough
+            val elapsedSeconds = (i.epochSeconds - v.epochSeconds).toDouble() +
+                (i.nanosecondsOfSecond - v.nanosecondsOfSecond) / NANOS_PER_SECOND
+            tableSeconds(v, t) + FUTURE_SLOPE_SECONDS_PER_YEAR * (elapsedSeconds / SECONDS_PER_JULIAN_YEAR)
         }
-        val y = 2000.0 + (jdUtc(i).value - DECIMAL_YEAR_EPOCH_JD) / GREGORIAN_YEAR_DAYS
-        return deltaTSeconds(y)
+    }
+
+    private fun tableSeconds(i: Instant, t: TimeTables): Double {
+        var taiMinusUtc = 0
+        for ((from, value) in t.leapSeconds) if (i >= from) taiMinusUtc = value
+        return taiMinusUtc + TT_MINUS_TAI_SECONDS
     }
 
     /** TDB - TT in seconds: 0.001657 sin g + 0.000014 sin 2g, g = 357.53 deg + 0.98560028 deg (tt - J2000). */

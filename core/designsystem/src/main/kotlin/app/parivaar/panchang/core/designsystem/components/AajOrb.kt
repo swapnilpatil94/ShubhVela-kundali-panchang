@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
+import app.parivaar.panchang.core.designsystem.surfaces.rememberBatterySaver
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -68,19 +69,22 @@ object OrbGeometry {
  * The Aaj orb (`.orb` + `orbSVG` in design/shubhvela-screens.html): 64 dp radial-ink disc, 1.5 dp gold ring, 6 dp ink halo,
  * drop shadow, a gold (kumkum when avoid) glow pulsing 18-34 dp over 3.2 s, ring r 29 dp / 3 dp from 12 o'clock with an end dot,
  * and the diya. The ring and glow are drawn in the draw phase, so a tick that changes only the fraction does not recompose.
- * The pulse runs only while [selected] and motion is allowed; otherwise it rests at 26 dp.
+ * The pulse runs only while [selected], motion is allowed and battery saver is off; otherwise it rests at 26 dp.
  */
 @Composable
 fun AajOrb(ui: OrbUi, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val r = PpTheme.ratna
-    val animate = selected && !LocalReducedMotion.current
-    val pulse = rememberLoop(PpLoop.ORB_MS)
-    val flicker = rememberLoop(PpLoop.DIYA_MS)
+    // No infinite transition exists unless the orb animates (selected, motion allowed, battery saver off).
+    val animate = selected && !LocalReducedMotion.current && !rememberBatterySaver()
     Box(modifier.size(OrbGeometry.ORB_DP.dp)) {
-        Canvas(Modifier.fillMaxSize()) {
-            val p = if (animate) 0.5f + 0.5f * sin(pulse.value * 2f * PI.toFloat()) else 0.5f
-            val f = if (animate) sin(flicker.value * 2f * PI.toFloat()) else 0f
-            drawOrb(ui, r, p, f)
+        if (animate) {
+            val pulse = rememberLoop(PpLoop.ORB_MS)
+            val flicker = rememberLoop(PpLoop.DIYA_MS)
+            Canvas(Modifier.fillMaxSize()) {
+                drawOrb(ui, r, 0.5f + 0.5f * sin(pulse.value * 2f * PI.toFloat()), sin(flicker.value * 2f * PI.toFloat()))
+            }
+        } else {
+            Canvas(Modifier.fillMaxSize()) { drawOrb(ui, r, 0.5f, 0f) }
         }
         Box(
             Modifier.fillMaxSize().clip(CircleShape).clickable(role = Role.Tab, onClick = onClick)

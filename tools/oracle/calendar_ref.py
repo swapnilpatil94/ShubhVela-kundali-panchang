@@ -231,19 +231,9 @@ class SunDays:
         sw = dict(zip(starts, pr.sun_windows(self.site, starts)))
         for d in days:
             ev, fv = sw[ws[d]], sw[ws[d] + DAY_MS]
-            rises_e = [t for k, t in ev["events"] if k == "RISE"]
-            rises_f = [t for k, t in fv["events"] if k == "RISE"]
-            sr = rises_e[0] if rises_e else None
-            ss = nsr = None
-            if sr is not None:
-                ss = next((t for k, t in sorted(ev["events"] + fv["events"], key=lambda e: e[1])
-                           if k == "SET" and t > sr), None)
-                nsr = rises_f[0] if rises_f else None
-            unavailable = not (sr is not None and ss is not None and nsr is not None and sr < ss < nsr)
-            extra = (not unavailable) and any(t > ss for t in rises_e)
-            self.t[d] = dict(sr=None if unavailable else sr, ss=None if unavailable else ss,
-                             nsr=None if unavailable else nsr, F=ev["fallback"] or fv["fallback"], X=extra,
-                             S=ev["fragile"] or fv["fragile"], U=unavailable)
+            x = pr.sun_day(ev, fv)
+            self.t[d] = dict(sr=x["sr"], ss=x["ss"], nsr=x["nsr"], F=x["F"], X=x["X"],
+                             S=ev["fragile"] or fv["fragile"], U=x["U"])
 
     def get(self, d):
         if d not in self.t:

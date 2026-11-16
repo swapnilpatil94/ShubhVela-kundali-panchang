@@ -68,4 +68,12 @@ class BackupRulesTest {
         assertEquals(3, perms.length)
         assertEquals(0, manifest.getElementsByTagName("uses-permission-sdk-23").length)
     }
+
+    /** MASTER Part 5 PLATFORM: Android 16 safer intents (Fable review item 8). */
+    @Test
+    fun manifestEnforcesIntentFilterMatching() {
+        val manifest = parse(File(root, "app/src/main/AndroidManifest.xml"))
+        val app = manifest.getElementsByTagName("application").item(0) as Element
+        assertEquals("enforceIntentFilter", app.getAttribute("android:intentMatchingFlags"))
+    }
 }

@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength")
+
 package app.parivaar.panchang.feature.aaj
 
 import app.parivaar.panchang.core.geo.OffsetResolver
@@ -36,6 +38,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -234,6 +237,60 @@ class AajModelTest {
         withModel(realEngine(), FixedOffsets(3_600), polarNow, MutableStateFlow(inputs(tromso))) { m ->
             val c = m.full()
             assertTrue(DayFlag.SUN_FALLBACK in c.highLatitude)
+        }
+    }
+
+    private class Moving(@Volatile var at: Instant) : Clock {
+        val calls = java.util.concurrent.atomic.AtomicInteger()
+        override fun now(): Instant = at.also { calls.incrementAndGet() }
+    }
+
+    private fun withMoving(clock: Moving, offsets: OffsetResolver, engine: AajEngine, body: suspend (AajModel) -> Unit) {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            val m = AajModel(MutableStateFlow(inputs(pune)), engine, offsets, AajCache(), clock, scope, Dispatchers.Default, Dispatchers.IO)
+            runBlocking { withTimeout(TIMEOUT_MS) { body(m) } }
+        } finally {
+            scope.cancel()
+        }
+    }
+
+    @Test fun `the 1 s tick stops without subscribers and runs while the sky is collected`() {
+        val c = Moving(puneNow)
+        withMoving(c, FixedOffsets(19_800), realEngine()) { m ->
+            m.full()
+            kotlinx.coroutines.delay(500)
+            val before = c.calls.get()
+            kotlinx.coroutines.delay(3_200)
+            assertTrue(c.calls.get() - before <= 1, "clock read ${c.calls.get() - before} times with nobody watching")
+            val job = CoroutineScope(Dispatchers.Default).launch { m.sky.collect { } }
+            kotlinx.coroutines.delay(3_200)
+            assertTrue(c.calls.get() - before >= 3, "the tick must run while the sky is collected")
+            job.cancel()
+        }
+    }
+
+    @Test fun `a nonexistent date rolls over at the place's midnight`() {
+        val c = Moving(Instant.parse("2026-11-15T18:29:59Z")) // 23:59:59 IST on the nonexistent 15th
+        withMoving(c, FixedOffsets(19_800, nonexistent = LocalDate(2026, 11, 15)), realEngine()) { m ->
+            assertEquals(AajUi.NonexistentDate, m.ui.first { it != AajUi.Loading })
+            c.at = Instant.parse("2026-11-15T18:30:01Z")
+            val next = m.ui.first { it is AajUi.Content } as AajUi.Content
+            assertEquals(LocalDate(2026, 11, 16), next.date)
+        }
+    }
+
+    @Test fun `a polar day rolls over at midnight`() {
+        val real = realEngine()
+        val bad = LocalDate(2026, 11, 15)
+        val polarOn15 = Throwing(real, bad)
+        val c = Moving(Instant.parse("2026-11-15T18:29:59Z"))
+        withMoving(c, FixedOffsets(19_800), polarOn15) { m ->
+            val p = assertIs<AajUi.PolarDay>(m.ui.first { it != AajUi.Loading })
+            assertEquals(19_800, p.offsetSeconds)
+            assertEquals("Asia/Kolkata", p.zoneId)
+            c.at = Instant.parse("2026-11-15T18:30:01Z")
+            assertEquals(LocalDate(2026, 11, 16), (m.ui.first { it is AajUi.Content } as AajUi.Content).date)
         }
     }
 

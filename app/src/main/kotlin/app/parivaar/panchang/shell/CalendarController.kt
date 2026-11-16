@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength")
+
 package app.parivaar.panchang.shell
 
 import android.content.Context
@@ -5,6 +7,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import app.parivaar.panchang.BuildConfig
+import app.parivaar.panchang.platform.zoneSafe
 import app.parivaar.panchang.core.geo.OffsetResolver
 import app.parivaar.panchang.core.model.geo.GeoPlace
 import app.parivaar.panchang.core.model.geo.tzContext
@@ -66,6 +69,7 @@ class CalendarController(
 
     val rules: List<IntentRule> by lazy { ShouldIRules.parse(assetText("rules/should_i.json")) }
 
+    @Suppress("ReturnCount")
     private fun build(items: List<SavedPlace>, s: AppSettings, travel: GeoPlace?): CalInputs? {
         val home = items.firstOrNull { it.id == s.homePlaceId } ?: return null
         val g = travel ?: home.place
@@ -77,8 +81,10 @@ class CalendarController(
                 CivilDayOffset.Nonexistent -> throw NonexistentCivilDayException()
             }
         }
+        // An unknown zone id (stored before validation, or missing from this device's tz data) shows no month, never a crash.
+        val zone = zoneSafe(null) { kotlinx.datetime.TimeZone.of(g.zoneId) } ?: return null
         return CalInputs(
-            Place(g.latDeg, g.lonDeg, g.elevationM ?: 0.0), id, kotlinx.datetime.TimeZone.of(g.zoneId), offsetFor,
+            Place(g.latDeg, g.lonDeg, g.elevationM ?: 0.0), id, zone, offsetFor,
             s.defaultCalc, s.monthSystem, s.ekadashi, RegionalViewsGate.effective(s.calendarView, BuildConfig.DEBUG),
         )
     }

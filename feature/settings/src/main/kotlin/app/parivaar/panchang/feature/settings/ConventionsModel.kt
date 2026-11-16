@@ -77,6 +77,14 @@ class AppearanceModel(private val repo: SettingsRepository, private val scope: C
     /** Persists the tag only; the host applies the locale (`LocaleApplier`). */
     fun setLocaleTag(tag: String) = write { it.copy(localeTag = tag) }
 
+    /** True while the stored settings row cannot be read: changes are not saved until the user resets it. */
+    val unreadable: kotlinx.coroutines.flow.Flow<Boolean> get() = repo.unreadable
+
+    /** Replaces the unreadable settings row by defaults. Call only after the user confirmed the reset. */
+    fun resetUnreadable() {
+        scope.launch { repo.resetUnreadable() }
+    }
+
     private fun write(f: (AppSettings) -> AppSettings) {
         scope.launch { repo.update(f) }
     }

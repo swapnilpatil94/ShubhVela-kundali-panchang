@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength")
+
 package app.parivaar.panchang.feature.aaj
 
 import app.parivaar.panchang.core.designsystem.components.ProofInfo
@@ -75,7 +77,10 @@ class AajModel(
     @Volatile private var skyPlace: Place? = null
 
     init {
-        scope.launch { runSky() }
+        // The sky (and so the 1 s tick it reads) runs only while someone collects [sky]; no UI, no ticking.
+        scope.launch {
+            _sky.subscriptionCount.map { it > 0 }.distinctUntilChanged().collectLatest { if (it) runSky() }
+        }
         // Inputs that do not change the calculation (theme, font scale, ...) compare equal and are skipped.
         scope.launch { combine(inputs.distinctUntilChanged(), refreshes) { i, _ -> i }.collectLatest { guarded(it) } }
     }
@@ -120,7 +125,7 @@ class AajModel(
         }
     }
 
-    @Suppress("ReturnCount")
+    @Suppress("ReturnCount", "LoopWithTooManyJumpStatements")
     private suspend fun run(i: AajInputs?) {
         PpPerf.mark("aaj.run.start")
         if (i == null) { skyPlace = null; _ui.value = AajUi.NoPlace; return }
@@ -131,12 +136,12 @@ class AajModel(
             val base = withContext(io) { PpPerf.time("aaj.offsetAt") { offsets.offsetAt(now, ctx).offsetSeconds } }
             val date = LocalDate.fromEpochDays(Math.floorDiv(now.epochSeconds + base, SECONDS_PER_DAY).toInt())
             val offs = withContext(io) { PpPerf.time("aaj.dayOffsets") { dayOffsets(i, date) } }
-            if (offs == null) { _ui.value = AajUi.NonexistentDate; return }
+            if (offs == null) { _ui.value = AajUi.NonexistentDate; untilMidnight(date, base); continue }
             val offFn: (LocalDate) -> Int = { offs[it] ?: offs.getValue(date) }
             val hash = listOf(i.settings, i.region, i.monthSystem, i.ekadashi).hashCode()
             val key = AajKey(date, i.placeId, offs.getValue(date), hash)
             val loaded = cache.get(key) ?: load(i, date, offFn, key)
-                ?: return
+            if (loaded == null) { untilMidnight(date, offs.getValue(date)); continue } // polar day: roll over at midnight
             publish(i, date, loaded, now)
             PpPerf.mark("aaj.firstContentPublished")
             if (loaded.festivals == null || loaded.calendar == null) {
@@ -150,6 +155,12 @@ class AajModel(
             }
             delay((wake - clock.now()).inWholeMilliseconds.coerceAtLeast(MIN_WAIT_MS))
         }
+    }
+
+    /** Sleeps until the place's next civil midnight (re-checked by the caller's loop). */
+    private suspend fun untilMidnight(date: LocalDate, offsetSeconds: Int) {
+        val midnight = Instant.fromEpochSeconds(date.plus(DatePeriod(days = 1)).toEpochDays() * SECONDS_PER_DAY - offsetSeconds)
+        delay((midnight - clock.now()).inWholeMilliseconds.coerceAtLeast(MIN_WAIT_MS))
     }
 
     private fun dayOffsets(i: AajInputs, date: LocalDate): Map<LocalDate, Int>? {
@@ -173,7 +184,7 @@ class AajModel(
             } catch (e: PanchangUnavailableException) {
                 check(e.code == PanchangError.NO_SUN_DAY)
                 val limbs = engine.limbSpans(date, off(date), place, i.settings)
-                _ui.value = AajUi.PolarDay(date, limbs, proofOf(null, i))
+                _ui.value = AajUi.PolarDay(date, limbs, proofOf(null, i), off(date), i.place.zoneId)
                 null
             }
         }
@@ -211,7 +222,7 @@ class AajModel(
             date = date, days = l.days, calendar = l.calendar,
             header = HeaderRule.evaluate(now, l.days), next = NextWindowRule.next(now, l.days),
             festivals = l.festivals, eclipse = l.eclipse, unavailable = unavailable,
-            highLatitude = today.flags, proof = proofOf(today, i), travel = i.travel,
+            highLatitude = today.flags, proof = proofOf(today, i), travel = i.travel, zoneId = i.place.zoneId,
         )
     }
 

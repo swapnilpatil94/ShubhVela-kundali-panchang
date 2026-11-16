@@ -5,6 +5,8 @@ package app.parivaar.panchang.platform.notify
 import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
+import app.parivaar.panchang.feature.aaj.PlaceClock
+import app.parivaar.panchang.platform.zoneSafe
 import android.content.pm.PackageManager
 import android.os.Build
 import android.text.format.DateFormat
@@ -30,6 +32,7 @@ import java.util.Locale
  * never asks again.
  */
 object Poster {
+    @Suppress("ReturnCount")
     fun post(context: Context, p: ReminderPayload, id: Int) {
         val nm = NotificationManagerCompat.from(context)
         if (!nm.areNotificationsEnabled()) return
@@ -39,7 +42,8 @@ object Poster {
             return
         }
         Channels.ensure(context)
-        val zone = TimeZone.of(p.zoneId)
+        // Unknown zone: post nothing rather than times in a wrong zone (no crash in the receiver).
+        val zone = zoneSafe(null) { TimeZone.of(p.zoneId) } ?: return
         val text = textFor(context, p.content, zone)
         val channel = Channels.idFor(p.kind)
         val open =
@@ -89,7 +93,7 @@ object Poster {
         val today = now.toLocalDateTime(zone).date
         fun range(from: kotlin.time.Instant, to: kotlin.time.Instant, shown: kotlinx.datetime.LocalDate) =
             rangeWithDayRef(
-                from, to, offset, shown, ::t,
+                from, to, PlaceClock.fixed(offset), shown, ::t,
                 context.getString(R.string.widget_next_day), context.getString(R.string.widget_previous_day),
             ) { d -> context.getString(R.string.widget_other_day, dateFmt.format(java.time.LocalDate.of(d.year, d.monthNumber, d.dayOfMonth))) }
         return when (c) {

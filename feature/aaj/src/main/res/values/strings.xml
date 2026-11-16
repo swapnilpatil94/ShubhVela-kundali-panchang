@@ -262,6 +262,7 @@
     <string name="aaj_panchang_eyebrow">Panchang · %1$s %2$s · VS %3$d</string>
     <string name="aaj_panchang_eyebrow_plain">Panchang</string>
     <string name="aaj_limb_till">till %1$s</string>
+    <string name="aaj_limb_from_till">from %1$s till %2$s</string>
     <string name="aaj_limb_row_cd">%1$s, %2$s, %3$s</string>
     <string-array name="aaj_vaar_names">
         <item>Ravivaar</item><item>Somvaar</item><item>Mangalvaar</item><item>Budhvaar</item>

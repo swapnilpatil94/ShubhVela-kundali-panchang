@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 """Rise/set oracle (docs/specs/M01.md sections 3.8, 3.9). Dev tool only.
 
-Run: tools/oracle/.venv/bin/python tools/oracle/gen_riseset.py
+Run:   tools/oracle/.venv/bin/python tools/oracle/gen_riseset.py
+Check: tools/oracle/.venv/bin/python tools/oracle/gen_riseset.py --check  (regenerates in memory, byte-compares
+       with the committed file, exits non-zero on any difference or a missing file; writes nothing)
 Writes engine-golden/src/main/resources/golden/riseset.json (deterministic: fixed seeds, sorted output, no
 timestamps). 10 cities x 400 UTC dates; window = date 00:00 UTC + 24 h; samples every 600 s (145 samples);
 events refined by bisection on integer milliseconds (bracket 1 ms; the reported instant is the first
@@ -212,6 +214,12 @@ def main():
     }
     lines = [json.dumps([n, s, bm], sort_keys=True, separators=(",", ":")) for n, s, bm in rows]
     text = '{"meta":' + json.dumps(meta, sort_keys=True, separators=(",", ":")) + ',"d":[\n' + ",\n".join(lines) + "\n]}\n"
+    if "--check" in sys.argv[1:]:
+        same = OUT.is_file() and OUT.read_bytes() == text.encode("utf-8")
+        print(f"{'ok  ' if same else 'DIFF'} {OUT.name}")
+        if not same:
+            raise SystemExit("gen_riseset --check: fixture differs from the generator output")
+        return
     OUT.write_text(text)
     print(f"wrote {OUT} ({len(text)} bytes)")
 

@@ -37,15 +37,17 @@ internal class SqliteRecordStore(
                     val db = helper.writableDatabase
                     db.beginTransaction()
                     try {
-                        val r = SqliteTx(db).block()
+                        val t = SqliteTx(db)
+                        val r = t.block()
                         db.setTransactionSuccessful()
-                        r
+                        r to t.wrote
                     } finally {
                         db.endTransaction()
                     }
                 }
-            counter.value += 1
-            result
+            // Only a committed write is a change: a read must never wake observers (they read again).
+            if (result.second) counter.value += 1
+            result.first
         }
 
     override suspend fun closeAndDelete(deleteFiles: () -> Boolean): Boolean =
@@ -85,6 +87,8 @@ internal class SqliteRecordStore(
     }
 
     private class SqliteTx(private val db: SQLiteDatabase) : RecordTx {
+        var wrote = false
+
         // Ids are bound as a hex literal built from bytes: only [0-9a-f] can reach the SQL text.
         private fun key(tbl: Int, id: ByteArray) = "tbl=$tbl AND id=x'${hex(id)}'"
 
@@ -127,16 +131,19 @@ internal class SqliteRecordStore(
                     put("ver", row.ver)
                     put("blob", row.blob)
                 }
+            wrote = true
             if (db.insertWithOnConflict(Schema.TABLE, null, v, SQLiteDatabase.CONFLICT_REPLACE) < 0) {
                 throw SQLiteException("Write failed")
             }
         }
 
-        override fun delete(tbl: Int, id: ByteArray): Boolean = db.delete(Schema.TABLE, key(tbl, id), null) > 0
+        override fun delete(tbl: Int, id: ByteArray): Boolean =
+            (db.delete(Schema.TABLE, key(tbl, id), null) > 0).also { if (it) wrote = true }
 
         override fun count(tbl: Int): Int = DatabaseUtils.queryNumEntries(db, Schema.TABLE, "tbl=$tbl").toInt()
 
         override fun clearAll() {
+            wrote = true
             db.delete(Schema.TABLE, null, null)
         }
 

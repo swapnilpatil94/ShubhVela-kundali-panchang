@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 """Positions oracle (docs/specs/M01.md section 3.9). Dev tool only.
 
-Run: tools/oracle/.venv/bin/python tools/oracle/gen_positions.py
+Run:   tools/oracle/.venv/bin/python tools/oracle/gen_positions.py
+Check: tools/oracle/.venv/bin/python tools/oracle/gen_positions.py --check  (regenerates in memory, byte-compares
+       with the committed file, exits non-zero on any difference or a missing file; writes nothing)
 Writes engine-golden/src/main/resources/golden/positions.json. Deterministic: fixed seed, sorted
 epochs, no timestamps. Bodies: SUN, MOON, MERCURY, VENUS, MARS, JUPITER, SATURN, RAHU_MEAN, RAHU_TRUE.
 """
@@ -63,6 +65,12 @@ def main():
         lines.append("[" + repr(float(tt[i])) + "," + json.dumps(row, separators=(",", ":")) + "]")
     meta = {"schema": 1, "seed": oc.SEED, "versions": oc.versions(), "kernelSha256": ksha, "bodies": BODIES}
     text = '{"meta":' + json.dumps(meta, sort_keys=True, separators=(",", ":")) + ',"v":[\n' + ",\n".join(lines) + "\n]}\n"
+    if "--check" in sys.argv[1:]:
+        same = OUT.is_file() and OUT.read_bytes() == text.encode("utf-8")
+        print(f"{'ok  ' if same else 'DIFF'} {OUT.name}")
+        if not same:
+            raise SystemExit("gen_positions --check: fixture differs from the generator output")
+        return
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(text)
     print(f"wrote {OUT} ({len(text)} bytes, {N} epochs)")

@@ -10,6 +10,7 @@ import app.parivaar.panchang.core.data.keys.KeyState
 import app.parivaar.panchang.core.data.keys.KeyWrapper
 import app.parivaar.panchang.core.data.keys.WrappedKeyFile
 import app.parivaar.panchang.core.data.store.RecordStore
+import app.parivaar.panchang.core.data.store.StoreClosedException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -74,7 +75,12 @@ internal class SnapshotManager(
     @Suppress("TooGenericExceptionCaught")
     suspend fun writeNow(): Boolean = mutex.withLock {
         if (!backupKeys.isAvailable() || !hasCurrentKey(dek)) return@withLock false
-        val plain = store.tx { FamilyRows.read(this, dek.ring) }.toBytes()
+        val plain =
+            try {
+                store.tx { FamilyRows.read(this, dek.ring) }.toBytes()
+            } catch (_: StoreClosedException) {
+                return@withLock false // a delete-all closed the store under watch(); never throw into start()
+            }
         try {
             if (plain.size > SnapshotFormat.MAX_PLAINTEXT) return@withLock false
             writeUnderCurrentKb(plain)

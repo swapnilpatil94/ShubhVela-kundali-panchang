@@ -128,4 +128,13 @@ class SnapshotTest {
         job.cancel()
         assertEquals("SnapshotManager(redacted)", d.snapshots.toString())
     }
+
+    /** Fable review item 5: a wipe closing the store must not throw out of writeNow (and so out of watch()). */
+    @Test fun writeNowAfterWipeReturnsFalseInsteadOfThrowing() = runBlocking {
+        val d = Device(File(root, "wipe"), FakeBackupKeyStore())
+        d.vault.open()
+        d.seed(FamilyFixture.doc)
+        d.store.closeAndDelete { true }
+        assertFalse(d.snapshots.writeNow())
+    }
 }

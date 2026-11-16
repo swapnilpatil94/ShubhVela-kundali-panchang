@@ -28,7 +28,9 @@ sealed interface TravelUi {
     data object Offer : TravelUi
     data object Rationale : TravelUi
     data object Locating : TravelUi
-    data class InPlace(val name: String) : TravelUi
+    data class InPlace(val name: String) : TravelUi {
+        override fun toString(): String = "InPlace(redacted)"
+    }
     data object Denied : TravelUi
     data object NoFix : TravelUi
     data object NoPlaceNearby : TravelUi
@@ -124,6 +126,8 @@ class TravelMode(
     private sealed interface Found {
         data object NoFix : Found
         data object NoPlace : Found
-        data class At(val place: GeoPlace) : Found
+        data class At(val place: GeoPlace) : Found {
+            override fun toString(): String = "At(redacted)"
+        }
     }
 }

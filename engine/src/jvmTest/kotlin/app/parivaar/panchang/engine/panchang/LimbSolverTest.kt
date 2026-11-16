@@ -2,6 +2,10 @@ package app.parivaar.panchang.engine.panchang
 
 import app.parivaar.panchang.engine.CalcSettings
 import app.parivaar.panchang.engine.astro.Body
+import app.parivaar.panchang.engine.astro.EclipticPos
+import app.parivaar.panchang.engine.astro.Ephemeris
+import app.parivaar.panchang.engine.astro.JulianDay
+import app.parivaar.panchang.engine.calendar.LunarCalendar
 import app.parivaar.panchang.engine.astro.GoldenLoader
 import app.parivaar.panchang.engine.astro.TimeScales
 import app.parivaar.panchang.engine.jyotish.Ayanamsa
@@ -145,5 +149,33 @@ class LimbSolverTest {
         for ((a, b) in lahiri.zip(shifted)) assertNotEquals(a, b)
         assertTrue(lahiri.zip(shifted).all { (a, b) -> abs((a - b).inWholeSeconds) < 6 * 3600 })
         assertTrue(abs((lahiri[0] - shifted[0]).inWholeMilliseconds) > 1.seconds.inWholeMilliseconds)
+    }
+
+    /**
+     * Fable review: the caches are trimmed inside [LimbSolver.spans], so a 200-year lunations() call stays
+     * bounded. Bound: two caches of at most MAX_CACHE (4,096) + one boundary search (40 cells + 1 root) each.
+     * Linear-motion stand-in ephemeris (synodic month 29.53 d): the cache behaviour, not the astronomy, is tested.
+     */
+    @Test
+    fun `caches stay bounded over a 200-year lunations call`() {
+        val linear = object : Ephemeris {
+            override fun geoApparent(body: Body, tt: JulianDay): EclipticPos {
+                val d = tt.value - JulianDay.J2000
+                return when (body) {
+                    Body.MOON -> EclipticPos(Zodiac.wrap360(218.3 + 13.176396 * d), 0.0, 0.00257, 13.176396)
+                    else -> EclipticPos(Zodiac.wrap360(280.46 + 0.9856474 * d), 0.0, 1.0, 0.9856474)
+                }
+            }
+            override val validRange = JulianDay(2378496.5)..JulianDay(2524593.5)
+        }
+        val calendar = LunarCalendar(linear)
+        val lunations = calendar.lunations(Instant.parse("1900-01-01T00:00:00Z"), Instant.parse("2100-01-01T00:00:00Z"))
+        assertTrue(lunations.size in 2470..2476, "lunations ${lunations.size}")
+        val peak = calendar.limbs.peakCacheSize
+        assertTrue(peak in 4_097..PEAK_CACHE_BOUND, "peak cache size $peak (bound $PEAK_CACHE_BOUND)")
+    }
+
+    private companion object {
+        const val PEAK_CACHE_BOUND = 2 * (4_096 + 41) + 1
     }
 }

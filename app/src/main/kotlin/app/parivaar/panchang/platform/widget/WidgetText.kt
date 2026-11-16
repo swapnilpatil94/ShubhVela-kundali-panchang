@@ -7,12 +7,11 @@ import android.text.format.DateFormat
 import app.parivaar.panchang.R
 import app.parivaar.panchang.engine.panchang.LimbSpan
 import app.parivaar.panchang.engine.panchang.WindowKind
-import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
-import app.parivaar.panchang.feature.aaj.dayRef
+import app.parivaar.panchang.feature.aaj.PlaceClock
 import app.parivaar.panchang.feature.calendar.guide.FestivalNames
 import kotlinx.datetime.LocalDate
 import kotlin.time.Instant
@@ -20,9 +19,16 @@ import kotlin.time.Instant
 /** Text for widgets and the tile, from string resources. Nothing here can see a name, profile or birth data. */
 internal class WidgetText(
     private val context: Context,
-    private val offsetSeconds: Int,
+    private val clock: PlaceClock,
     private val shown: LocalDate,
 ) {
+    /** Fixed offset (no place yet). */
+    constructor(context: Context, offsetSeconds: Int, shown: LocalDate) : this(context, PlaceClock.fixed(offsetSeconds), shown)
+
+    /** The place's real zone: D-1, D and D+1 each in their own offset (DST-aware). */
+    constructor(context: Context, zoneId: String, dayOffsetSeconds: Int, shown: LocalDate) :
+        this(context, PlaceClock(zoneId, dayOffsetSeconds, shown), shown)
+
     private val locale = Locale.getDefault()
     private val fmt =
         if (DateFormat.is24HourFormat(context)) {
@@ -37,19 +43,19 @@ internal class WidgetText(
     /** Clock time, with a day label when it falls on another civil date than the shown one. */
     fun time(i: Instant): String =
         timeWithDayRef(
-            clock(i), dayRef(i, offsetSeconds, shown),
+            clock(i), clock.dayRef(i, shown),
             context.getString(R.string.widget_next_day), context.getString(R.string.widget_previous_day),
         ) { d -> context.getString(R.string.widget_other_day, dateFmt.format(java.time.LocalDate.of(d.year, d.monthNumber, d.dayOfMonth))) }
 
     /** Start and end texts; a shared day label is printed once, at the end. */
     fun range(from: Instant, to: Instant): Pair<String, String> =
         rangeWithDayRef(
-            from, to, offsetSeconds, shown, ::clock,
+            from, to, clock, shown, ::clock,
             context.getString(R.string.widget_next_day), context.getString(R.string.widget_previous_day),
         ) { d -> context.getString(R.string.widget_other_day, dateFmt.format(java.time.LocalDate.of(d.year, d.monthNumber, d.dayOfMonth))) }
 
     private fun clock(i: Instant): String =
-        fmt.format(ZonedDateTime.ofInstant(java.time.Instant.ofEpochSecond(i.epochSeconds), ZoneOffset.ofTotalSeconds(offsetSeconds)))
+        fmt.format(ZonedDateTime.ofInstant(java.time.Instant.ofEpochSecond(i.epochSeconds), clock.zone))
 
     fun vaar(ordinal: Int): String = context.resources.getStringArray(R.array.widget_vaar)[ordinal]
 

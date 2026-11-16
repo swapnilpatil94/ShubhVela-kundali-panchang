@@ -1,5 +1,7 @@
 package app.parivaar.panchang.core.model.geo
 
+import kotlinx.datetime.IllegalTimeZoneException
+import kotlinx.datetime.TimeZone
 import kotlin.jvm.JvmInline
 import kotlin.time.Instant
 
@@ -15,13 +17,36 @@ data class GeoPlace(
     val population: Long,
     val zoneId: String,
     val overlayKey: String?,
-)
+) {
+    /** Never prints the name or coordinates (privacy: a place can identify a person). */
+    override fun toString(): String = "GeoPlace(id=$id)"
+}
 
 /** [tier]: 0 exact key, 1 key prefix, 2 token prefixes (see M05 spec 4.2). */
-data class PlaceHit(val place: GeoPlace, val matchedName: String, val tier: Int)
+data class PlaceHit(val place: GeoPlace, val matchedName: String, val tier: Int) {
+    override fun toString(): String = "PlaceHit(tier=$tier)"
+}
 
 /** Everything the offset resolver needs to know about a place. */
-data class TzContext(val zoneId: String, val lonDeg: Double, val overlayKey: String?)
+data class TzContext(val zoneId: String, val lonDeg: Double, val overlayKey: String?) {
+    override fun toString(): String = "TzContext(redacted)"
+}
+
+/** Longest zone id accepted anywhere (IANA ids are far shorter). */
+const val ZONE_ID_MAX = 64
+
+/**
+ * True when the runtime time-zone database knows [zoneId]: the one check shared by stored-data decoding, the
+ * offset resolver and every `TimeZone.of` caller, so an id that passes can never throw later on this runtime.
+ */
+fun isKnownZoneId(zoneId: String): Boolean =
+    zoneId.length in 1..ZONE_ID_MAX &&
+        try {
+            TimeZone.of(zoneId)
+            true
+        } catch (_: IllegalTimeZoneException) {
+            false
+        }
 
 fun GeoPlace.tzContext(): TzContext = TzContext(zoneId, lonDeg, overlayKey)
 

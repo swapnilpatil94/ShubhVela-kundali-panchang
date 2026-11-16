@@ -127,8 +127,41 @@ class SkyContrastTest {
 
     @Test fun nebulaGenerationTimeAndWorstCase() {
         nebulaPixels(Gem.NEELAM, 200, 180)
-        val t0 = System.nanoTime(); val px = nebulaPixels(Gem.NEELAM, 1080, 990); val t1 = System.nanoTime()
-        applyTextSafeZone(px, 1080, 990, 40f); val t2 = System.nanoTime()
+        val w = 1080; val h = 990; val feather = 40f
+        val t0 = System.nanoTime(); val px = nebulaPixels(Gem.NEELAM, w, h); val t1 = System.nanoTime()
+        applyTextSafeZone(px, w, h, feather); val t2 = System.nanoTime()
         println("nebula 1080x990 gen=${(t1 - t0) / 1_000_000} ms cap=${(t2 - t1) / 1_000_000} ms")
+        assertTrue((t2 - t0) / 1_000_000 < 2_000, "generation and cap took ${(t2 - t0) / 1_000_000} ms")
+        var stars = 0
+        for (y in 0 until h) for (x in 0 until w) {
+            if (safeZoneWeight(x, y, w, h, feather) < 1f) continue
+            val p = px[y * w + x]
+            val l = luminanceOf(((p shr 16) and 0xFF) / 255f, ((p shr 8) and 0xFF) / 255f, (p and 0xFF) / 255f)
+            assertTrue(l <= SkySafeZone.MAX_LUMINANCE + 1e-4f, "L=$l at $x,$y")
+            if (l > 0.03f) stars++
+        }
+        assertTrue(stars > 20, "stars visible in the zone: $stars")
+    }
+
+    /** The header text column (eyebrow, title, meta, chip) is bottom-anchored: the zone must reach its bottom edge at every height. */
+    @Test fun zoneCoversTheRealTextColumnBounds() {
+        for (insetDp in listOf(0f, 24f, 48f, 80f)) for (grow in listOf(0f, 120f, 400f)) {
+            val hDp = SkyHeaderSpec.HEIGHT_DP + insetDp + grow
+            assertTrue(SkySafeZone.textBottomFrac(hDp) <= SkySafeZone.Y_FRAC, "text bottom ${SkySafeZone.textBottomFrac(hDp)} at $hDp dp")
+        }
+        assertTrue(SkyHeaderSpec.TEXT_FRACTION_WITH_PLANET <= SkySafeZone.X_FRAC && SkyHeaderSpec.TEXT_FRACTION <= SkySafeZone.X_FRAC)
+        // The reviewer's measurement: text spans about 58 to 93 % of the header; the old 62 % zone missed it.
+        assertTrue(SkySafeZone.Y_FRAC >= 0.93f)
+    }
+
+    @Test fun horaLordSpanHasSevenToOneOverTheWorstCappedSkyForEveryGem() {
+        for (gem in Gem.entries) {
+            val c = SkyText.horaLordArgb(gem)
+            val worst = SkyContrastModel.worstContrast(c)
+            println("hora lord $gem = ${java.lang.Long.toHexString(c)} worst $worst")
+            assertTrue(worst >= SkyText.MIN_CONTRAST && SkyText.MIN_CONTRAST >= 7.0, "$gem $worst")
+            // still a tint of the gem, not plain white
+            assertTrue(c != 0xFFFFFFFFL, "$gem")
+        }
     }
 }

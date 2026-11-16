@@ -21,9 +21,10 @@ internal class InMemoryRecordStore : RecordStore {
         lock.withLock {
             if (closed) throw StoreClosedException()
             val work = LinkedHashMap(rows)
-            val r = Tx(work).block()
+            val t = Tx(work)
+            val r = t.block()
             rows = work
-            counter.value += 1
+            if (t.wrote) counter.value += 1
             r
         }
 
@@ -40,6 +41,8 @@ internal class InMemoryRecordStore : RecordStore {
     }
 
     private class Tx(private val m: LinkedHashMap<Pair<Int, List<Byte>>, StoredRow>) : RecordTx {
+        var wrote = false
+
         private fun k(tbl: Int, id: ByteArray) = tbl to id.toList()
 
         override fun get(tbl: Int, id: ByteArray) = m[k(tbl, id)]
@@ -48,12 +51,16 @@ internal class InMemoryRecordStore : RecordStore {
 
         override fun put(row: StoredRow) {
             m[k(row.tbl, row.id)] = row
+            wrote = true
         }
 
-        override fun delete(tbl: Int, id: ByteArray) = m.remove(k(tbl, id)) != null
+        override fun delete(tbl: Int, id: ByteArray) = (m.remove(k(tbl, id)) != null).also { if (it) wrote = true }
 
         override fun count(tbl: Int) = m.values.count { it.tbl == tbl }
 
-        override fun clearAll() = m.clear()
+        override fun clearAll() {
+            m.clear()
+            wrote = true
+        }
     }
 }

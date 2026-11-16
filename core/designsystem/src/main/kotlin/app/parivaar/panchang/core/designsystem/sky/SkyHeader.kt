@@ -44,7 +44,9 @@ data class SkyHeaderUi(val gem: Gem, val eyebrow: String, val title: String, val
 
 /** Header height (dp) and hora planet geometry (DESIGN_V2 section 6). */
 object SkyHeaderSpec {
-    val height = 330.dp
+    const val HEIGHT_DP = 330f
+    const val TEXT_BOTTOM_PAD_DP = 24f // PpSpace.xxl
+    val height = HEIGHT_DP.dp
     val planetSize = 112.dp
     val planetOffsetX = 28.dp
     val planetTop = 56.dp
@@ -89,7 +91,7 @@ fun SkyHeader(
         Column(
             Modifier.align(Alignment.BottomStart)
                 .fillMaxWidth(if (planet != null) SkyHeaderSpec.TEXT_FRACTION_WITH_PLANET else SkyHeaderSpec.TEXT_FRACTION)
-                .padding(start = PpSpace.screen, end = PpSpace.s, bottom = PpSpace.xxl, top = PpSpace.xxxl + topInset),
+                .padding(start = PpSpace.screen, end = PpSpace.s, bottom = SkyHeaderSpec.TEXT_BOTTOM_PAD_DP.dp, top = PpSpace.xxxl + topInset),
         ) {
             Text(ui.eyebrow.uppercase(), style = PpType.eyebrow.copy(fontWeight = FontWeight.ExtraBold, shadow = shadow), color = onSky)
             Text(

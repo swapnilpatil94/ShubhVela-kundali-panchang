@@ -8,6 +8,7 @@ import app.parivaar.panchang.core.data.VaultState
 import app.parivaar.panchang.core.geo.OffsetResolver
 import app.parivaar.panchang.core.model.geo.CivilDayOffset
 import app.parivaar.panchang.core.model.geo.tzContext
+import app.parivaar.panchang.platform.zoneSafe
 import app.parivaar.panchang.core.model.settings.AppSettings
 import app.parivaar.panchang.engine.CalcSettings
 import app.parivaar.panchang.engine.Place
@@ -18,6 +19,7 @@ import app.parivaar.panchang.engine.jyotish.ChartCalculator
 import app.parivaar.panchang.engine.jyotish.Gochar
 import app.parivaar.panchang.feature.calendar.CalendarEngine
 import app.parivaar.panchang.feature.calendar.DirectCalendarEngine
+import app.parivaar.panchang.feature.calendar.forTradition
 import app.parivaar.panchang.engine.calendar.EclipseSearch
 import app.parivaar.panchang.engine.calendar.FestivalDef
 import app.parivaar.panchang.engine.calendar.FestivalEngine
@@ -60,6 +62,9 @@ class ActivePlace(
 
     override fun toString(): String = "ActivePlace(redacted)"
 }
+
+/** Festival definitions for [s]: the calendar's Ekadashi tradition filter, shared by reminders and widgets. */
+internal fun defsFor(defs: List<FestivalDef>, s: AppSettings): List<FestivalDef> = defs.forTradition(s.ekadashi)
 
 /**
  * The one engine instance of the app (shared with the Aaj screen). Calls are serialized by one lock ([onEngine]);
@@ -161,6 +166,11 @@ class EngineAccess @Inject constructor(
     /** Festival definitions that have vrat rules (Ekadashi included). */
     val vratIds: Set<String> get() = onEngine { engine.defs.filter { it.vratRules.isNotEmpty() }.map { it.id }.toSet() }
 
+    /** True when the last [active] call found a home place whose time zone this device does not know. */
+    @Volatile
+    var homeZoneUnknown: Boolean = false
+        private set
+
     /** Null until the vault is open and a home place is chosen. Blocking. */
     fun active(): ActivePlace? =
         runBlocking {
@@ -171,6 +181,10 @@ class EngineAccess @Inject constructor(
             val g = saved.place
             val ctx = g.tzContext()
             val r = resolver.get()
+            // An unknown zone degrades to "no home place" (flagged), never a crash (Fable review item 2).
+            val zone = zoneSafe(null) { TimeZone.of(g.zoneId).also { r.offsetAt(Instant.fromEpochSeconds(0), ctx) } }
+            homeZoneUnknown = zone == null
+            if (zone == null) return@runBlocking null
             val offset = { d: LocalDate ->
                 when (val o = r.civilDayOffset(d, ctx)) {
                     is CivilDayOffset.Valid -> o.offset.offsetSeconds
@@ -178,7 +192,7 @@ class EngineAccess @Inject constructor(
                         r.offsetAt(d.atStartOfDayIn(TimeZone.UTC), ctx).offsetSeconds
                 }
             }
-            ActivePlace(s, g.name, Place(g.latDeg, g.lonDeg, g.elevationM ?: 0.0), TimeZone.of(g.zoneId), offset)
+            ActivePlace(s, g.name, Place(g.latDeg, g.lonDeg, g.elevationM ?: 0.0), zone, offset)
         }
 
     /** Panchang days from [first]; a day without a sunrise or sunset is skipped. */
@@ -194,8 +208,11 @@ class EngineAccess @Inject constructor(
             }
         }
 
+    /** Occurrences for reminders and widgets, with only the user's Ekadashi tradition (as Aaj and the calendar). */
     fun festivals(a: ActivePlace, first: LocalDate, last: LocalDate): List<FestivalOccurrence> =
-        onEngine { engine.festivals.occurrences(engine.defs, first, last, a.place, a.calc, a.offsetFor) }
+        onEngine {
+            engine.festivals.occurrences(defsFor(engine.defs, a.settings), first, last, a.place, a.calc, a.offsetFor)
+        }
 
     /** Eclipses of local dates [first]..[last] that are visible from the place. */
     fun eclipses(a: ActivePlace, first: LocalDate, last: LocalDate): List<LocalEclipse> =

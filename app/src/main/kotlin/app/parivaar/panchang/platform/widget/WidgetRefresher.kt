@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import app.parivaar.panchang.platform.zoneSafe
 import app.parivaar.panchang.PanchangApp
 import app.parivaar.panchang.engine.calendar.FestivalOccurrence
 import app.parivaar.panchang.feature.aaj.widget.WidgetContent
@@ -64,7 +65,7 @@ object WidgetRefresher {
         val app = context.applicationContext
         Thread {
             try {
-                refresh(app)
+                zoneSafe(Unit) { refresh(app) } // an uncaught throw on this thread would crash the process
             } finally {
                 pending?.finish()
             }
@@ -99,7 +100,7 @@ object WidgetRefresher {
         val days = access.days(a, date.plus(DatePeriod(days = -1)), DAYS)
         val offset = a.offsetFor(date)
         val showCity = a.settings.showCityOnWidgets
-        val b = RemoteViewsBinder(context, WidgetText(context, offset, date), now)
+        val b = RemoteViewsBinder(context, WidgetText(context, a.zone.id, offset, date), now)
         today.forEach { mgr.updateAppWidget(it, b.today(WidgetContent.today(now, days, showCity, a.name))) }
         rahu.forEach { mgr.updateAppWidget(it, b.rahu(WidgetContent.rahu(now, days, showCity, a.name))) }
         if (fest.isNotEmpty()) {

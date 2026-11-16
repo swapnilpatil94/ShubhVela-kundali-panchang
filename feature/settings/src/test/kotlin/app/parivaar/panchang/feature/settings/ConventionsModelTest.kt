@@ -18,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -137,5 +138,27 @@ class ConventionsModelTest {
         for (id in AyanamsaId.entries.filter { !Ayanamsa.isEnabled(it) }) {
             assertEquals(base, ConventionsEdits.withAyanamsa(base, id))
         }
+    }
+}
+
+class UnreadableSettingsTest {
+    private class Repo : SettingsRepository {
+        val flag = MutableStateFlow(true)
+        var resets = 0
+        override val settings: Flow<AppSettings> = MutableStateFlow(AppSettings())
+        override val unreadable: Flow<Boolean> get() = flag
+        override suspend fun update(f: (AppSettings) -> AppSettings): DataResult<Unit> = DataResult.Ok(Unit)
+        override suspend fun resetUnreadable(): DataResult<Unit> { resets++; flag.value = false; return DataResult.Ok(Unit) }
+    }
+
+    @Test fun flagIsExposedAndResetRunsOnlyWhenCalled() = kotlinx.coroutines.runBlocking {
+        val repo = Repo()
+        val m = AppearanceModel(repo, CoroutineScope(Dispatchers.Unconfined))
+        assertEquals(true, m.unreadable.first())
+        m.setThemeMode(ThemeMode.DARK) // an ordinary edit never resets
+        assertEquals(0, repo.resets)
+        m.resetUnreadable()
+        assertEquals(1, repo.resets)
+        assertEquals(false, m.unreadable.first())
     }
 }

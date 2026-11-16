@@ -164,6 +164,13 @@ class MainActivity : ComponentActivity() {
         val homeName by vm.homePlaceName.collectAsStateWithLifecycle()
         val travelPlace by vm.travel.place.collectAsStateWithLifecycle()
 
+        // Privacy screen (Fable review item 9): FLAG_SECURE, and no recents snapshot on API 33+, set and cleared live.
+        LaunchedEffect(settings.privacyScreen) {
+            val on = settings.privacyScreen
+            PrivacyScreen.apply(on, window::setFlags)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) setRecentsScreenshotEnabled(!on)
+        }
+
         // Settings language changes (and onboarding step 1) reach the platform locale here.
         LaunchedEffect(settings.localeTag) {
             val tag = settings.localeTag

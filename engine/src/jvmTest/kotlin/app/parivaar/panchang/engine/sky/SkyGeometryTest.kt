@@ -33,6 +33,23 @@ class SkyGeometryTest {
         assertEquals(0.0, SkyGeometry.illuminatedFraction(180.0), 1e-15)
     }
 
+    /** Fable review: literal book values next to the polynomial comparison below. */
+    @Test
+    fun meeusWorkedExamplesLiterally() {
+        val eph = GoldenLoader.openDe440()
+        // Meeus example 45.a, 1992 December 16 0h TD: B = 16.442 degrees.
+        val tt45 = JulianDay(2448972.5)
+        val b = SkyGeometry.saturnRingTiltDeg(eph.geoApparent(Body.SATURN, tt45), eph.geoApparent(Body.SUN, tt45), tt45)
+        assertEquals(16.442, b, 0.01, "Meeus 45.a B")
+        // Meeus example 48.a, Moon 1992 April 12 0h TD: k = 0.6786, chi = 285.0 degrees.
+        val tt48 = JulianDay(2448724.5)
+        val moon = eph.geoApparent(Body.MOON, tt48)
+        val sun = eph.geoApparent(Body.SUN, tt48)
+        val k = SkyGeometry.illuminatedFraction(SkyGeometry.phaseAngleDeg(moon, sun, tt48))
+        assertEquals(0.6786, k, 0.0005, "Meeus 48.a k")
+        assertEquals(285.0, SkyGeometry.brightLimbAngleDeg(moon, sun, tt48), 0.1, "Meeus 48.a chi")
+    }
+
     @Test
     fun ringTiltAgreesWithMeeusChapter45Polynomials() {
         // Meeus 45: sin B = sin i cos b sin(l - Om) - cos i sin b, i and Om of the ring plane on the ecliptic and

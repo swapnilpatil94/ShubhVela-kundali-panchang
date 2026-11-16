@@ -26,6 +26,9 @@ enum class DataError {
     FILE_AUTH,
     FILE_TOO_LARGE,
     PASSPHRASE_POLICY,
+
+    /** The stored settings row exists but cannot be read; nothing is written until an explicit reset. */
+    UNREADABLE,
 }
 
 sealed interface DataResult<out T> {
@@ -87,9 +90,19 @@ interface BondRepository {
 }
 
 interface SettingsRepository {
+    /** Stored settings; defaults (in memory only) while there is no row or the row is [unreadable]. */
     val settings: Flow<AppSettings>
 
+    /**
+     * True while a settings row exists but cannot be decoded (tampered, or written by a newer app). Then [update]
+     * answers [DataError.UNREADABLE] and never persists defaults over it (home place, onboarding state).
+     */
+    val unreadable: Flow<Boolean> get() = kotlinx.coroutines.flow.flowOf(false)
+
     suspend fun update(f: (AppSettings) -> AppSettings): DataResult<Unit>
+
+    /** Explicit user reset: replaces an unreadable settings row by defaults. No-op when the row is readable. */
+    suspend fun resetUnreadable(): DataResult<Unit> = DataResult.Ok(Unit)
 }
 
 /**

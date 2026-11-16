@@ -94,8 +94,8 @@ interface CalendarEngine {
     fun day(date: LocalDate, i: CalInputs): List<PanchangDay>
 }
 
-/** Used by tests and previews: the filter applied before any festival is computed. */
-internal fun List<FestivalDef>.forTradition(t: Tradition): List<FestivalDef> = filter {
+/** The Ekadashi tradition filter applied before any festival is computed (calendar, Aaj, reminders, widgets). */
+fun List<FestivalDef>.forTradition(t: Tradition): List<FestivalDef> = filter {
     val r = it.rule
     r !is app.parivaar.panchang.engine.calendar.FestivalRule.Ekadashi || r.tradition == t
 }

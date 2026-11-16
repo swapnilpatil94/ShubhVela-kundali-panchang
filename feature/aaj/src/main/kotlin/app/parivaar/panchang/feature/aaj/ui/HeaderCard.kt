@@ -41,11 +41,11 @@ import app.parivaar.panchang.core.designsystem.sky.GemChip
 import app.parivaar.panchang.core.designsystem.sky.SkyHeader
 import app.parivaar.panchang.core.designsystem.sky.SkyHeaderUi
 import app.parivaar.panchang.core.designsystem.sky.SkySource
+import app.parivaar.panchang.core.designsystem.sky.SkyText
 import app.parivaar.panchang.core.designsystem.tokens.Gem
 import app.parivaar.panchang.core.designsystem.tokens.PpSpace
 import app.parivaar.panchang.core.designsystem.tokens.PpType
 import app.parivaar.panchang.core.designsystem.tokens.gemFor
-import app.parivaar.panchang.core.designsystem.tokens.lighten
 import app.parivaar.panchang.engine.panchang.WindowKind
 import app.parivaar.panchang.feature.aaj.AajUi
 import app.parivaar.panchang.feature.aaj.HoraSky
@@ -86,13 +86,14 @@ internal fun headerUi(
     place: String?,
     horaLordColor: androidx.compose.ui.graphics.Color,
 ): HeaderUi {
-    val dow: DayOfWeek = c.date.dayOfWeek
+    // Vaar and gem belong to the sunrise-to-sunrise day containing now, not the civil date.
+    val dow: DayOfWeek = vaarAt(c, now).dayOfWeek()
     val gem = gemFor(dow)
     val vaar = names.vaar(dow.ordinal + 1) // kotlinx DayOfWeek.ordinal: Monday = 0, so +1 gives ISO 1..7
     val chip = res.getString(R.string.aaj_gem_chip, vaar, names.gem(gem.ordinal))
     val date = fmt.dateShort(c.date)
     val eyebrow = if (place.isNullOrBlank()) date else res.getString(R.string.aaj_eyebrow_place_date, place, date)
-    val title = res.getString(greetingRes(localHour(now, c.day.utcOffsetSeconds)))
+    val title = res.getString(greetingRes(localHour(now, fmt.offsetAt(now))))
     val hora = c.days.asSequence().flatMap { it.windows.asSequence() }
         .firstOrNull { it.kind == WindowKind.HORA && it.start <= now && now < it.end }
     val meta = if (hora != null) {
@@ -171,17 +172,20 @@ internal fun AajChrome(avatarInitials: String?, onSearch: () -> Unit, onAvatar: 
     }
 }
 
-@Suppress("unused")
-private fun horaLordColorOf(gem: Gem) = androidx.compose.ui.graphics.Color(lighten(gem.argb, 0.25f))
-
-internal fun horaLordColor(gem: Gem): androidx.compose.ui.graphics.Color = horaLordColorOf(gem)
+/**
+ * Hora-lord span colour. On the sky (night) the gem lightened just enough for 7:1 over the worst capped sky
+ * ([SkyText.horaLordArgb]); on Chandan (ivory, no sky) the meta colour is kept so the span never loses contrast.
+ */
+internal fun horaLordColor(gem: Gem, onSky: Boolean): androidx.compose.ui.graphics.Color =
+    if (onSky) androidx.compose.ui.graphics.Color(SkyText.horaLordArgb(gem)) else androidx.compose.ui.graphics.Color.Unspecified
 
 @Composable
 internal fun rememberHeaderUi(c: AajUi.Content, now: Instant, names: AajNames, fmt: TimeFmt, place: String?): HeaderUi {
     val res = LocalContext.current.resources
-    val gem = gemFor(c.date.dayOfWeek)
     val minute = now.epochSeconds / MINUTE
-    return remember(c, minute, names, fmt, place) { headerUi(res, names, fmt, c, now, place, horaLordColor(gem)) }
+    val gem = gemFor(vaarAt(c, now).dayOfWeek())
+    val dark = PpTheme.ratna.isDark
+    return remember(c, minute, names, fmt, place, dark) { headerUi(res, names, fmt, c, now, place, horaLordColor(gem, dark)) }
 }
 
 private const val MINUTE = 60L

@@ -191,7 +191,10 @@ CONV = "UPPER_LIMB_REFRACTED"
 
 
 def sun_windows(site, starts):
-    """Per window start (ms): dict(events [(kind, ms)], fallback, noon, fragile). Spec 3.5."""
+    """Per window start (ms): dict(real [(kind, ms)], conv [(kind, ms)], noon, fragile). Spec 3.5.
+
+    real = the observed crossings of the window; conv = the LOCAL_NOON_PM_6H convention pair of the window
+    (culmination -/+ 6 h), computed for every window. Which ones a day uses is decided by sun_day()."""
     starts = np.asarray(starts, dtype=np.int64)
     nd, ns = starts.size, gr.NS
     samples = starts[:, None] + np.arange(ns, dtype=np.int64)[None, :] * gr.STEP_MS
@@ -208,29 +211,56 @@ def sun_windows(site, starts):
     per = {}
     for (d, _, kind, ms, rate) in gr.refine(site, "sun", br):
         per.setdefault(d, []).append((kind, ms, rate))
-    res, fb = [], []
+    res = []
     for d in range(nd):
         ev = sorted(per.get(d, []), key=lambda e: e[1])
-        real = any(e[0] == 0 for e in ev) and any(e[0] == 1 for e in ev)
         fr = bool(frag[d]) or any(abs(e[2]) < gr.FRAGILE_RATE for e in ev)
-        res.append({"events": [("RISE" if k == 0 else "SET", ms) for k, ms, _ in ev], "fallback": not real,
-                    "noon": None, "fragile": fr})
-        if not real:
-            fb.append(d)
-    if fb:
-        am = np.argmax(alt[fb], axis=1)
-        a = np.array([samples[d, max(0, i - 1)] for d, i in zip(fb, am)], dtype=float)
-        b = np.array([samples[d, min(ns - 1, i + 1)] for d, i in zip(fb, am)], dtype=float)
-        inv = 0.6180339887498949
-        for _ in range(40):
-            c, e = b - (b - a) * inv, a + (b - a) * inv
-            fc, _d = site.alt("sun", np.rint(c).astype(np.int64))
-            fe, _d = site.alt("sun", np.rint(e).astype(np.int64))
-            left = fc >= fe
-            b = np.where(left, e, b)
-            a = np.where(left, a, c)
-        noon = np.rint((a + b) / 2).astype(np.int64)
-        for d, nm in zip(fb, noon.tolist()):
-            res[d]["noon"] = nm
-            res[d]["events"] = [("RISE", nm - 6 * HOUR_MS), ("SET", nm + 6 * HOUR_MS)]
+        res.append({"real": [("RISE" if k == 0 else "SET", ms) for k, ms, _ in ev], "fragile": fr})
+    am = np.argmax(alt, axis=1)
+    a = np.array([samples[d, max(0, i - 1)] for d, i in enumerate(am)], dtype=float)
+    b = np.array([samples[d, min(ns - 1, i + 1)] for d, i in enumerate(am)], dtype=float)
+    inv = 0.6180339887498949
+    for _ in range(40):
+        c, e = b - (b - a) * inv, a + (b - a) * inv
+        fc, _d = site.alt("sun", np.rint(c).astype(np.int64))
+        fe, _d = site.alt("sun", np.rint(e).astype(np.int64))
+        left = fc >= fe
+        b = np.where(left, e, b)
+        a = np.where(left, a, c)
+    noon = np.rint((a + b) / 2).astype(np.int64)
+    for d, nm in enumerate(noon.tolist()):
+        res[d]["noon"] = nm
+        res[d]["conv"] = [("RISE", nm - 6 * HOUR_MS), ("SET", nm + 6 * HOUR_MS)]
     return res
+
+
+def sun_day(ev, fv):
+    """One panchang day from its window (ev) and the next (fv), event by event (Fable review M1).
+
+    Sunrise: the earliest observed RISE of ev, and only if ev has none its convention RISE; next sunrise the
+    same for fv. Sunset: the earliest observed SET of ev or fv strictly between them, and only if there is none
+    the convention SET of ev, then of fv, strictly between them. Returns dict(sr, ss, nsr, F, X, U, noon) with
+    noon = ev's culmination when the sunrise itself is the convention one (else None)."""
+    def first(lst, kind):
+        ts_ = sorted(t for k, t in lst if k == kind)
+        return ts_[0] if ts_ else None
+
+    sr, sr_conv = first(ev["real"], "RISE"), False
+    if sr is None:
+        sr, sr_conv = first(ev["conv"], "RISE"), True
+    nsr, nsr_conv = first(fv["real"], "RISE"), False
+    if nsr is None:
+        nsr, nsr_conv = first(fv["conv"], "RISE"), True
+    ss, ss_conv = None, False
+    if sr is not None and nsr is not None and sr < nsr:
+        for pool, conv in ((ev["real"] + fv["real"], False), (ev["conv"], True), (fv["conv"], True)):
+            inside = sorted(t for k, t in pool if k == "SET" and sr < t < nsr)
+            if inside:
+                ss, ss_conv = inside[0], conv
+                break
+    if ss is None:
+        return dict(sr=None, ss=None, nsr=None, F=False, X=False, U=True, noon=None)
+    same = ev["conv"] if sr_conv else ev["real"]
+    extra = any(k == "RISE" and t > ss for k, t in same)
+    return dict(sr=sr, ss=ss, nsr=nsr, F=sr_conv or ss_conv or nsr_conv, X=extra, U=False,
+                noon=ev["noon"] if sr_conv else None)

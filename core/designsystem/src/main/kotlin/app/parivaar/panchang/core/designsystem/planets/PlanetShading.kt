@@ -24,6 +24,7 @@ import kotlin.math.sqrt
  * for Saturn b = the ring tilt B and g = 0, so N is also the ring normal (line of nodes horizontal, D9).
  * Colours are 0..255 (the design's units) until the final premultiplied 0..1 output.
  */
+@Suppress("TooManyFunctions")
 object PlanetShading {
     private const val RING_IN_SHADOW = 0.12f
     private const val RING_SHADOW_ON_DISC = 0.75f
@@ -50,33 +51,47 @@ object PlanetShading {
     }
 
     /** Ring opacity at [rho] Saturn radii (design `ringCol`): C 0.16, B 0.8, Cassini 0.06, A 0.55, Encke gap. */
-    fun ringAlpha(rho: Float): Float = ring(rho)[3]
+    fun ringAlpha(rho: Float): Float {
+        var a = when {
+            rho > 1.24f && rho < 1.53f -> 0.16f
+            rho >= 1.53f && rho < 1.95f -> 0.8f
+            rho >= 1.95f && rho < 2.02f -> 0.06f
+            rho >= 2.02f && rho < 2.27f -> 0.55f
+            else -> 0f
+        }
+        if (rho > 2.205f && rho < 2.215f) a = 0.05f
+        return a * (0.82f + 0.18f * sin(rho * 230f) * sin(rho * 61f))
+    }
 
     /** Ring colour (0..255) and opacity at [rho]: [r, g, b, alpha]. */
-    fun ring(rho: Float): FloatArray {
-        val c = when {
-            rho > 1.24f && rho < 1.53f -> floatArrayOf(140f, 125f, 100f, 0.16f)
-            rho >= 1.53f && rho < 1.95f -> floatArrayOf(228f, 212f, 172f, 0.8f)
-            rho >= 1.95f && rho < 2.02f -> floatArrayOf(120f, 110f, 95f, 0.06f)
-            rho >= 2.02f && rho < 2.27f -> floatArrayOf(205f, 188f, 148f, 0.55f)
-            else -> floatArrayOf(0f, 0f, 0f, 0f)
+    fun ring(rho: Float): FloatArray = FloatArray(4).also { ringInto(rho, it) }
+
+    /** As [ring], into [c] (no allocation: the CPU fallback calls this per pixel). */
+    internal fun ringInto(rho: Float, c: FloatArray) {
+        when {
+            rho > 1.24f && rho < 1.53f -> { c[0] = 140f; c[1] = 125f; c[2] = 100f }
+            rho >= 1.53f && rho < 1.95f -> { c[0] = 228f; c[1] = 212f; c[2] = 172f }
+            rho >= 1.95f && rho < 2.02f -> { c[0] = 120f; c[1] = 110f; c[2] = 95f }
+            rho >= 2.02f && rho < 2.27f -> { c[0] = 205f; c[1] = 188f; c[2] = 148f }
+            else -> { c[0] = 0f; c[1] = 0f; c[2] = 0f }
         }
-        if (rho > 2.205f && rho < 2.215f) c[3] = 0.05f
-        c[3] *= 0.82f + 0.18f * sin(rho * 230f) * sin(rho * 61f)
-        return c
+        c[3] = ringAlpha(rho)
     }
 
     /**
      * Factor of the ring's shadow on a disc point [n] (design: x (1 - 0.75 alpha)): the ray toward the Sun meets
      * the ring plane at t = -(n . nR) / (sun . nR) > 0. Ring normal nR = (0, cos B, sin B).
      */
-    fun ringShadowOnDisc(n: FloatArray, sun: FloatArray, sinB: Float, cosB: Float): Float {
+    fun ringShadowOnDisc(n: FloatArray, sun: FloatArray, sinB: Float, cosB: Float): Float =
+        ringShadowOnDisc(n[0], n[1], n[2], sun, sinB, cosB)
+
+    private fun ringShadowOnDisc(nx: Float, ny: Float, nz: Float, sun: FloatArray, sinB: Float, cosB: Float): Float {
         val sn = sun[1] * cosB + sun[2] * sinB
-        val t = if (abs(sinB) < EDGE_ON || abs(sn) < 1e-4f) 0f else -(n[1] * cosB + n[2] * sinB) / sn
+        val t = if (abs(sinB) < EDGE_ON || abs(sn) < 1e-4f) 0f else -(ny * cosB + nz * sinB) / sn
         if (t <= 0f) return 1f
-        val hx = n[0] + t * sun[0]
-        val hy = n[1] + t * sun[1]
-        val hz = n[2] + t * sun[2]
+        val hx = nx + t * sun[0]
+        val hy = ny + t * sun[1]
+        val hz = nz + t * sun[2]
         return 1f - RING_SHADOW_ON_DISC * ringAlpha(sqrt(hx * hx + hy * hy + hz * hz))
     }
 
@@ -93,9 +108,11 @@ object PlanetShading {
     }
 
     /** True when the ring point [h] (radii) lies in the planet's shadow: its ray toward the Sun hits the sphere. */
-    fun planetShadowOnRing(h: FloatArray, sun: FloatArray): Boolean {
-        val b = h[0] * sun[0] + h[1] * sun[1] + h[2] * sun[2]
-        val c = h[0] * h[0] + h[1] * h[1] + h[2] * h[2] - 1f
+    fun planetShadowOnRing(h: FloatArray, sun: FloatArray): Boolean = planetShadowOnRing(h[0], h[1], h[2], sun)
+
+    private fun planetShadowOnRing(hx: Float, hy: Float, hz: Float, sun: FloatArray): Boolean {
+        val b = hx * sun[0] + hy * sun[1] + hz * sun[2]
+        val c = hx * hx + hy * hy + hz * hz - 1f
         return b < 0f && b * b - c > 0f
     }
 
@@ -121,6 +138,10 @@ object PlanetShading {
         val sinG = sin(g)
         val cosG = cos(g)
         val offTexels = rot / (2f * PI.toFloat()) * PlanetTextures.WIDTH
+
+        /** Per-pixel scratch (one Scene per render, one thread): no allocation inside the pixel loop. */
+        val col = FloatArray(3)
+        val rc = FloatArray(4)
     }
 
     private fun disc(s: Scene, px: Float, py: Float, out: FloatArray) {
@@ -138,16 +159,18 @@ object PlanetShading {
         val style = s.style
         var sh = discIntensity(style.model, style.soft, style.limb, z, d)
         if (style.model == LightModel.LOMMEL_SEELIGER) sh *= style.exposure
-        if (s.ringOn && d > 0f) sh *= ringShadowOnDisc(floatArrayOf(x, y, z), sun, s.sinB, s.cosB)
+        if (s.ringOn && d > 0f) sh *= ringShadowOnDisc(x, y, z, sun, s.sinB, s.cosB)
         val rim = if (style.rim > 0f) (1f - z).pow(3) * max(0f, d + 0.25f) * style.rim else 0f
-        val col = FloatArray(3) { k ->
+        val col = s.col
+        for (k in 0..2) {
             val channel = ((texel shr (16 - 8 * k)) and 0xFF).toFloat()
-            channel * sh + style.earthshine * AMBIENT[k] + RIM[k] * rim
+            col[k] = channel * sh + style.earthshine * AMBIENT[k] + RIM[k] * rim
         }
         if (s.ringOn && abs(s.sinB) >= EDGE_ON) {
             val ra = visibleRingAlpha(px, py, s.sinB, s.cosB)
             if (ra > 0f) {
-                val rc = ring(sqrt(x * x + y * y + (y * s.cosB / s.sinB).pow(2)))
+                val rc = s.rc
+                ringInto(sqrt(x * x + y * y + (y * s.cosB / s.sinB).pow(2)), rc)
                 val face = ringFace(s)
                 for (k in 0..2) col[k] = col[k] * (1f - ra) + rc[k] * RING_GAIN * face * ra
             }
@@ -161,19 +184,19 @@ object PlanetShading {
     private fun ring(s: Scene, px: Float, py: Float, out: FloatArray) {
         val r2 = px * px + py * py
         val ps = -py
-        val rc: FloatArray
+        val rc = s.rc
         val alpha: Float
         var light = ringFace(s)
         if (abs(s.sinB) < EDGE_ON) {
-            rc = ring(abs(px))
+            ringInto(abs(px), rc)
             alpha = rc[3] * (1f - smoothstep(0f, 1.5f / s.rPx, abs(ps)))
             light = 0.5f
         } else {
             if (r2 < 1f) return // over the disc: composited in disc()
             val z = -ps * s.cosB / s.sinB
-            rc = ring(sqrt(px * px + ps * ps + z * z))
+            ringInto(sqrt(px * px + ps * ps + z * z), rc)
             alpha = rc[3]
-            if (planetShadowOnRing(floatArrayOf(px, ps, z), s.sun)) light *= RING_IN_SHADOW
+            if (planetShadowOnRing(px, ps, z, s.sun)) light *= RING_IN_SHADOW
         }
         if (alpha <= 0f) return
         for (k in 0..2) out[k] = rc[k] * RING_GAIN * light / 255f * alpha + out[k] * (1f - alpha)

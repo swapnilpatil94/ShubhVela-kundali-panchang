@@ -55,7 +55,7 @@ private fun decodeSky(context: android.content.Context, source: SkySource, wPx: 
     val (w, h, px) = when (source) {
         is SkySource.Placeholder -> {
             val key = Triple(source.gem, wPx to hPx, density)
-            val cached = synchronized(placeholderCache) { placeholderCache[key] }
+            val cached = placeholderCache.get(key)
             if (cached != null) return cached
             Triple(wPx, hPx, placeholderSkyPixels(source.gem, wPx, hPx))
         }
@@ -71,15 +71,14 @@ private fun decodeSky(context: android.content.Context, source: SkySource, wPx: 
     applyTextSafeZone(px, w, h, feather)
     val image = Bitmap.createBitmap(px, w, h, Bitmap.Config.ARGB_8888).asImageBitmap()
     if (source is SkySource.Placeholder) {
-        synchronized(placeholderCache) { placeholderCache[Triple(source.gem, wPx to hPx, density)] = image }
+        placeholderCache.put(Triple(source.gem, wPx to hPx, density), image)
     }
     return image
 }
 
-/** Small LRU of finished (capped) placeholder skies: at most 4 bitmaps (about 4 MB each at 1080 x 990). */
-private val placeholderCache = object : LinkedHashMap<Triple<Gem, Pair<Int, Int>, Float>, ImageBitmap>(8, 0.75f, true) {
-    override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Triple<Gem, Pair<Int, Int>, Float>, ImageBitmap>?): Boolean = size > 4
-}
+/** LRU of finished (capped) placeholder skies, bounded by bytes (ARGB_8888): about two 1080 x 990 headers, whatever the size. */
+internal const val PLACEHOLDER_CACHE_BYTES = 9L * 1024 * 1024
+private val placeholderCache = ByteLru<Triple<Gem, Pair<Int, Int>, Float>, ImageBitmap>(PLACEHOLDER_CACHE_BYTES) { it.width.toLong() * it.height * 4 }
 
 private fun decodeCropped(context: android.content.Context, id: Int, wPx: Int, hPx: Int): Bitmap {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }

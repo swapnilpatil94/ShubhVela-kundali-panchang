@@ -28,8 +28,9 @@ object PlatformWiring {
                 .map { Key(listOf(it.homePlaceId, it.defaultCalc, it.reminders, it.showCityOnWidgets, it.localeTag)) }
                 .distinctUntilChanged()
                 .collect {
-                    Replan.run(app)
-                    WidgetRefresher.refresh(app)
+                    // A bad zone must not kill this collector (it would stop all later re-plans) or the app.
+                    zoneSafe(Unit) { Replan.run(app) }
+                    zoneSafe(Unit) { WidgetRefresher.refresh(app) }
                 }
         }
     }

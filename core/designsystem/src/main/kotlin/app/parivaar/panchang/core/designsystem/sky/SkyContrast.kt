@@ -5,6 +5,7 @@ package app.parivaar.panchang.core.designsystem.sky
 import app.parivaar.panchang.core.designsystem.tokens.Gem
 import app.parivaar.panchang.core.designsystem.tokens.PpPalette
 import app.parivaar.panchang.core.designsystem.tokens.contrastRatio
+import app.parivaar.panchang.core.designsystem.tokens.lighten
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -14,9 +15,46 @@ import kotlin.math.pow
 object SkySafeZone {
     /** Relative luminance cap inside the zone: worst case #F6F1E7 text gives 7.46:1; 7:1 holds up to 0.0833. */
     const val MAX_LUMINANCE = 0.075f
-    const val X_FRAC = 0.84f
-    const val Y_FRAC = 0.62f
+
+    /** The text column's width fraction without a planet ([SkyHeaderSpec.TEXT_FRACTION]); with one it is narrower. */
+    const val X_FRAC = SkyHeaderSpec.TEXT_FRACTION
+
+    /** Bottom padding of the bottom-anchored text column ([SkyHeaderSpec.TEXT_BOTTOM_PAD_DP]). */
+    fun textBottomFrac(headerHeightDp: Float): Float = 1f - SkyHeaderSpec.TEXT_BOTTOM_PAD_DP / headerHeightDp
+
+    /**
+     * Vertical extent of the zone. The text column is bottom-anchored and the header height is content-driven
+     * (min [SkyHeaderSpec.HEIGHT_DP] plus the status bar, growing with font scale), so its bottom edge
+     * [textBottomFrac] tends to 1 as the header grows: the only bound valid for every height is the full height.
+     */
+    const val Y_FRAC = 1f
     const val FEATHER_DP = 14f
+}
+
+/** Colours drawn as text on the sky header, checked by the worst-case model. */
+object SkyText {
+    /** The meta line's hora-lord span: 13 sp semibold, so it is held to 7:1 like body text. */
+    const val MIN_CONTRAST = 7.0
+
+    private val accents: Map<Gem, Long> by lazy { Gem.entries.associateWith { accentOf(it) } }
+
+    /** The gem lightened by the smallest amount (at least 25 %) that gives [MIN_CONTRAST] over the worst capped sky. */
+    fun horaLordArgb(gem: Gem): Long = accents.getValue(gem)
+
+    private fun accentOf(gem: Gem): Long {
+        var f = BASE_LIGHTEN
+        while (f < 1f) {
+            val c = lighten(0xFF000000L or gem.argb, f)
+            if (SkyContrastModel.worstContrast(c, COARSE_STEPS) >= MIN_CONTRAST + MARGIN) return c
+            f += STEP
+        }
+        return lighten(0xFF000000L or gem.argb, 1f)
+    }
+
+    private const val BASE_LIGHTEN = 0.25f
+    private const val STEP = 0.01f
+    private const val COARSE_STEPS = 20
+    private const val MARGIN = 0.05 // the coarse grid may miss the exact worst sample; the test checks the fine grid
 }
 
 /** Reading shade (rgb 8,10,20, left to right) and fade into ink0 (top to bottom): stops (fraction, alpha). */
@@ -116,7 +154,7 @@ object SkyContrastModel {
         return over(shaded, PpPalette.INK0, SkyShade.fadeAlpha(yFrac))
     }
 
-    /** Minimum contrast of [text] over the whole zone (x <= 84 %, y <= 62 %), worst capped pixel at every sample. */
+    /** Minimum contrast of [text] over the whole zone (x <= [SkySafeZone.X_FRAC], y <= [SkySafeZone.Y_FRAC]), worst capped pixel at every sample. */
     fun worstContrast(text: Long, steps: Int = 40): Double {
         var worst = Double.MAX_VALUE
         for (px in cappedCandidates()) for (i in 0..steps) for (j in 0..steps) {

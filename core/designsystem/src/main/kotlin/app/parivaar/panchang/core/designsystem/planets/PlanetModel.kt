@@ -2,6 +2,8 @@
 
 package app.parivaar.panchang.core.designsystem.planets
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -142,7 +144,13 @@ internal fun PlanetLight.unitSun(): FloatArray {
  * until the holder releases it. Not thread-safe (main thread only).
  */
 class PlanetAnimationBudget {
-    private var holder: Any? = null
+    // Snapshot state, so a waiting view observes the release and retries ([isFree]).
+    private var holder: Any? by androidx.compose.runtime.mutableStateOf(null)
+
+    /** True when nobody holds the budget (snapshot read: observable from a composable or snapshotFlow). */
+    val isFree: Boolean get() = holder == null
+
+    fun holds(token: Any): Boolean = holder === token
 
     /** True if [token] holds (or now takes) the budget. */
     fun tryAcquire(token: Any): Boolean {

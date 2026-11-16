@@ -23,6 +23,19 @@ internal object DataLimits {
     const val MAX_PLACES = 2000
     const val MAX_BONDS = 2000
     const val LOCALE_MAX = 35
+
+    // Stored and imported places (Fable review item 2): anything outside these bounds is a bad row.
+    const val PLACE_NAME_MAX = 200
+    const val ADMIN1_MAX = 200
+    const val OVERLAY_KEY_MAX = 64
+    const val POPULATION_MAX = 2_000_000_000L
+    const val ELEVATION_MIN_M = -1_000.0
+    const val ELEVATION_MAX_M = 9_000.0
+    val COUNTRY_CODE = Regex("[A-Z]{2}")
+
+    // Birth dates the app accepts (MASTER Part 3 precision range 1900-2100, with margin for elders and planning).
+    const val BIRTH_YEAR_MIN = 1800
+    const val BIRTH_YEAR_MAX = 2200
 }
 
 internal val PpJson = Json
