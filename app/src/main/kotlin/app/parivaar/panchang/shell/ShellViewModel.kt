@@ -42,6 +42,11 @@ import app.parivaar.panchang.feature.kundli.KundliCache
 import app.parivaar.panchang.feature.kundli.KundliViewModel
 import app.parivaar.panchang.feature.kundli.ParivaarViewModel
 import app.parivaar.panchang.feature.kundli.ProfileEditorViewModel
+import app.parivaar.panchang.content.horoscope.Period
+import app.parivaar.panchang.feature.horoscope.RashifalViewModel
+import app.parivaar.panchang.platform.content.BundledContentPacks
+import app.parivaar.panchang.platform.engine.EngineRashifalEngine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import app.parivaar.panchang.core.model.geo.CivilDayOffset
 import app.parivaar.panchang.engine.Place
 import app.parivaar.panchang.platform.zoneSafe
@@ -185,16 +190,45 @@ class ShellViewModel
             val parivaar = ParivaarViewModel(
                 profileList, kundliHome, engineAccess.kundliEngine, Clock.System, viewModelScope, Dispatchers.Default,
             )
-            KundliWiring(kundli, parivaar) {
-                ProfileEditorViewModel(
-                    profiles, search, offsets, { settings.value.defaultCalc }, { kundli.evict(it.id) }, Clock.System,
-                    viewModelScope, Dispatchers.IO,
-                )
-            }
+            KundliWiring(
+                kundli, parivaar,
+                {
+                    ProfileEditorViewModel(
+                        profiles, search, offsets, { settings.value.defaultCalc }, { kundli.evict(it.id) },
+                        Clock.System, viewModelScope, Dispatchers.IO,
+                    )
+                },
+                RashifalViewModel(
+                    kundli.state.map { natalSnapshot(it.bundle, it.noon) }.distinctUntilChanged(),
+                    EngineRashifalEngine(engineAccess), ::contentPacks, ::rashifalTime, Clock.System, viewModelScope,
+                    Dispatchers.Default,
+                ),
+            )
         }
 
         init {
             viewModelScope.launch { vault.state.collect { if (it != VaultState.Ready) kundliCache.clear() } }
+        }
+
+        /** M11: bundled content packs, verified once off the main thread (from assets; no network). */
+        private val packs by lazy {
+            BundledContentPacks.load { path ->
+                runCatching { context.assets.open(path).use { it.readBytes() } }.getOrNull()
+            }
+        }
+
+        private fun contentPacks() = packs
+
+        /** Reading times in the home zone; the day view shows the time only, longer periods add the date. */
+        private fun rashifalTime(at: kotlin.time.Instant, period: Period): String {
+            val zone = kundliHome.value?.zone?.id?.let { zoneSafe(null) { java.time.ZoneId.of(it) } }
+                ?: java.time.ZoneId.systemDefault()
+            val locale = context.resources.configuration.locales[0]
+            val skeleton = if (period == Period.DAY) "jmm" else "dMMMjmm"
+            val fmt = java.time.format.DateTimeFormatter.ofPattern(
+                android.text.format.DateFormat.getBestDateTimePattern(locale, skeleton), locale,
+            )
+            return java.time.Instant.ofEpochMilli(at.toEpochMilliseconds()).atZone(zone).format(fmt)
         }
 
         private fun kundliHome(items: List<SavedPlace>, s: AppSettings): CalInputsLite? {

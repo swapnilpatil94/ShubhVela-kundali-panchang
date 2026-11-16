@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M11: Hindi for the Rashifal entry only; the rest of this module is translated in a later milestone. -->
+<resources>
+    <string name="kundli_rashifal">इस कुंडली की राशि का राशिफल</string>
+</resources>

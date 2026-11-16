@@ -77,6 +77,7 @@ fun KundliScreen(
     onEditProfile: (Profile) -> Unit,
     onOpenParivaar: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenRashifal: () -> Unit = {},
 ) {
     val ctx = LocalContext.current
     val names = remember(ctx) { KundliNames(ctx.resources) }
@@ -102,6 +103,13 @@ fun KundliScreen(
         }
         Spacer(Modifier.height(PpSpace.m))
         KundliBody(state, names, onEvent)
+        if (state.bundle != null && state.tab == KundliTab.CHART) {
+            Spacer(Modifier.height(PpSpace.m))
+            PpButton(
+                stringResource(R.string.kundli_rashifal), onOpenRashifal, PpButtonStyle.Outline,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
         Spacer(Modifier.height(BOTTOM_INSET))
     }
 }

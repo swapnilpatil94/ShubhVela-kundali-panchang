@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M11: Hindi for the Rashifal entry only; the rest of this module is translated in a later milestone. -->
+<resources>
+    <string name="aaj_rashifal_title">राशिफल</string>
+    <string name="aaj_rashifal_body">आपकी राशि के लिए आज का राशिफल, ग्रहों की वर्तमान राशियों के अनुसार।</string>
+</resources>

@@ -34,6 +34,7 @@ import app.parivaar.panchang.feature.aaj.ui.AajExtras
 import app.parivaar.panchang.feature.aaj.ui.AajScreen
 import app.parivaar.panchang.feature.bhakti.BhaktiPlaceholderScreen
 import app.parivaar.panchang.feature.bonds.BondsPlaceholderScreen
+import app.parivaar.panchang.feature.horoscope.RashifalRoute
 import app.parivaar.panchang.feature.settings.AppearanceModel
 import app.parivaar.panchang.feature.settings.ConventionsModel
 import app.parivaar.panchang.feature.settings.LanguageChoice
@@ -86,6 +87,7 @@ fun ShellScreen(
     val avatar = { navigator.push(Dest.Settings) }
     val search = { searching = true }
     val dock = rememberDockState(aaj)
+    val rashifalExtras = aajExtras.withRashifal { navigator.push(Dest.Rashifal) }
     ShellStatusBar(tab, dest)
     val dockScroll = rememberDockScroll(tab to dest)
     PpNavigationSuite(
@@ -97,21 +99,16 @@ fun ShellScreen(
             when (val d = dest) {
                 is Dest.Root ->
                     when (tab) {
-                        Tab.AAJ -> AajTab(aaj, homePlaceName, navigator, aajExtras, avatar, search)
+                        Tab.AAJ -> AajTab(aaj, homePlaceName, navigator, rashifalExtras, avatar, search)
                         Tab.CALENDAR ->
                             CalendarTab(cal, settings, homePlaceName, navigator, conventions, search)
-                        Tab.KUNDLI -> KundliTab(kundli)
+                        Tab.KUNDLI -> KundliTab(kundli) { navigator.push(Dest.Rashifal) }
                         Tab.BONDS -> BondsPlaceholderScreen(homePlaceName, null, avatar, search)
                         Tab.BHAKTI -> BhaktiPlaceholderScreen(homePlaceName, null, avatar, search)
                     }
-                Dest.Settings ->
-                    SettingsScreen(
-                        settings, languages, appearance,
-                        onOpenConventions = { navigator.push(Dest.Conventions) },
-                        onOpenPrivacy = { navigator.push(Dest.Privacy) },
-                    )
+                Dest.Settings -> SettingsDest(settings, languages, appearance, navigator)
                 Dest.Conventions -> ConventionsDest(settings, conventions)
-                Dest.Privacy -> PrivacyScreen()
+                Dest.Privacy, Dest.Rashifal -> InfoDest(d, kundli) { navigator.back() }
                 is Dest.FestivalGuide, Dest.Grahan, Dest.Transits, Dest.ShouldI ->
                     CalendarSubScreen(d, cal) { navigator.back() }
             }
@@ -126,6 +123,26 @@ fun ShellScreen(
             onDismiss = { searching = false },
         )
     }
+}
+
+@Composable
+private fun SettingsDest(
+    settings: AppSettings,
+    languages: List<LanguageChoice>,
+    appearance: AppearanceModel,
+    navigator: AppNavigator,
+) = SettingsScreen(
+    settings, languages, appearance,
+    onOpenConventions = { navigator.push(Dest.Conventions) },
+    onOpenPrivacy = { navigator.push(Dest.Privacy) },
+)
+
+/** Privacy and Rashifal (M11): pushed screens without arguments. */
+@Composable
+private fun InfoDest(d: Dest, kundli: KundliWiring, onBack: () -> Unit) {
+    if (d != Dest.Rashifal) return PrivacyScreen()
+    val rs by kundli.rashifal.state.collectAsStateWithLifecycle()
+    RashifalRoute(kundli.rashifal, rs, onBack)
 }
 
 /** Hide-on-scroll state of the dock; resets whenever [resetKey] (tab or destination) changes. */

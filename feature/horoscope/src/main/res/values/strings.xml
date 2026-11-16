@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rashifal_title">Rashifal</string>
+    <string name="rashifal_eyebrow">Planets through the signs</string>
+    <string name="rashifal_back">Back</string>
+    <string name="rashifal_period_day">Day</string>
+    <string name="rashifal_period_week">Week</string>
+    <string name="rashifal_period_month">Month</string>
+    <string name="rashifal_period_year">Year</string>
+    <string name="rashifal_basis_label">Sign from the chart</string>
+    <string name="rashifal_basis_moon">Moon sign</string>
+    <string name="rashifal_basis_sun">Sun sign</string>
+    <string name="rashifal_basis_lagna">Lagna</string>
+    <string name="rashifal_sign_label">Sign</string>
+    <string name="rashifal_reading_for">Reading for %1$s</string>
+    <string name="rashifal_your_day">Your day</string>
+    <string name="rashifal_your_day_needs_time">Add a birth time to this profile to see Your day.</string>
+    <string name="rashifal_footer">Traditional interpretation, not a scientific prediction.</string>
+    <string name="rashifal_fallback_note">Some text is shown in English.</string>
+    <string name="rashifal_loading">Preparing the reading</string>
+    <string name="rashifal_error_title">Reading not available</string>
+    <string name="rashifal_error_body">Please try again in a moment.</string>
+    <string name="rashifal_no_place_title">Choose a home place</string>
+    <string name="rashifal_no_place_body">Rashifal follows the sunrise of your home place.</string>
+    <string name="rashifal_how">How this is calculated</string>
+    <string name="rashifal_how_body">Each line follows where a planet stands now, counted as a house from the chosen sign (sidereal). Days begin at sunrise. Which planets appear for a day, week, month or year is this app\'s own convention, not a rule of tradition.</string>
+    <string-array name="rashifal_rashi_names">
+        <item>Mesha</item><item>Vrishabha</item><item>Mithuna</item><item>Karka</item><item>Simha</item><item>Kanya</item>
+        <item>Tula</item><item>Vrishchika</item><item>Dhanu</item><item>Makara</item><item>Kumbha</item><item>Meena</item>
+    </string-array>
+</resources>

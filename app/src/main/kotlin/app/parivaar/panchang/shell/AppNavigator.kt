@@ -25,6 +25,9 @@ sealed interface Dest {
     data object Transits : Dest
 
     data object ShouldI : Dest
+
+    /** M11 Rashifal. Carries no profile id, sign or birth data (the view model reads the active profile). */
+    data object Rashifal : Dest
 }
 
 /** Hand-written back stack: one stack per [Tab], each rooted at `Root(tab)`. Thread-safe. */
@@ -108,6 +111,7 @@ class AppNavigator(initial: Tab = Tab.AAJ) {
                 Dest.Grahan -> "grahan"
                 Dest.Transits -> "transits"
                 Dest.ShouldI -> "shouldi"
+                Dest.Rashifal -> "rashifal"
             }
 
         private fun parse(k: String): Dest? =
@@ -118,6 +122,7 @@ class AppNavigator(initial: Tab = Tab.AAJ) {
                 "grahan" -> Dest.Grahan
                 "transits" -> Dest.Transits
                 "shouldi" -> Dest.ShouldI
+                "rashifal" -> Dest.Rashifal
                 else -> k.takeIf { it.startsWith("guide=") }?.substringAfter('=')?.takeIf(ID::matches)
                     ?.let { Dest.FestivalGuide(it) }
             }

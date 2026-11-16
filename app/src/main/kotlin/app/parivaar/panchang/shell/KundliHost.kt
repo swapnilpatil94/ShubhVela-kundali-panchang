@@ -22,7 +22,7 @@ private const val MODE_EDIT = "edit"
  * returns editor -> previous screen -> chart. The editing profile id is a random record id, never personal data.
  */
 @Composable
-fun KundliTab(w: KundliWiring) {
+fun KundliTab(w: KundliWiring, onOpenRashifal: () -> Unit) {
     var mode by rememberSaveable { mutableStateOf(MODE_CHART) }
     var back by rememberSaveable { mutableStateOf(MODE_CHART) }
     var editId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -48,6 +48,7 @@ fun KundliTab(w: KundliWiring) {
             onAddProfile = { openEditor(MODE_CHART, null) },
             onEditProfile = { openEditor(MODE_CHART, it.id.hex) },
             onOpenParivaar = { mode = MODE_PARIVAAR },
+            onOpenRashifal = onOpenRashifal,
         )
     }
 }

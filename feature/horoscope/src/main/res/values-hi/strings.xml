@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rashifal_title">राशिफल</string>
+    <string name="rashifal_eyebrow">राशियों में ग्रहों की चाल</string>
+    <string name="rashifal_back">वापस</string>
+    <string name="rashifal_period_day">दिन</string>
+    <string name="rashifal_period_week">सप्ताह</string>
+    <string name="rashifal_period_month">माह</string>
+    <string name="rashifal_period_year">वर्ष</string>
+    <string name="rashifal_basis_label">कुंडली से राशि</string>
+    <string name="rashifal_basis_moon">चंद्र राशि</string>
+    <string name="rashifal_basis_sun">सूर्य राशि</string>
+    <string name="rashifal_basis_lagna">लग्न</string>
+    <string name="rashifal_sign_label">राशि</string>
+    <string name="rashifal_reading_for">%1$s के लिए</string>
+    <string name="rashifal_your_day">आपका दिन</string>
+    <string name="rashifal_your_day_needs_time">आपका दिन देखने के लिए इस प्रोफ़ाइल में जन्म समय जोड़ें।</string>
+    <string name="rashifal_footer">पारंपरिक व्याख्या, वैज्ञानिक भविष्यवाणी नहीं।</string>
+    <string name="rashifal_fallback_note">कुछ पाठ अंग्रेज़ी में दिखाया गया है।</string>
+    <string name="rashifal_loading">राशिफल तैयार हो रहा है</string>
+    <string name="rashifal_error_title">राशिफल उपलब्ध नहीं</string>
+    <string name="rashifal_error_body">कृपया थोड़ी देर में फिर देखें।</string>
+    <string name="rashifal_no_place_title">घर का स्थान चुनें</string>
+    <string name="rashifal_no_place_body">राशिफल घर के स्थान के सूर्योदय के अनुसार चलता है।</string>
+    <string name="rashifal_how">गणना कैसे होती है</string>
+    <string name="rashifal_how_body">हर पंक्ति ग्रह की वर्तमान स्थिति पर आधारित है, जिसे चुनी गई राशि से भाव के रूप में गिना जाता है (निरयण)। दिन सूर्योदय से शुरू होता है। दिन, सप्ताह, माह या वर्ष में कौन से ग्रह दिखें, यह इस ऐप की अपनी व्यवस्था है, परंपरा का नियम नहीं।</string>
+    <string-array name="rashifal_rashi_names">
+        <item>मेष</item><item>वृषभ</item><item>मिथुन</item><item>कर्क</item><item>सिंह</item><item>कन्या</item>
+        <item>तुला</item><item>वृश्चिक</item><item>धनु</item><item>मकर</item><item>कुंभ</item><item>मीन</item>
+    </string-array>
+</resources>

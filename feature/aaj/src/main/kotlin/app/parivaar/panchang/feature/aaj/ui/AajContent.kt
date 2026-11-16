@@ -4,6 +4,7 @@ package app.parivaar.panchang.feature.aaj.ui
 
 import app.parivaar.panchang.core.designsystem.family.FamilyDateRow
 import android.content.res.Resources
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -207,6 +208,9 @@ internal fun DayContent(
                     )
                 }
                 if (timings) item { TimingsSection(c, now, names, fmt, Modifier.padding(horizontal = PpSpace.screen)) }
+                extras.onOpenRashifal?.let { open ->
+                    item { InfoCard(stringResource(R.string.aaj_rashifal_title), stringResource(R.string.aaj_rashifal_body), Modifier.padding(horizontal = PpSpace.screen).clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = open)) }
+                }
                 if (c.highLatitude.isNotEmpty()) {
                     item { InfoCard(stringResource(R.string.aaj_high_latitude_title), stringResource(R.string.aaj_high_latitude_body), Modifier.padding(horizontal = PpSpace.screen)) }
                 }

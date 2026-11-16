@@ -27,6 +27,8 @@
     <string name="aaj_header_resume">Today\'s good times are over for now. Next from %1$s</string>
     <string name="aaj_header_tomorrow_none">Today\'s good times are over</string>
     <string name="aaj_header_unavailable">Timings unavailable here today</string>
+    <string name="aaj_rashifal_title">Rashifal</string>
+    <string name="aaj_rashifal_body">Today\'s reading for your sign, from the planets\' current signs.</string>
     <string name="aaj_footer">Traditional interpretation, not a scientific prediction.</string>
     <string name="aaj_how_calculated">How this is calculated</string>
     <string name="aaj_arc_good">Good time</string>

@@ -43,7 +43,15 @@ class AajExtras(
     val onShare: (ShareFormat, ShareCardModel) -> Unit = { _, _ -> },
     /** M10: the next family date (on screen only; never in widgets or notifications). */
     val family: AajFamilyRow? = null,
+    /** M11: opens Rashifal (the route carries no personal data); null hides the card. */
+    val onOpenRashifal: (() -> Unit)? = null,
 ) {
+    /** The same hooks plus the Rashifal entry (shell wiring). */
+    fun withRashifal(open: () -> Unit): AajExtras = AajExtras(
+        travel, onTravelUpdate, onTravelDismiss, onRationaleContinue, onBackHome, speech, onSpeak, onStopSpeaking,
+        showCityOnShare, cityName, onShare, family, open,
+    )
+
     companion object {
         val None = AajExtras()
     }

@@ -19,14 +19,26 @@ val stageRuleAssets = tasks.register<Sync>("stageRuleAssets") {
     into(layout.buildDirectory.dir("generated/ruleAssets"))
 }
 
+// M11: the signed bundled content packs (built by :content:buildPacks with a throwaway key, D3), staged into
+// assets/content/<lang>/pack.ppc plus assets/content/bundled.pub (public key only).
+val stageContentPacks = tasks.register<Sync>("stageContentPacks") {
+    dependsOn(":content:buildPacks")
+    from(rootProject.layout.projectDirectory.dir("content/build/generated/contentPacks")) {
+        include("content/bundled.pub", "content/*/pack.ppc")
+    }
+    into(layout.buildDirectory.dir("generated/contentAssets"))
+}
+
 tasks.configureEach {
-    if (name != "stageRuleAssets" && Regex("(?i).*(lint|assets).*").matches(name)) dependsOn(stageRuleAssets)
+    val staging = name == "stageRuleAssets" || name == "stageContentPacks"
+    if (!staging && Regex("(?i).*(lint|assets).*").matches(name)) dependsOn(stageRuleAssets, stageContentPacks)
 }
 
 android {
     // The perf build type uses the release stubs (no debug gate) so it behaves like a shipped build.
     sourceSets.maybeCreate("perf").kotlin.directories.add("src/release/kotlin")
     sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/ruleAssets").get().asFile)
+    sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/contentAssets").get().asFile)
     namespace = "app.parivaar.panchang"
     compileSdk = 36
     buildToolsVersion = "36.0.0"
@@ -91,6 +103,8 @@ dependencies {
     implementation(project(":feature:aaj"))
     implementation(project(":feature:calendar"))
     implementation(project(":feature:kundli"))
+    implementation(project(":feature:horoscope"))
+    implementation(project(":content"))
     implementation(project(":feature:bonds"))
     implementation(project(":feature:bhakti"))
     implementation(project(":feature:onboarding"))

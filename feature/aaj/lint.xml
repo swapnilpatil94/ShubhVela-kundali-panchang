@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- M11: only the Rashifal entry is in Hindi so far. Missing hi strings fall back to English and are warnings until
+     the module's full Hindi pass lands (TODO(owner): restore to error then). -->
+<lint>
+    <issue id="MissingTranslation" severity="warning" />
+</lint>

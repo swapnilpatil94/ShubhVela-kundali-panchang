@@ -19,6 +19,8 @@ import app.parivaar.panchang.engine.astro.AstronomyEngineEphemeris
 import app.parivaar.panchang.engine.astro.SelectingEphemeris
 import app.parivaar.panchang.engine.calendar.CalendarCalculator
 import app.parivaar.panchang.engine.jyotish.ChartCalculator
+import app.parivaar.panchang.content.horoscope.EngineTransitSource
+import app.parivaar.panchang.content.horoscope.TransitSource
 import app.parivaar.panchang.engine.jyotish.Gochar
 import app.parivaar.panchang.engine.jyotish.NakshatraTable
 import app.parivaar.panchang.engine.jyotish.Vargas
@@ -73,6 +75,9 @@ class ActivePlace(
     override fun toString(): String = "ActivePlace(redacted)"
 }
 
+/** The civil date of [now] at the home place. */
+fun EngineAccess.today(a: ActivePlace, now: Instant): LocalDate = now.toLocalDateTime(a.zone).date
+
 /** Festival definitions for [s]: the calendar's Ekadashi tradition filter, shared by reminders and widgets. */
 internal fun defsFor(defs: List<FestivalDef>, s: AppSettings): List<FestivalDef> = defs.forTradition(s.ekadashi)
 
@@ -109,6 +114,8 @@ class EngineAccess @Inject constructor(
         val sets: List<FestivalSet>,
         val calendar: CalendarEngine,
         val kundli: KundliEngine,
+        val chart: ChartCalculator,
+        val gochar: Gochar,
     )
 
     private val engine: Engine by lazy {
@@ -145,7 +152,10 @@ class EngineAccess @Inject constructor(
             NakshatraTable.parse(asset("rules/nakshatra.json")), Gochar(eph), FinderFamilyDates(FamilyDateFinder(eph)),
         )
         val calendar = EngineCalendarEngine(direct, aaj)
-        return Engine(calc, fest, ecl, defs, aaj, tables, sets, calendar, EngineKundliEngine(kundli, aaj))
+        return Engine(
+            calc, fest, ecl, defs, aaj, tables, sets, calendar, EngineKundliEngine(kundli, aaj), ChartCalculator(eph),
+            Gochar(eph),
+        )
     }
 
     /** Builds the engine (ephemeris, rule files, festival sets) once, off the main thread. Call from app start. */
@@ -262,7 +272,26 @@ class EngineAccess @Inject constructor(
         ProfileFamilyDateSource(::profiles, ::familyHome, kundliEngine)
     }
 
-    fun today(a: ActivePlace, now: Instant): LocalDate = now.toLocalDateTime(a.zone).date
+    /**
+     * M11: runs [block] under the engine lock with a transit source at the home place and the panchang day start
+     * (sunrise per settings; the engine's high-latitude fallback applies; a day with no sun events starts at local
+     * midnight). Blocking; nothing is logged.
+     */
+    fun <T> rashifal(a: ActivePlace, block: (TransitSource, (LocalDate) -> Instant) -> T): T =
+        onEngine {
+            val src = EngineTransitSource(engine.chart, engine.gochar, a.place, a.calc)
+            val starts = HashMap<LocalDate, Instant>()
+            val dayStart = { d: LocalDate ->
+                starts.getOrPut(d) {
+                    try {
+                        engine.calc.day(d, a.offsetFor(d), a.place, a.calc).sunrise
+                    } catch (_: PanchangUnavailableException) {
+                        d.atStartOfDayIn(a.zone)
+                    }
+                }
+            }
+            block(src, dayStart)
+        }
 
     private companion object {
         const val REGION = "all"

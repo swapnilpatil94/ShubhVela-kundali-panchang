@@ -1,0 +1,21 @@
+# English banned terms (case-insensitive, whole word). Seed from docs/specs/M11.md L3.
+danger
+dangerous
+destroy
+destruction
+death
+die
+deadly
+fatal
+disaster
+curse
+doom
+ruin
+catastrophe
+remedy
+remedies
+gemstone
+buy
+guaranteed
+urgent
+100%

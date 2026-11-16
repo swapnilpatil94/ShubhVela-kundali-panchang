@@ -4,6 +4,7 @@
     <string name="kundli_title">Your birth sky</string>
     <string name="kundli_eyebrow">%1$s · %2$s</string>
     <string name="kundli_family">Parivaar</string>
+    <string name="kundli_rashifal">Rashifal for this chart\'s sign</string>
     <string name="kundli_me">Me</string>
     <string name="kundli_edit">Edit</string>
     <string name="kundli_add_profile">Add profile</string>

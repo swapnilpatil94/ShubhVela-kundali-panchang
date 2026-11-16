@@ -1,0 +1,21 @@
+# Hindi banned terms (substring after NFC). Seed; VERIFY V5 with a native reviewer.
+मृत्यु
+मौत
+विनाश
+खतरा
+ख़तरा
+खतरनाक
+संकट
+अनिष्ट
+श्राप
+अशुभ
+बर्बाद
+दुर्घटना
+भयानक
+उपाय
+रत्न
+खरीद
+ख़रीद
+गारंटी
+तुरंत
+100%
