@@ -19,7 +19,7 @@ class RuleAssetsPackagedTest {
         assertTrue(referenced.isNotEmpty(), "no rule references found, the scan is broken")
         for (name in referenced) {
             assertTrue(File(root, "rules/$name").isFile, "rules/$name does not exist in the repo")
-            assertTrue("\"$name\"" in staging, "rules/$name is opened at run time but not staged in app/build.gradle.kts")
+            assertTrue("\"$name\"" in staging, "rules/$name is opened at run time but is not staged in the app build")
         }
     }
 }
