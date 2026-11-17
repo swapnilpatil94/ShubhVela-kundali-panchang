@@ -66,6 +66,32 @@ class NakshatraTable private constructor(
         return nakshatras[n].symbolId
     }
 
+    /** Gana code of nakshatra [n] (0..26), e.g. `DEVA`. */
+    fun gana(n: Int): String = nak(n).gana
+
+    /** Yoni code of nakshatra [n] (0..26), e.g. `HORSE`. */
+    fun yoni(n: Int): String = nak(n).yoni
+
+    /** Nadi code of nakshatra [n] (0..26), e.g. `ADI`. */
+    fun nadi(n: Int): String = nak(n).nadi
+
+    /** Varna code of sign [rashi] (0..11), e.g. `KSHATRIYA`. */
+    fun varna(rashi: Int): String {
+        require(rashi in rashis.indices) { "rashi index out of range" }
+        return rashis[rashi].varna
+    }
+
+    /** Vashya codes of sign [rashi] (0..11): one, or two (first half, second half from 15 degrees). */
+    fun vashyas(rashi: Int): List<String> {
+        require(rashi in rashis.indices) { "rashi index out of range" }
+        return rashis[rashi].vashya
+    }
+
+    private fun nak(n: Int): NakshatraRow {
+        require(n in nakshatras.indices) { "nakshatra index out of range" }
+        return nakshatras[n]
+    }
+
     /** The Avakhada of the Moon of [facts]: sign, degree, nakshatra and pada. */
     fun avakhada(facts: ChartFacts): Avakhada {
         val moon = facts.of(Graha.MOON)

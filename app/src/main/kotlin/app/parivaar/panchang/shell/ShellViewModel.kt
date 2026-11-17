@@ -68,9 +68,12 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.security.SecureRandom
+import app.parivaar.panchang.feature.bonds.BondsData
+import app.parivaar.panchang.feature.bonds.BondsViewModel
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.time.Clock
+import kotlinx.datetime.toLocalDateTime
 import app.parivaar.panchang.feature.settings.AppearanceModel
 import app.parivaar.panchang.feature.settings.ConventionsModel
 
@@ -91,6 +94,7 @@ class ShellViewModel
         @ApplicationContext private val context: Context,
         private val places: PlaceRepository,
         private val engineAccess: EngineAccess,
+        private val bondsRepo: app.parivaar.panchang.core.data.BondRepository,
     ) : ViewModel() {
         val gate = AppGateModel(vault, settingsRepo, viewModelScope, Dispatchers.IO)
 
@@ -203,6 +207,30 @@ class ShellViewModel
                     EngineRashifalEngine(engineAccess), ::contentPacks, ::rashifalTime, Clock.System, viewModelScope,
                     Dispatchers.Default,
                 ),
+            )
+        }
+
+        /**
+         * M12 Bonds: bonds and profiles while the vault is open, an explicit null (everything cleared) while it is not.
+         * Engine and codec calls run on Default under the engine lock; nothing is logged.
+         */
+        val bonds: BondsViewModel by lazy {
+            val data = vault.state.flatMapLatest { st ->
+                if (st == VaultState.Ready) {
+                    kotlinx.coroutines.flow.combine(
+                        bondsRepo.observeAll().catch { }.map { it.items },
+                        profiles.observeAll().catch { }.map { it.items },
+                    ) { b, p -> BondsData(b, p) }
+                } else {
+                    flowOf(null)
+                }
+            }
+            val rng = SecureRandom()
+            BondsViewModel(
+                data, RepoBondStore(bondsRepo), engineAccess.bondEngine(context.getString(R.string.share_host)),
+                { app.parivaar.panchang.core.data.newRecordId(rng) },
+                { Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date },
+                Clock.System, viewModelScope, Dispatchers.Default,
             )
         }
 

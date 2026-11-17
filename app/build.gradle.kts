@@ -12,9 +12,15 @@ val stageRuleAssets = tasks.register<Sync>("stageRuleAssets") {
     from(rootProject.file("rules")) {
         include(
             "durmuhurta.json", "choghadiya.json", "should_i.json", "vargas.json", "yogas.json", "nakshatra.json",
+            "koota.json",
             "festivals/*.json",
         )
         into("rules")
+    }
+    // M12: the versioned bond axis weights and label bands, read at run time as assets/content/bond_weights.json.
+    from(rootProject.file("content")) {
+        include("bond_weights.json")
+        into("content")
     }
     into(layout.buildDirectory.dir("generated/ruleAssets"))
 }
@@ -106,6 +112,7 @@ dependencies {
     implementation(project(":feature:horoscope"))
     implementation(project(":content"))
     implementation(project(":feature:bonds"))
+    implementation(project(":core:share"))
     implementation(project(":feature:bhakti"))
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:settings"))

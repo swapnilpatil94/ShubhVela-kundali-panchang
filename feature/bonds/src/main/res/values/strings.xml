@@ -1,5 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- M12 Bonds. English source; every key is ready for the 12 app languages. Calm tone: no fear words, no pass/fail,
+     no remedies. Labels and wording are provisional, VERIFY with the pandit (M12 spec rules 9 to 12). -->
 <resources>
-    <string name="bonds_placeholder_title">Coming soon</string>
-    <string name="bonds_placeholder_body">Compatibility with family and friends will appear here in a coming update.</string>
+    <string name="bonds_footer">Traditional interpretation, not a scientific prediction.</string>
+    <string name="bonds_locked_title">Bonds are locked</string>
+    <string name="bonds_locked_body">Unlock the app to see your bonds.</string>
+    <string name="bonds_working">Working it out…</string>
+    <string name="bonds_back">Back</string>
+
+    <!-- List -->
+    <string name="bonds_empty_title">No bonds yet</string>
+    <string name="bonds_empty_body">Add a family member, or paste a friend\'s Bond Code, to see how your Moon signs meet.</string>
+    <string name="bonds_add">Add a bond</string>
+    <string name="bonds_share_my_code">Share my Bond Code</string>
+    <string name="bonds_match_open">Marriage match</string>
+    <string name="bonds_row_family">From your family</string>
+    <string name="bonds_row_code">From a Bond Code</string>
+    <string name="bonds_open_bond">Open bond with %1$s</string>
+    <string name="bonds_privacy_note">Bonds stay on this phone. Only a Bond Code you choose to share ever leaves it.</string>
+
+    <!-- Kinds -->
+    <string name="bonds_kind_love">Love</string>
+    <string name="bonds_kind_crush">Crush</string>
+    <string name="bonds_kind_bestie">Bestie</string>
+    <string name="bonds_kind_sibling">Sibling</string>
+    <string name="bonds_kind_parent">Parent</string>
+    <string name="bonds_kind_work">Work</string>
+    <string name="bonds_kind_roommate">Roommate</string>
+    <string name="bonds_kind_label">Bond type</string>
+    <string name="bonds_kind_pick">Choose the bond type, now %1$s</string>
+
+    <!-- Add -->
+    <string name="bonds_add_title">Add a bond</string>
+    <string name="bonds_add_from_family">From your family</string>
+    <string name="bonds_add_family_empty">Family members you add in Kundli appear here.</string>
+    <string name="bonds_add_by_code">Paste a Bond Code</string>
+    <string name="bonds_code_hint">Bond Code or link</string>
+    <string name="bonds_code_check">Check code</string>
+    <string name="bonds_err_invalid">This code could not be read. Ask your friend to share it again.</string>
+    <string name="bonds_err_not_computable">This chart could not be calculated. Check the birth details in Kundli.</string>
+    <string name="bonds_err_save">The bond could not be saved. Please try again.</string>
+    <string name="bonds_err_unavailable">Matching is not available right now. Please try again later.</string>
+
+    <!-- Preview -->
+    <string name="bonds_preview_title">Add bond?</string>
+    <string name="bonds_preview_body">Nothing is saved until you tap Add bond.</string>
+    <string name="bonds_preview_add">Add bond</string>
+    <string name="bonds_preview_cancel">Cancel</string>
+    <string name="bonds_field_name">Name</string>
+    <string name="bonds_field_moon">Moon nakshatra</string>
+    <string name="bonds_field_moon_value">%1$s, pada %2$d</string>
+    <string name="bonds_field_rashi">Moon sign</string>
+    <string name="bonds_field_lagna">Lagna</string>
+    <string name="bonds_field_not_shared">Not shared</string>
+    <string name="bonds_field_mars">Mars placement</string>
+    <string name="bonds_field_venus">Venus sign</string>
+    <string name="bonds_field_sun">Sun sign</string>
+    <string name="bonds_field_vashya">Vashya</string>
+    <string name="bonds_field_unknown">Not known</string>
+    <string name="bonds_mars_0">No Manglik placement</string>
+    <string name="bonds_mars_1">Partial Manglik placement</string>
+    <string name="bonds_mars_2">Manglik placement</string>
+
+    <!-- Result -->
+    <string name="bonds_result_eyebrow">%1$s bond</string>
+    <string name="bonds_result_you">You</string>
+    <string name="bonds_result_pair">%1$s and %2$s</string>
+    <string name="bonds_result_gunas">of %1$s gunas</string>
+    <string name="bonds_result_score_desc">%1$s of %2$s gunas</string>
+    <string name="bonds_result_kootas">Koota by koota</string>
+    <string name="bonds_result_koota_value">%1$s / %2$s</string>
+    <string name="bonds_result_excluded">Not counted for this bond type</string>
+    <string name="bonds_result_base_rule">Base rule; exceptions not applied.</string>
+    <string name="bonds_result_variant">Manglik variant: base rule, no cancellations applied.</string>
+    <string name="bonds_result_tables_verify">These tables are still being checked with a pandit.</string>
+    <string name="bonds_result_no_self_title">Add your own details first</string>
+    <string name="bonds_result_no_self_body">Add yourself in Kundli, marked as Self, to see how you match.</string>
+    <string name="bonds_growth_area">Growth area · %1$s</string>
+    <string name="bonds_friend_excludes_note">For friends and siblings, Bhakoot and Nadi are left out: they speak to marriage.</string>
+    <string name="bonds_delete">Delete bond</string>
+    <string name="bonds_delete_note">Deleting removes it from this phone only.</string>
+    <string name="bonds_delete_failed">The bond could not be deleted. Please try again.</string>
+    <string name="bonds_card_share_family_note">Bonds made from a family profile are never shared.</string>
+
+    <!-- Axes -->
+    <string name="bonds_axis_vibe">Vibe</string>
+    <string name="bonds_axis_talk">Talk</string>
+    <string name="bonds_axis_trust">Trust</string>
+    <string name="bonds_axis_fights">Fights</string>
+    <string name="bonds_axis_growth">Growth</string>
+
+    <!-- Labels (bond_weights.json bands; never negative) -->
+    <string name="bonds_label_cosmic_twins">Cosmic Twins</string>
+    <string name="bonds_label_soul_squad">Soul Squad</string>
+    <string name="bonds_label_spicy_combo">Spicy Combo</string>
+    <string name="bonds_label_opposites_attract">Opposites Attract</string>
+    <string name="bonds_label_growth_bond">Growth Bond</string>
+
+    <!-- Kootas -->
+    <string name="bonds_koota_varna">Varna</string>
+    <string name="bonds_koota_vashya">Vashya</string>
+    <string name="bonds_koota_tara">Tara</string>
+    <string name="bonds_koota_yoni">Yoni</string>
+    <string name="bonds_koota_graha_maitri">Graha Maitri</string>
+    <string name="bonds_koota_gana">Gana</string>
+    <string name="bonds_koota_bhakoot">Bhakoot</string>
+    <string name="bonds_koota_nadi">Nadi</string>
+
+    <!-- Notes (calm; ids from the engine) -->
+    <string name="bonds_note_bhakoot_dosha">The Moon signs sit in a pairing the base rule scores low. Many families look at the whole chart.</string>
+    <string name="bonds_note_nadi_same">Both share the same Nadi, which the base rule scores low. Traditions differ on its weight.</string>
+    <string name="bonds_note_exception_possible">Some traditions apply an exception here; it is not applied to this score.</string>
+    <string name="bonds_note_generic">A traditional note applies to this koota.</string>
+    <string name="bonds_manglik_balanced">Mars placements are balanced for both of you.</string>
+    <string name="bonds_manglik_consult">Mars placements differ. Many traditions apply cancellations; a family pandit can advise.</string>
+
+    <!-- Share my code -->
+    <string name="bonds_share_title">Share my Bond Code</string>
+    <string name="bonds_share_body">Your Bond Code holds only these traits. It never holds your birth date, time or place.</string>
+    <string name="bonds_share_lagna_toggle">Include my lagna</string>
+    <string name="bonds_share_minor_note">Under 18: only your initials are shared.</string>
+    <string name="bonds_share_send">Share</string>
+    <string name="bonds_share_copy">Copy code</string>
+    <string name="bonds_share_copied">Code copied</string>
+    <string name="bonds_share_chooser">Share Bond Code</string>
+    <string name="bonds_share_text">Here is my Bond Code for Parivaar Panchang: %1$s\nOpen Bonds, tap Add a bond and paste it to see how our Moon signs meet.</string>
+    <string name="bonds_share_no_self_title">Only your own profile can be shared</string>
+    <string name="bonds_share_no_self_body">Add yourself in Kundli, marked as Self, to create your Bond Code. Family profiles are never shared.</string>
+
+    <!-- Marriage match (F1) -->
+    <string name="bonds_match_title">Marriage match</string>
+    <string name="bonds_match_body">Ashtakoota with the bride and groom roles named. Pick two people.</string>
+    <string name="bonds_match_first">First person</string>
+    <string name="bonds_match_second">Second person</string>
+    <string name="bonds_match_groom">Groom</string>
+    <string name="bonds_match_bride">Bride</string>
+    <string name="bonds_match_first_groom">First person as groom</string>
+    <string name="bonds_match_second_groom">Second person as groom</string>
+    <string name="bonds_match_pick_two">Pick two different people to see the match.</string>
+
+    <string-array name="bonds_rashi_names">
+        <item>Mesha</item><item>Vrishabha</item><item>Mithuna</item><item>Karka</item><item>Simha</item><item>Kanya</item>
+        <item>Tula</item><item>Vrishchika</item><item>Dhanu</item><item>Makara</item><item>Kumbha</item><item>Meena</item>
+    </string-array>
+    <string-array name="bonds_nakshatra_names">
+        <item>Ashwini</item><item>Bharani</item><item>Krittika</item><item>Rohini</item><item>Mrigashira</item>
+        <item>Ardra</item><item>Punarvasu</item><item>Pushya</item><item>Ashlesha</item><item>Magha</item>
+        <item>Purva Phalguni</item><item>Uttara Phalguni</item><item>Hasta</item><item>Chitra</item><item>Swati</item>
+        <item>Vishakha</item><item>Anuradha</item><item>Jyeshtha</item><item>Mula</item><item>Purva Ashadha</item>
+        <item>Uttara Ashadha</item><item>Shravana</item><item>Dhanishta</item><item>Shatabhisha</item>
+        <item>Purva Bhadrapada</item><item>Uttara Bhadrapada</item><item>Revati</item>
+    </string-array>
+    <string-array name="bonds_vashya_names">
+        <item>Chatushpada</item><item>Manava</item><item>Jalachara</item><item>Vanachara</item><item>Keeta</item>
+    </string-array>
 </resources>

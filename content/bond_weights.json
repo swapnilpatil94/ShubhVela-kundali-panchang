@@ -1,0 +1,208 @@
+{
+  "version": 1,
+  "bands": [
+    {
+      "min": 80,
+      "labelKey": "bond.label.cosmic_twins"
+    },
+    {
+      "min": 65,
+      "labelKey": "bond.label.soul_squad"
+    },
+    {
+      "min": 50,
+      "labelKey": "bond.label.spicy_combo"
+    },
+    {
+      "min": 35,
+      "labelKey": "bond.label.opposites_attract"
+    },
+    {
+      "min": 0,
+      "labelKey": "bond.label.growth_bond"
+    }
+  ],
+  "types": {
+    "LOVE": {
+      "exclude": [],
+      "weights": {
+        "VIBE": {
+          "GANA": 1,
+          "YONI": 1
+        },
+        "TALK": {
+          "GRAHA_MAITRI": 1,
+          "VARNA": 1
+        },
+        "TRUST": {
+          "TARA": 1,
+          "VASHYA": 1
+        },
+        "FIGHTS": {
+          "BHAKOOT": 1,
+          "GANA": 1
+        },
+        "GROWTH": {
+          "NADI": 1,
+          "TARA": 1
+        }
+      }
+    },
+    "CRUSH": {
+      "exclude": [],
+      "weights": {
+        "VIBE": {
+          "GANA": 1,
+          "YONI": 1
+        },
+        "TALK": {
+          "GRAHA_MAITRI": 1,
+          "VARNA": 1
+        },
+        "TRUST": {
+          "TARA": 1,
+          "VASHYA": 1
+        },
+        "FIGHTS": {
+          "BHAKOOT": 1,
+          "GANA": 1
+        },
+        "GROWTH": {
+          "NADI": 1,
+          "TARA": 1
+        }
+      }
+    },
+    "PARENT": {
+      "exclude": [],
+      "weights": {
+        "VIBE": {
+          "GANA": 1,
+          "YONI": 1
+        },
+        "TALK": {
+          "GRAHA_MAITRI": 1,
+          "VARNA": 1
+        },
+        "TRUST": {
+          "TARA": 1,
+          "VASHYA": 1
+        },
+        "FIGHTS": {
+          "BHAKOOT": 1,
+          "GANA": 1
+        },
+        "GROWTH": {
+          "NADI": 1,
+          "TARA": 1
+        }
+      }
+    },
+    "WORK": {
+      "exclude": [],
+      "weights": {
+        "VIBE": {
+          "GANA": 1,
+          "YONI": 1
+        },
+        "TALK": {
+          "GRAHA_MAITRI": 1,
+          "VARNA": 1
+        },
+        "TRUST": {
+          "TARA": 1,
+          "VASHYA": 1
+        },
+        "FIGHTS": {
+          "BHAKOOT": 1,
+          "GANA": 1
+        },
+        "GROWTH": {
+          "NADI": 1,
+          "TARA": 1
+        }
+      }
+    },
+    "ROOMMATE": {
+      "exclude": [],
+      "weights": {
+        "VIBE": {
+          "GANA": 1,
+          "YONI": 1
+        },
+        "TALK": {
+          "GRAHA_MAITRI": 1,
+          "VARNA": 1
+        },
+        "TRUST": {
+          "TARA": 1,
+          "VASHYA": 1
+        },
+        "FIGHTS": {
+          "BHAKOOT": 1,
+          "GANA": 1
+        },
+        "GROWTH": {
+          "NADI": 1,
+          "TARA": 1
+        }
+      }
+    },
+    "BESTIE": {
+      "exclude": [
+        "BHAKOOT",
+        "NADI"
+      ],
+      "weights": {
+        "VIBE": {
+          "GANA": 1,
+          "YONI": 1
+        },
+        "TALK": {
+          "GRAHA_MAITRI": 1,
+          "VARNA": 1
+        },
+        "TRUST": {
+          "TARA": 1,
+          "VASHYA": 1
+        },
+        "FIGHTS": {
+          "GANA": 1,
+          "YONI": 1
+        },
+        "GROWTH": {
+          "TARA": 1,
+          "GRAHA_MAITRI": 1
+        }
+      }
+    },
+    "SIBLING": {
+      "exclude": [
+        "BHAKOOT",
+        "NADI"
+      ],
+      "weights": {
+        "VIBE": {
+          "GANA": 1,
+          "YONI": 1
+        },
+        "TALK": {
+          "GRAHA_MAITRI": 1,
+          "VARNA": 1
+        },
+        "TRUST": {
+          "TARA": 1,
+          "VASHYA": 1
+        },
+        "FIGHTS": {
+          "GANA": 1,
+          "YONI": 1
+        },
+        "GROWTH": {
+          "TARA": 1,
+          "GRAHA_MAITRI": 1
+        }
+      }
+    }
+  }
+}

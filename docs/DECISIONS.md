@@ -395,3 +395,44 @@ Logged only, not changed:
 - hi strings exist only for `:feature:horoscope` (the other modules have no values-hi yet); the Aaj card and the Kundli button are en only.
 - Not done: Roborazzi screenshots (Roborazzi is not in the offline cache, M07R); emulator check (not driven by this agent).
 - M11 polish: the Aaj Rashifal card and the Kundli Rashifal button now have hi strings (`values-hi` in `:feature:aaj` and `:feature:kundli`). Those modules have no other hi strings yet, so their `lint.xml` turns MissingTranslation into a warning (the rest falls back to English). TODO(owner): set it back to error once the modules are fully translated. The Rashifal screen uses the same back row as the calendar sub-screens (ScreenFrame), the reading text is body size (16 sp) with PpSpace.s gaps between paragraphs, and the sign name is the display title.
+
+## M12 engine (koota, Manglik, bond axes, Bond Code codec; 2026-11-16)
+- D1 South Dashakoota / 10 Porutham, Rajju and Vedha move to M12b: they need a pandit fixture first (F1 South still owed).
+- D2 No QR: the version catalog has no QR library. A code is shared as text, a link or through the share sheet.
+- D3 Play Install Referrer and the referral reward move to M15 (library not cached; the reward is ad-free days). Instagram Stories needs the owner's Facebook App ID: TODO(owner), M15.
+- D4 F9: only the free "Minimal" theme ships; the R/P themes need M15 rewarded/billing.
+- D5 The Bond Code adds `vs` (Vashya class, 3 bits) and drops the cached g/y/nd; `BondCode.decode` recomputes them from mn (gana Deva 0 / Manushya 1 / Rakshasa 2, yoni in the koota.json order Horse 0 .. Lion 13, nadi Adi 0 / Madhya 1 / Antya 2). MASTER Part 8 schema to be updated the same way.
+- D6 F3 bond types score symmetrically with `AshtakootaCalculator.matchSymmetric` (per-koota mean of both orientations). `KootaTables.parse` rejects a Vashya or Gana matrix with an odd q(a,b)+q(b,a), so the mean is always exact. F1 marriage matching uses `match(groom, bride)`.
+- Golden fixtures live in `engine-golden/src/main/resources/golden/koota_{pairs,symmetric}.csv` (the existing fixture home read by GoldenLoader and oracle_common.RES), not `engine/src/commonTest/resources` as the spec text says. The CSVs add a `notes` column (note ids in koota order) so the oracle also checks the notes.
+- The 110 inputs: each pada with the Vashya class at its start, then (right after it) the alternate class for PA p1 (Manava then Chatushpada) and Shravana p2 (Chatushpada then Jalachara). `MoonPoint` rejects a vashya the pada cannot have (`vashyaChoices`). The Bond Code applies the same pada-level check (stricter than rule 13, which only checks signs other than 8 and 9; more accurate).
+- No engine friendship table existed, so `rules/koota.json` holds the natural relations; `AshtakootaTest` asserts they equal the spec and that the sign lords equal `Zodiac.lordOf`.
+- `manglikLevel(facts, lagnaKnown)` evaluates the same Mars-in-1/2/4/7/8/12-by-sign conditions as `rules/yogas.json`. `ManglikLevelTest` asserts parity with `YogaRules` on 3,000 random charts. The overload `manglikLevel(findings, lagnaKnown)` takes `YogaRules.evaluate` output directly.
+- Oracle vs tables: the Python oracle (`tools/oracle/koota_ref.py`) was written from the spec text and the standard nakshatra lists before the Kotlin tables. Diffs: gana, yoni and nadi for all 27 nakshatras and varna and vashya for all 12 signs agree with `rules/nakshatra.json`; all 12,100 + 6,105 golden rows matched the engine on the first run. No disagreement to resolve.
+- Bond Code name rules: NFC, 1..12 code points, at most 36 UTF-8 bytes, and also at most 12 UTF-16 units (the existing `BondTraits` check). Rejected: Cc, Zl, Zp, unassigned, surrogates, the bidi controls (U+061C, U+200E/F, U+202A-202E, U+2066-2069). ZWJ/ZWNJ are allowed because Indic names need them.
+- Bond Code checksum, stated honestly: CRC-8/0x07 detects every burst of at most 8 bits, so every single-bit flip and every single-character substitution is always rejected (the fuzz test proves it on 1k codes). Insertions and deletions are caught by the length checks, or else by the CRC with probability of about 255/256 only.
+- `fromLinkOrCode` accepts only `https://<host>/b#<code>` (host compared case-insensitively) or a raw code, ignoring surrounding whitespace. A port, user info, any other path or a query is rejected.
+- Bond axes weights format (`content/bond_weights.json`) is documented on `BondAxisScorer`. The parser enforces that BESTIE and SIBLING exclude BHAKOOT and NADI with zero weight.
+- VERIFY (pandit / owner, all tables in `rules/koota.json` carry `"status":"VERIFY"`):
+  - V1 Varna ranks by sign element.
+  - V2 Vashya classes by sign and the Dhanu/Makara 15-degree split.
+  - V3 Vashya points matrix (LOW confidence).
+  - V4 Tara bad set {3,5,7} and the 3 / 1.5 / 0 points.
+  - V5 Yoni 14x14 matrix and the 7 sworn-enemy pairs.
+  - V6 Graha Maitri natural relations and the 5/4/3/1/0.5/0 points.
+  - V7 Gana matrix (D 6 6 1, M 5 6 0, R 1 0 6).
+  - V8 Bhakoot dosha pairs {2,12}, {5,9}, {6,8}.
+  - V9 Nadi same = 0.
+  - V10 The exception notes. Bhakoot: same lord or mutual natural friends. Nadi: same rashi with a different nakshatra, or the same nakshatra with a different pada. These are notes only and never change Q.
+  - V11 Manglik partial/full (k = 1 / k >= 2) and the cancellation list (not applied).
+  - V12 Whether PARENT, WORK and ROOMMATE also exclude Bhakoot and Nadi (they use 144 for now).
+  - V13 The label bands and the axis weights.
+  - Pandit fixture `fixtures/koota_pandit.csv` (20 pairs) is TODO(owner).
+
+## M12 app (implementer; Bonds tab, storage, wiring; 2026-11-16)
+- Storage: `BondTraits.vashya` is `Int?` (null only for pre-M12 rows) and `Bond` gains `profileRef: RecordId?` and `payloadVersion` (default 1). `BondCodec` writes `vs`, `profileRef` and `pv` only when they differ from the pre-M12 value, so old rows and the `family_v1.json` export vector stay byte-identical. A pre-M12 row without `vs` is never matched with a guessed Vashya (calm "not available" state) - more accurate.
+- `content/bond_weights.json` follows the `BondAxisScorer` schema (`version`, `bands[min,labelKey]`, `types[T]{exclude,weights}`) and is staged as `assets/content/bond_weights.json` by `stageRuleAssets`; `rules/koota.json` is staged too (`BondAssetsPackagedTest`, `RuleAssetsPackagedTest`).
+- Traits from a profile are computed on the phone (Kundli bundle, engine `vashyaOf` and `manglikLevel`). No birth time means no lagna and Manglik without the lagna rule. Deceased profiles are not offered as bonds.
+- Share: text only, through the system chooser (the user picks the app), and the text carries the code only. No link in the text yet because the domain is unconfirmed (TODO(owner)); pasting accepts both the code and `https://<share_host>/b#<code>`. `share_host` = `shubhvela.app` as a non-translatable placeholder (TODO(owner): confirm in MASTER Part 10 section A). Copy sets `EXTRA_IS_SENSITIVE`.
+- Only a SELF + OWN profile can produce a code. The lagna toggle is off by default. Under 18 (from the self birth date and the device date) forces initials such as "R.S.".
+- Not done in this pass (TODO): the App Links activity alias plus `<queries>` for WhatsApp (they need the owner's domain and a MASTER Part 5 edit: TODO(owner)); the PNG cards, `CardRenderer`, `IdentityCardScreen` and `ShareIntents` in core/share, with `CardPrivacyTest` and `ShareIntentsTest`; Roborazzi (offline substitute per M07R); the Hindi strings (English keys are ready for 12 languages).
+- Bonds hold no ads (`NoAdsInBondsTest`). Vault lock: the view model receives an explicit `null` and resets to `BondsState(locked = true)`, never `emptyFlow`.

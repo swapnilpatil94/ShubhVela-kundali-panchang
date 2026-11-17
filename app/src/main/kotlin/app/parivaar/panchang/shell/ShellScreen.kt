@@ -33,7 +33,7 @@ import app.parivaar.panchang.feature.aaj.ui.AajActions
 import app.parivaar.panchang.feature.aaj.ui.AajExtras
 import app.parivaar.panchang.feature.aaj.ui.AajScreen
 import app.parivaar.panchang.feature.bhakti.BhaktiPlaceholderScreen
-import app.parivaar.panchang.feature.bonds.BondsPlaceholderScreen
+import app.parivaar.panchang.feature.bonds.BondsViewModel
 import app.parivaar.panchang.feature.horoscope.RashifalRoute
 import app.parivaar.panchang.feature.settings.AppearanceModel
 import app.parivaar.panchang.feature.settings.ConventionsModel
@@ -64,6 +64,7 @@ fun ShellScreen(
     aajExtras: AajExtras,
     cal: CalendarWiring,
     kundli: KundliWiring,
+    bonds: BondsViewModel,
     modifier: Modifier = Modifier,
 ) {
     val navigator =
@@ -103,7 +104,7 @@ fun ShellScreen(
                         Tab.CALENDAR ->
                             CalendarTab(cal, settings, homePlaceName, navigator, conventions, search)
                         Tab.KUNDLI -> KundliTab(kundli) { navigator.push(Dest.Rashifal) }
-                        Tab.BONDS -> BondsPlaceholderScreen(homePlaceName, null, avatar, search)
+                        Tab.BONDS -> BondsTabHost(bonds, homePlaceName, avatar, search)
                         Tab.BHAKTI -> BhaktiPlaceholderScreen(homePlaceName, null, avatar, search)
                     }
                 Dest.Settings -> SettingsDest(settings, languages, appearance, navigator)

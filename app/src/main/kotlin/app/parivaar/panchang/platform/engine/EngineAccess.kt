@@ -87,6 +87,7 @@ internal fun defsFor(defs: List<FestivalDef>, s: AppSettings): List<FestivalDef>
  * Rule files come from packaged assets (`rules/`, copied from the repo-level `rules` dir at build time).
  */
 @Singleton
+@Suppress("TooManyFunctions") // M12 added the Bonds port; one shared engine, one lock
 class EngineAccess @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settingsRepo: SettingsRepository,
@@ -190,6 +191,13 @@ class EngineAccess @Inject constructor(
 
     /** The Kundli tab's engine port: the one engine instance, every call under the single engine lock. */
     val kundliEngine: KundliEngine get() = engine.kundli
+
+    /**
+     * M12: the Bonds port over the same engine lock: koota tables, axis weights, traits from the Kundli engine and the
+     * Bond Code codec (links only for [shareHost]). Blocking; nothing is logged.
+     */
+    fun bondEngine(shareHost: String): app.parivaar.panchang.feature.bonds.BondEngine =
+        EngineBondEngine({ kundliEngine }, resolver.get(), ::asset, { engine.aaj }, BondCodeAdapter(shareHost))
 
     /** The shipped festival definitions (immutable), for the festival guide. */
     val festivalDefs: List<FestivalDef> get() = engine.defs

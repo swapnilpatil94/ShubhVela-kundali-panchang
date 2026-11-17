@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- M12: the Bond Code link host (non-translatable). TODO(owner): confirm the domain in MASTER Part 10 section A. -->
+    <string name="share_host" translatable="false">shubhvela.app</string>
+</resources>
